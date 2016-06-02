@@ -145,6 +145,8 @@
 		 */
 		const init = clients => {
 			console.log("++++++", clients);
+
+			agl.updateMetro();
 		};
 		/**
 		 * *connect Генератор для коннекта баз данных
