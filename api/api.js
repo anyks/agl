@@ -83,7 +83,8 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$lat", lat).replace("$lng", lng));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
-				console.log("+++++++++", obj.status, obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData);//, obj.data.response.GeoObjectCollection.featureMember);
+				// obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData
+				console.log("+++++++++", obj.status, obj.data.response.GeoObjectCollection.featureMember);
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
