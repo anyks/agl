@@ -254,41 +254,27 @@
 		}
 		/**
 		 * fnShowProps Функция поиска параметра в объекте json
-		 * @param  {Object} obj объект в котором нужно найти параметр
-		 * @param  {String} key параметр объекта
-		 * @return {Variant}    найденный результат
+		 * @param  {Object}  obj объект в котором нужно найти параметр
+		 * @param  {String}  key параметр объекта
+		 * @param  {Variant} def параметр по умолчанию
+		 * @return {Variant}     найденный результат
 		 */
 		static fnShowProps(obj, key, def = null){
 			// Если данный ключ уже найден
 			if(Anyks.isset(obj[key])) return obj[key];
 			// Заполняем массив результатами поиска на каждый ключ
-			for(let key in obj){
+			for(let item in obj){
 				// Получаем данные на каждый ключ
-				const result = fnShowProps(obj, key);
+				const result = (
+					Anyks.isset(obj[item]) &&
+					Anyks.isObject(obj[item]) ?
+					fnShowProps(obj[item], key, def) : false
+				);
 				// Если результат существует
-				if(Anyks.isset(result)) return result;
-				// Иначе продолжаем поиск
-				else continue;
+				if(result) return result;
 			}
 			// Выводим данные по умолчанию
 			return def;
-			/*
-
-			// обращение к свойствам объекта по индексу
-			for(let i in obj){
-				// Если данные найдены в первом уровне
-				if(i === objName) return obj[i];
-				// Если данные найдены
-				else if(Anyks.isset(obj[i][objName])) {
-					// Если элемент найден тогда выходим
-					return obj[i][objName];
-				// Продолжаем поиск
-				} else if(Anyks.isObject(obj[i])){
-					// Если элемент не найден идем глубже
-					return Anyks.fnShowProps(obj[i], objName);
-				}
-			}
-			*/
 		}
 		/**
 		 * returnObject Функция извлекает ссылки на параметры объекта игнорируя указанный
