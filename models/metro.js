@@ -21,7 +21,6 @@
 		getData(){
 			// Выводим коллекцию Cian
 			return new mongo.Schema({
-				/*
 				"id":	String,
 				"name":	String,
 				"url":	String,
@@ -37,7 +36,7 @@
 						"order":	Number
 					}]
 				}]
-				*/
+				/*
 				"id":						String,
 				"name":						String,
 				"url":						String,
@@ -51,6 +50,7 @@
 				"lines.$.stations.$.lat":	Number,
 				"lines.$.stations.$.lng":	Number,
 				"lines.$.stations.$.order":	Number
+				*/
 			}, {collection: this.collection});
 		}
 	}
