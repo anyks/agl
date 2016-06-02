@@ -1,0 +1,27 @@
+name: "agl"
+#host: "mimi.anyks.net"
+#urlbot: "braind"
+#version: "1.0.0"
+#bind: "127.0.0.1"
+#port: "330"
+#tport: "1490"
+#socket: "/tmp/toma.sock"
+#wssocket: "/tmp/wstoma.sock"
+#secretkey: "6991163"
+#secretstr: "The future begins today!"
+#password: "Anyks, the whole world will be our!!!"
+#token: "145122412:AAHnI9wt2ua-ZPWc-86CXtDkyu9iKChAldY"
+#yapi: "ALrFUFQBAAAA8mwkCAMALiFAdLC9pCzv6TDA8O2chq9JpwYAAAAAAAAAAAD95EPaH5dAUFut2wqGwvlnw-nKZw=="
+#offTime: "60"
+#mode: "1"
+#checkEducation: "1"
+#debug: { errors: "1", messages: "1" }
+#master: { host: "127.0.0.1", port: "1490" }
+#fork: { host: "127.0.0.1", port: "430" }
+#redis: { host: "192.168.0.3", port: "6379", pass: "586324719954", db: "1" }
+#postgresql: { user: "komodo", pass: "51143521697", host: "192.168.0.10", port: "6432", db: "mimibrain" }
+#morph: { host: "127.0.0.1", port: "9090", max: "100", threads: "100", bin: "/usr/local/bin/python3.5", dir: "/var/www/mimibrain/py", worker: "server/workers/morphology.js" }
+git_repository: "git@github.com:anyks/agl.git"
+git_dir: "/var/www/git/"
+work_dir: "/var/www/"
+logs_dir: "/var/www/logs"

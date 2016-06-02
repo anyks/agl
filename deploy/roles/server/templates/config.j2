@@ -1,0 +1,60 @@
+{
+	"server": {
+		"name":				"{{ name }}",
+		"host":				"{{ host }}",
+		"urlbot":			"{{ urlbot }}",
+		"version":			"{{ version }}",
+		"bind":				"{{ bind }}",
+		"mode":				{{ mode }},
+		"checkEducation":	{{ checkEducation }},
+		"offTime":			{{ offTime }},
+		"token":			"{{ token }}",
+		"ports":	{
+			"admin":	{{ port }},
+			"server":	{{ tport }}
+		},
+		"debug": {
+			"errors":	{{ debug.errors }},
+			"messages":	{{ debug.messages }}
+		},
+		"access": {
+			"adminkey":		{{ secretkey }},
+			"secretkey":	"{{ secretstr }}",
+			"password":		"{{ password }}"
+		}
+	},
+	"master": {
+		"host": "{{ master.host }}",
+		"port": {{ master.port }}
+	},
+	"fork": {
+		"host": "{{ fork.host }}",
+		"port": {{ fork.port }}
+	},
+	"redis": {
+		"host":		"{{ redis.host }}",
+		"password":	"{{ redis.pass }}",
+		"port":		{{ redis.port }},
+		"db":		{{ redis.db }}
+	},
+	"postgresql": {
+		"log":		"{{ logs_dir }}",
+		"user":		"{{ postgresql.user }}",
+		"password":	{{ postgresql.pass }},
+		"server":	"{{ postgresql.host }}",
+		"port":		"{{ postgresql.port }}",
+		"db":		"{{ postgresql.db }}"
+	},
+	"morph": {
+		"host":		"{{ morph.host }}",
+		"port":		{{ morph.port }},
+		"max":		{{ morph.max }},
+		"threads":	{{ morph.threads }},
+		"bin":		"{{ morph.bin }}",
+		"scripts":	"{{ morph.dir }}",
+		"worker":	"{{ morph.worker }}"
+	},
+	"ya": {
+		"key": "{{ yapi }}"
+	}
+}

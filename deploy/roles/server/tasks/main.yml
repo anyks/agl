@@ -1,0 +1,30 @@
+- name: Pull git
+  git: repo={{ git_repository }} dest={{ git_dir }}/{{ name }} accept_hostkey=yes update=yes depth=5 force=yes
+#  sudo_user: anyks
+
+- name: Remove old data
+  action: shell rm -rf {{ work_dir }}/{{ name }}/{{ item }}
+  with_items:
+    - models
+    - server
+    - api
+#    - config/config.json
+#    - node_modules/brain
+#    - node_modules/anyks
+#    - config/help
+
+- name: Copy new files
+  action: shell cp -rf {{ git_dir }}/{{ name }}/{{ item }} {{ work_dir }}/{{ name }}/{{ item }}
+  with_items:
+    - models
+    - server
+    - api
+#    - node_modules/brain
+#    - node_modules/anyks
+#    - config/help
+
+- name: Set permissions
+  action: shell sudo {{ work_dir }}/permissions.sh
+
+#- name: Copy config file
+#  template: src="config.j2" dest="{{ work_dir }}/config/config.json"
