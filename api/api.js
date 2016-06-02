@@ -86,7 +86,7 @@ const anyks = require("./lib.anyks");
 				// obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData
 				// obj.data.response.GeoObjectCollection.featureMember[0].GeoObject
 
-				const nobj = obj.data.response.GeoObjectCollection.featureMember[0].GeoObject;
+				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
 				const ya = {
 					"pos":							idObj.anyks.fnShowProps(nobj, "pos"),

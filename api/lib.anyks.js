@@ -261,9 +261,10 @@
 		static fnShowProps(obj, objName){
 			// обращение к свойствам объекта по индексу
 			for(let i in obj){
+				// Если данные найдены в первом уровне
+				if(i === objName) return obj[i];
 				// Если данные найдены
-				if(Anyks.isset(obj[i][objName])
-				&& (!Anyks.isObject(obj[i][objName]))) {
+				else if(Anyks.isset(obj[i][objName])) {
 					// Если элемент найден тогда выходим
 					return obj[i][objName];
 				// Продолжаем поиск
