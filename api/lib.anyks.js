@@ -261,6 +261,10 @@
 		static fnShowProps(obj, objName){
 			// обращение к свойствам объекта по индексу
 			for(let i in obj){
+				
+
+				console.log("-------", i);
+
 				// Если данные найдены
 				if(Anyks.isset(obj[i][objName])
 				&& (!Anyks.isObject(obj[i][objName]))) {
