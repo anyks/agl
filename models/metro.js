@@ -36,21 +36,6 @@
 						"order":	Number
 					}]
 				}]
-				/*
-				"id":						String,
-				"name":						String,
-				"url":						String,
-				"lines":					[Object],
-				"lines.$.id":				String,
-				"lines.$.name":				String,
-				"lines.$.hex_color":		String,
-				"lines.$.stations":			[Object],
-				"lines.$.stations.$.id":	String,
-				"lines.$.stations.$.name":	String,
-				"lines.$.stations.$.lat":	Number,
-				"lines.$.stations.$.lng":	Number,
-				"lines.$.stations.$.order":	Number
-				*/
 			}, {collection: this.collection});
 		}
 	}
