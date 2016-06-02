@@ -81,16 +81,30 @@ const anyks = require("./lib.anyks");
 				'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false',
 				'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
 			].map(val => val.replace("$lat", lat).replace("$lng", lng));
-			// Получаем объект запроса с геокодера
+			// Получаем объект запроса с геокодера"AddressLine":	
 			const init = obj => {
 				// obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData
 				// obj.data.response.GeoObjectCollection.featureMember[0].GeoObject
-				
+
 				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
-				// 
-				// 
-				console.log("+++++++++", obj.status, idObj.anyks.fnShowProps(nobj, "ThoroughfareName"));
+				const ya = {
+					"kind":							idObj.anyks.fnShowProps(nobj, "kind"),
+					"text":							idObj.anyks.fnShowProps(nobj, "text"),
+					"precision":					idObj.anyks.fnShowProps(nobj, "precision"),
+					"AddressLine":					idObj.anyks.fnShowProps(nobj, "AddressLine"),
+					"CountryNameCode":				idObj.anyks.fnShowProps(nobj, "CountryNameCode"),
+					"CountryName":					idObj.anyks.fnShowProps(nobj, "CountryName"),
+					"AdministrativeAreaName":		idObj.anyks.fnShowProps(nobj, "AdministrativeAreaName"),
+					"SubAdministrativeAreaName":	idObj.anyks.fnShowProps(nobj, "SubAdministrativeAreaName"),
+					"LocalityName":					idObj.anyks.fnShowProps(nobj, "LocalityName"),
+					"ThoroughfareName":				idObj.anyks.fnShowProps(nobj, "ThoroughfareName"),
+					"description":					idObj.anyks.fnShowProps(nobj, "description"),
+					"name":							idObj.anyks.fnShowProps(nobj, "name"),
+					"pos":							idObj.anyks.fnShowProps(nobj, "pos")
+				};
+
+				console.log("+++++++++", obj.status, ya);
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
