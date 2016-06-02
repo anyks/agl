@@ -190,7 +190,7 @@ const anyks = require("./lib.anyks");
 				// arr.forEach(obj => (new Metro(obj)).save());
 				arr.forEach(obj => {
 					// Сохраняем результат
-					(new Metro(obj.lines.forEach(line => {
+					return (new Metro(obj.lines.forEach(line => {
 						// Переходим по всем линиям метро
 						return line.stations.forEach(station => {
 							// Формируемновый ключ gps;
