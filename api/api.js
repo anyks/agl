@@ -173,7 +173,12 @@ const anyks = require("./lib.anyks");
 				// Переходим по всему массиву данных
 				// arr.forEach(obj => (new Metro(obj)).save());
 				
-				arr.forEach(obj => console.log("------", obj));
+				arr.forEach(obj => {
+
+					const dd = new Metro(obj);
+					dd.save((e, el) => console.log("------", e, el));
+
+				});
 
 				// 
 				// Очищаем таймер обновления метро
