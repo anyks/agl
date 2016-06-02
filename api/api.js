@@ -196,13 +196,17 @@ const anyks = require("./lib.anyks");
 
 						// Переходим по всем линиям метро
 						const dd = line.stations.forEach(station => {
+							
+							console.log("+++++0", station);
+
 							// Формируемновый ключ gps;
 							station.gps = [station.lng, station.lat];
+
+							console.log("+++++1", station);
+
 							// Выводим результат
 							return station;
 						});
-
-						console.log("+++++", dd, line);
 
 					}))).save();
 				});
