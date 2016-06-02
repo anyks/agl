@@ -16,8 +16,8 @@ const anyks = require("./lib.anyks");
 	const name = "agl";
 	// Версия системы
 	const version = "1.0";
-	// Интервал проверки обновления 12 часов
-	const intUpdateMetro = 12;
+	// Интервал проверки обновления 24 часов
+	const intUpdateMetro = (24 * 31);
 	// Отладочная информация
 	const debug = {
 		// Отображать ошибки
@@ -159,6 +159,18 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Подключаем модуль закачки данных
 			const fetch = require('node-fetch');
+			// db.metro.createIndex({name: 1}, {name: "city"})
+			// db.metro.createIndex({"lines.hex_color": 1}, {name: "color"})
+			// db.metro.createIndex({"lines.name": 1}, {name: "lines"})
+			// db.metro.createIndex({"lines.stations.name": 1}, {name: "stations"})
+			// db.metro.createIndex({"lines.stations.order": 1}, {name: "order"})
+			// db.metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"})
+			// db.metro.createIndex({"lines.stations.gps": "2dsphere"});
+			//
+			// db.metro.find({"lines.name": "Автозаводская"})
+			// db.metro.find({"lines": {$elemMatch: {"name": "Автозаводская"}}});
+			// db.metro.find({"lines.stations.name": "Чистые пруды"})
+			// db.metro.find({"lines": {$elemMatch: {"stations": {$elemMatch: {"name": "Горьковская"}}}}});
 			/**
 			 * getData Функция обработки полученных данных с интернета
 			 * @param  {Array} arr объект данными метро
@@ -170,8 +182,34 @@ const anyks = require("./lib.anyks");
 				const model = (new Models("metro")).getData();
 				// Создаем схему
 				const Metro = idObj.clients.mongo.model("Metro", model);
+				// Подключаемся к коллекции metro
+				const metro = idObj.clients.mongo.connection.db.collection("metro");
+				// Удаляем всю коллекцию
+				metro.drop();
 				// Переходим по всему массиву данных
-				arr.forEach(obj => (new Metro(obj)).save());
+				// arr.forEach(obj => (new Metro(obj)).save());
+				arr.forEach(obj => {
+					// Сохраняем результат
+					(new Metro(obj.lines.forEach(line => {
+						// Переходим по всем линиям метро
+						return line.stations.forEach(station => {
+							// Формируемновый ключ gps;
+							station.gps = [station.lng, station.lat];
+							// Выводим результат
+							return station;
+						});
+					})).save();
+				});
+				/*
+				// Создаем индексы
+				metro.createIndex({name: 1}, {name: "city"});
+				metro.createIndex({"lines.hex_color": 1}, {name: "color"});
+				metro.createIndex({"lines.name": 1}, {name: "lines"});
+				metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
+				metro.createIndex({"lines.stations.order": 1}, {name: "order"});
+				metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
+				metro.createIndex({"lines.stations.gps": "2dsphere"});
+				*/
 				// Очищаем таймер обновления метро
 				clearInterval(idObj.timerUpdateMetro);
 				// Устанавливаем таймер на проверку данных
@@ -179,8 +217,10 @@ const anyks = require("./lib.anyks");
 			};
 			// Закачиваем данные метро
 			fetch('https://api.hh.ru/metro')
-			.then(res => res.json())
-			.then(getData);
+			// Преобразуем полученный объект
+			.then(res => res.json(), e => idObj.log(["get metro", e], "error"))
+			// Обрабатываем полученные данные
+			.then(getData, e => idObj.log(["parse metro", e], "error"));
 		}
 		/**
 		 * mongo Метод подключения к MongoDB

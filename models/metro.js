@@ -33,7 +33,8 @@
 						"name":		String,
 						"lat":		Number,
 						"lng":		Number,
-						"order":	Number
+						"order":	Number,
+						"gps":		[Number, Number]
 					}]
 				}]
 			}, {collection: this.collection});
