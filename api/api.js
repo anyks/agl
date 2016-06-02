@@ -159,14 +159,6 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Подключаем модуль закачки данных
 			const fetch = require('node-fetch');
-			// db.metro.createIndex({name: 1}, {name: "city"})
-			// db.metro.createIndex({"lines.hex_color": 1}, {name: "color"})
-			// db.metro.createIndex({"lines.name": 1}, {name: "lines"})
-			// db.metro.createIndex({"lines.stations.name": 1}, {name: "stations"})
-			// db.metro.createIndex({"lines.stations.order": 1}, {name: "order"})
-			// db.metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"})
-			// db.metro.createIndex({"lines.stations.gps": "2dsphere"});
-			//
 			// db.metro.find({"lines.name": "Автозаводская"})
 			// db.metro.find({"lines": {$elemMatch: {"name": "Автозаводская"}}});
 			// db.metro.find({"lines.stations.name": "Чистые пруды"})
@@ -211,7 +203,7 @@ const anyks = require("./lib.anyks");
 				metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
 				metro.createIndex({"lines.stations.order": 1}, {name: "order"});
 				metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
-				metro.createIndex({"lines.stations.gps": "2dsphere"});
+				metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
 				// Очищаем таймер обновления метро
 				clearInterval(idObj.timerUpdateMetro);
 				// Устанавливаем таймер на проверку данных
