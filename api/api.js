@@ -189,11 +189,8 @@ const anyks = require("./lib.anyks");
 				// Переходим по всему массиву данных
 				// arr.forEach(obj => (new Metro(obj)).save());
 				arr.forEach(obj => {
-					// Сохраняем результат
-					return (new Metro(obj.lines.forEach(line => {
-						
-
-
+					// Формируем нужного вида для нас массив
+					obj.lines.forEach(line => {
 						// Переходим по всем линиям метро
 						line.stations.forEach(station => {
 							// Формируемновый ключ gps;
@@ -201,14 +198,12 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							return station;
 						});
-
-						console.log("++++++", line );
-
+						// Выводим полученный массив
 						return line;
-
-					}))).save();
+					});
+					// Сохраняем результат
+					return (new Metro(obj)).save();
 				});
-				/*
 				// Создаем индексы
 				metro.createIndex({name: 1}, {name: "city"});
 				metro.createIndex({"lines.hex_color": 1}, {name: "color"});
@@ -217,7 +212,6 @@ const anyks = require("./lib.anyks");
 				metro.createIndex({"lines.stations.order": 1}, {name: "order"});
 				metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
 				metro.createIndex({"lines.stations.gps": "2dsphere"});
-				*/
 				// Очищаем таймер обновления метро
 				clearInterval(idObj.timerUpdateMetro);
 				// Устанавливаем таймер на проверку данных
