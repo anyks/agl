@@ -195,18 +195,16 @@ const anyks = require("./lib.anyks");
 
 
 						// Переходим по всем линиям метро
-						const dd = line.stations.forEach(station => {
-							
-							console.log("+++++0", station);
-
+						line.stations.forEach(station => {
 							// Формируемновый ключ gps;
 							station.gps = [station.lng, station.lat];
-
-							console.log("+++++1", station);
-
 							// Выводим результат
 							return station;
 						});
+
+						console.log("++++++", line, );
+
+						return line;
 
 					}))).save();
 				});
