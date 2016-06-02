@@ -35,14 +35,14 @@
 		// Получаем api anyks
 		const ax = agl.anyks;
 		/**
-		 * fileExists Функция проверки на существование файла
-		 * @param  {String} path адрес файла
-		 * @return {Boolean}     результат проверки на существование файла
+		 * socketExists Функция проверки на существование сокета
+		 * @param  {String} path адрес сокета
+		 * @return {Boolean}     результат проверки на существование сокета
 		 */
-		const fileExists = path => {
+		const socketExists = path => {
 			try  {
 				// Выводим сообщение что файл существует
-				return fs.statSync(path).isFile();
+				return fs.statSync(path).isSocket();
 			// Если возникает ошибка то обрабатываем ее
 			} catch(e) {
 				// Обрабатываем ошибку
@@ -114,7 +114,7 @@
 					"password":	this.rpass
 				};
 				// Проверяем есть ли файл сокета Redis
-				else if(fileExists(this.rserv)) conf = {
+				else if(socketExists(this.rserv)) conf = {
 					"socket":	this.rserv,
 					"db":		parseInt(this.rdb, 10),
 					"password":	this.rpass
@@ -134,7 +134,7 @@
 					"port":	parseInt(parse[2], 10)
 				};
 				// Проверяем нет ли такого уже файла сокета сервера
-				else if(!fileExists(this.serv)) conf = {"socket": this.serv};
+				else if(!socketExists(this.serv)) conf = {"socket": this.serv};
 				// Выводим результат
 				return conf;
 			}
