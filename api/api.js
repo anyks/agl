@@ -170,6 +170,9 @@ const anyks = require("./lib.anyks");
 				const model = (new Models("metro")).getData();
 				// Создаем схему
 				const Metro = idObj.clients.mongo.model("Metro", model);
+
+				console.log("++++++++++", arr);
+
 				// Переходим по всему массиву данных
 				arr.forEach(obj => (new Metro(obj)).save());
 				// Очищаем таймер обновления метро
