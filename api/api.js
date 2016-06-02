@@ -198,7 +198,7 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							return station;
 						});
-					})).save();
+					}))).save();
 				});
 				/*
 				// Создаем индексы
