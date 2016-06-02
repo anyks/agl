@@ -268,11 +268,8 @@
 				const result = (
 					Anyks.isset(obj[item]) &&
 					Anyks.isObject(obj[item]) ?
-					fnShowProps(obj[item], key, def) : false
+					Anyks.fnShowProps(obj[item], key, def) : false
 				);
-
-				console.log("++++++", result, key, item);
-
 				// Если результат существует
 				if(result) return result;
 			}
