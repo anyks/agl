@@ -84,7 +84,8 @@ const anyks = require("./lib.anyks");
 			// Получаем объект запроса с геокодера
 			const init = obj => {
 				// obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData
-				console.log("+++++++++", obj.status, obj.data.response.GeoObjectCollection.featureMember[0].GeoObject.metaDataProperty.GeocoderMetaData);
+				// obj.data.response.GeoObjectCollection.featureMember[0].GeoObject
+				console.log("+++++++++", obj.status, obj.data.response.GeoObjectCollection.featureMember[0].GeoObject.metaDataProperty.GeocoderMetaData.AddressDetails);
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
