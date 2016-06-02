@@ -254,11 +254,26 @@
 		}
 		/**
 		 * fnShowProps Функция поиска параметра в объекте json
-		 * @param  {Object} obj     Объект в котором нужно найти параметр
-		 * @param  {String} objName Параметр объекта
-		 * @return {Variant}        найденный результат
+		 * @param  {Object} obj объект в котором нужно найти параметр
+		 * @param  {String} key параметр объекта
+		 * @return {Variant}    найденный результат
 		 */
-		static fnShowProps(obj, objName){
+		static fnShowProps(obj, key, def = null){
+			// Если данный ключ уже найден
+			if(Anyks.isset(obj[key])) return obj[key];
+			// Заполняем массив результатами поиска на каждый ключ
+			for(let key in obj){
+				// Получаем данные на каждый ключ
+				const result = fnShowProps(obj, key);
+				// Если результат существует
+				if(Anyks.isset(result)) return result;
+				// Иначе продолжаем поиск
+				else continue;
+			}
+			// Выводим данные по умолчанию
+			return def;
+			/*
+
 			// обращение к свойствам объекта по индексу
 			for(let i in obj){
 				// Если данные найдены в первом уровне
@@ -273,6 +288,7 @@
 					return Anyks.fnShowProps(obj[i], objName);
 				}
 			}
+			*/
 		}
 		/**
 		 * returnObject Функция извлекает ссылки на параметры объекта игнорируя указанный
