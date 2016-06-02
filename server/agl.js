@@ -144,9 +144,10 @@
 		 * @param  {Object} clients клиенты баз данных
 		 */
 		const init = clients => {
-			console.log("++++++", clients);
+			// console.log("++++++", clients);
 
-			agl.updateMetro();
+			// agl.updateMetro();
+			agl.getAddressFromGPS(55.5689216, 37.4896679);
 		};
 		/**
 		 * *connect Генератор для коннекта баз данных
