@@ -139,6 +139,9 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Подключаем модуль закачки данных
 			const fetch = require('node-fetch');
+
+			console.log("+++++++", address);
+
 			// Массив с геокодерами
 			const urlsGeo = [
 				'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
