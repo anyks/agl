@@ -86,6 +86,7 @@ const anyks = require("./lib.anyks");
 				// obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData
 				// obj.data.response.GeoObjectCollection.featureMember[0].GeoObject
 
+				/*
 				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
 				const ya = {
@@ -105,6 +106,8 @@ const anyks = require("./lib.anyks");
 				};
 
 				console.log("+++++++++", obj.status, ya);
+				*/
+				console.log("+++++++++", JSON.stringify(obj));
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
