@@ -139,21 +139,12 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Подключаем модуль закачки данных
 			const fetch = require('node-fetch');
-
-			try {
-
 			// Массив с геокодерами
 			const urlsGeo = [
 				'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
 				'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false',
 				'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 			].map(val => val.replace("$address", address));
-
-			console.log("+++++++", urlsGeo);
-
-			} catch(e) {console.log("+++++++", e);}
-			
-
 			// Получаем объект запроса с геокодера
 			const init = obj => {
 				// const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
@@ -184,11 +175,14 @@ const anyks = require("./lib.anyks");
 			 * @return {Boolean} результат запроса из базы
 			 */
 			const getData = function * (){
+				
+				console.log("+++++++0", urlsGeo[0]);
+
 				// Выполняем запрос с геокодера Yandex
 				const yandex = yield fetch(urlsGeo[0]).then(res => res.json(), err => false);
 
-				console.log("+++++++", yandex);
-
+				console.log("+++++++1", yandex);
+				/*
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(res => res.json(), err => false) : false);
 				// Выполняем запрос с геокодера OpenStreet Maps
@@ -201,6 +195,7 @@ const anyks = require("./lib.anyks");
 				);
 				// Выполняем инициализацию
 				init(obj);
+				*/
 			};
 			// Запускаем коннект
 			exec(getData());
