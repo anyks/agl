@@ -177,6 +177,9 @@ const anyks = require("./lib.anyks");
 			const getData = function * (){
 				// Выполняем запрос с геокодера Yandex
 				const yandex = yield fetch(urlsGeo[0]).then(res => res.json(), err => false);
+
+				console.log("+++++++", yandex);
+
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(res => res.json(), err => false) : false);
 				// Выполняем запрос с геокодера OpenStreet Maps
