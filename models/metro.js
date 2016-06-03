@@ -31,8 +31,8 @@
 					"stations": [{
 						"id":		String,
 						"name":		String,
-						"lat":		Number,
-						"lng":		Number,
+						"lat":		String,
+						"lng":		String,
 						"order":	Number,
 						"gps":		[Number, Number]
 					}]

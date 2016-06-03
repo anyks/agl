@@ -65,6 +65,23 @@ const anyks = require("./lib.anyks");
 			this.intervalUpdateMetro = intUpdateMetro  * 3600000;
 		}
 		/**
+		 * generateKey Функция генерирования ключа
+		 * @param  {String} str строка для генерации
+		 * @return {String}     сгенерированный ключ
+		 */
+		generateKey(str){
+			// Подключаем модуль md5
+			const md5 = require('MD5');
+			// Генерируем от текущего времени
+			let mkey = md5((new Date()).valueOf().toString());
+			// Если это строка
+			if($.isString(str)) mkey = md5(str);
+			// Формируем новый вид ключа
+			let key = (mkey.substr(0, 8) + mkey.substr(24, 31));
+			// Выводим результат
+			return key.replace(key.substr(4, 8), mkey.substr(8, 16));
+		}
+		/**
 		 * getAddressFromGPS Метод получения данных адреса по GPS координатам
 		 * @param  {Float}   lat    широта
 		 * @param  {Float}   lng    долгота
@@ -208,6 +225,47 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
+				// Данные с геокодера
+				let data = {}, result = false;
+				// Определяем тип геокодера
+				switch(obj.status){
+					// OpenStreetMaps
+					case "osm":
+						// Получаем данные с геокодера
+						data = obj.data[0];
+						// Формируем объект
+						result = {
+							"id":	idObj.generateKey(str),
+							"lat":	$.fnShowProps(data, "lat"),
+							"lng":	$.fnShowProps(data, "lon"),
+							"gps":	[
+								parseFloat($.fnShowProps(data, "lon")),
+								parseFloat($$.fnShowProps(data, "lat"))
+							],
+							"boundingbox": $.fnShowProps(data, "boundingbox"),
+							"description": $.fnShowProps(data, "display_name"),
+							"address": {
+								"zip":		$.fnShowProps(data, "postcode"),
+								"city":		$.fnShowProps(data, "city"),
+								"code":		$.fnShowProps(data, "country_code"),
+								"screet":	$.fnShowProps(data, "road"),
+								"region":	$.fnShowProps(data, "state"),
+								"country":	$.fnShowProps(data, "country"),
+								"district":	$.fnShowProps(data, "state_district")
+							}
+						};
+					break;
+				}
+				// Создаем модель
+				const model = (new Models("address")).getData();
+				// Создаем схему
+				const Address = idObj.clients.mongo.model("Address", model);
+				// Сохраняем результат в базу данных
+				if(result) (new Address(result)).save();
+				// Выводим результат
+				return result;
+
+
 				
 
 
@@ -232,34 +290,7 @@ const anyks = require("./lib.anyks");
 
 				console.log("+++++++++", obj.status, ya);
 				*/
-			
 
-				const nobj = obj.data[0];
-
-				const osm = {
-					"place_id":		idObj.anyks.fnShowProps(nobj, "place_id"),
-					"boundingbox":	idObj.anyks.fnShowProps(nobj, "boundingbox"),
-					"lat":			idObj.anyks.fnShowProps(nobj, "lat"),
-					"lon":			idObj.anyks.fnShowProps(nobj, "lon"),
-					"display_name": idObj.anyks.fnShowProps(nobj, "display_name"),
-					"class":		idObj.anyks.fnShowProps(nobj, "class"),
-					"type":			idObj.anyks.fnShowProps(nobj, "osm_type"),
-					"id":			idObj.anyks.fnShowProps(nobj, "osm_id"),
-					"importance":	idObj.anyks.fnShowProps(nobj, "importance"),
-					"icon":			idObj.anyks.fnShowProps(nobj, "icon"),
-					"address": {
-						"road":				idObj.anyks.fnShowProps(nobj, "road"),
-						"city":				idObj.anyks.fnShowProps(nobj, "city"),
-						"town":				idObj.anyks.fnShowProps(nobj, "town"),
-						"state_district":	idObj.anyks.fnShowProps(nobj, "state_district"),
-						"state":			idObj.anyks.fnShowProps(nobj, "state"),
-						"postcode":			idObj.anyks.fnShowProps(nobj, "postcode"),
-						"country":			idObj.anyks.fnShowProps(nobj, "country"),
-						"country_code":		idObj.anyks.fnShowProps(nobj, "country_code")
-					}
-				};
-
-				console.log("+++++++++", obj.status, osm);
 
 			};
 			/**
