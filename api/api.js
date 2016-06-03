@@ -147,10 +147,10 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$address", address));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
-				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
+				// const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
-				console.log("-------", nobj);
-
+				console.log("-------", obj);
+				/*
 				const ya = {
 					"pos":							idObj.anyks.fnShowProps(nobj, "pos").split(" "),
 					"kind":							idObj.anyks.fnShowProps(nobj, "kind"),
@@ -168,6 +168,7 @@ const anyks = require("./lib.anyks");
 				};
 
 				console.log("+++++++++", obj.status, ya);
+				*/
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
