@@ -225,6 +225,9 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
+				
+				try {
+
 				// Данные с геокодера
 				let data = {}, result = false;
 				// Определяем тип геокодера
@@ -270,7 +273,7 @@ const anyks = require("./lib.anyks");
 				return result;
 
 
-				
+				} catch(e) {console.log("++++++", e, data);}
 
 
 				/*
