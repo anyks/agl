@@ -286,17 +286,21 @@ const anyks = require("./lib.anyks");
 							// Описание адреса
 							let description = data.formatted_address;
 							// Переменные адреса
-							let zip, city, code, street, region, district;
+							let zip, city, code, street, region, country, district;
 							// Переходим по всему массиву с компонентами адреса
 							data.address_components.forEach(obj => {
 								// Ищем почтовый индекс
 								if(obj.types.indexOf('postal_code') > -1) zip = obj.long_name;
 								// Ищем город
 								else if(obj.types.indexOf('locality') > -1) city = obj.long_name;
-								// Ищем код страны
-								else if(obj.types.indexOf('country') > -1) code = obj.short_name.toLowerCase();
+								// Ищем код и название страны
+								else if(obj.types.indexOf('country') > -1){
+									// Получаем название страны
+									country	= obj.long_name;
+									// Получаем код страны
+									code	= obj.short_name.toLowerCase();
 								// Ищем название улицы
-								else if(obj.types.indexOf('route') > -1) street = obj.long_name;
+								} else if(obj.types.indexOf('route') > -1) street = obj.long_name;
 								// Ищем название региона
 								else if(obj.types.indexOf('administrative_area_level_1') > -1) region = obj.long_name;
 								// Ищем название района
