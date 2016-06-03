@@ -81,7 +81,7 @@ const anyks = require("./lib.anyks");
 				'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false',
 				'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
 			].map(val => val.replace("$lat", lat).replace("$lng", lng));
-			// Получаем объект запроса с геокодера"AddressLine":	
+			// Получаем объект запроса с геокодера
 			const init = obj => {
 				// obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData
 				// obj.data.response.GeoObjectCollection.featureMember[0].GeoObject
@@ -112,11 +112,20 @@ const anyks = require("./lib.anyks");
 			 */
 			const getData = function * (){
 				// Выполняем запрос с геокодера Yandex
-				const yandex = yield fetch(urlsGeo[0]).then(res => res.json(), err => false);
+				const yandex = yield fetch(urlsGeo[0]).then(
+					res => (res.status === 200 ? res.json() : false),
+					err => false
+				);
 				// Выполняем запрос с геокодера Google
-				const google = (!yandex ? yield fetch(urlsGeo[1]).then(res => res.json(), err => false) : false);
+				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+					res => (res.status === 200 ? res.json() : false),
+					err => false
+				) : false);
 				// Выполняем запрос с геокодера OpenStreet Maps
-				const osm = (!google ? yield fetch(urlsGeo[2]).then(res => res.json(), err => false) : false);
+				const osm = (!google ? yield fetch(urlsGeo[2]).then(
+					res => (res.status === 200 ? res.json() : false),
+					err => false
+				) : false);
 				// Создаем объект ответа
 				const obj = (
 					yandex ? {data: yandex, status: "yandex"} :
@@ -174,11 +183,20 @@ const anyks = require("./lib.anyks");
 			 */
 			const getData = function * (){
 				// Выполняем запрос с геокодера Yandex
-				const yandex = yield fetch(urlsGeo[0]).then(res => res.json(), err => false);
+				const yandex = yield fetch(urlsGeo[0]).then(
+					res => (res.status === 200 ? res.json() : false),
+					err => false
+				);
 				// Выполняем запрос с геокодера Google
-				const google = (!yandex ? yield fetch(urlsGeo[1]).then(res => res.json(), err => false) : false);
+				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+					res => (res.status === 200 ? res.json() : false),
+					err => false
+				) : false);
 				// Выполняем запрос с геокодера OpenStreet Maps
-				const osm = (!google ? yield fetch(urlsGeo[2]).then(res => res.json(), err => false) : false);
+				const osm = (!google ? yield fetch(urlsGeo[2]).then(
+					res => (res.status === 200 ? res.json() : false),
+					err => false
+				) : false);
 				// Создаем объект ответа
 				const obj = (
 					yandex ? {data: yandex, status: "yandex"} :
