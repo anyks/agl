@@ -252,7 +252,7 @@ const anyks = require("./lib.anyks");
 						// Сохраняем результат в базу данных
 						if(result) (new Address(result)).save();
 						// Создаем индексы
-						// db.address.createIndex({id: 1}, {name: "id"});
+						// db.address.createIndex({id: 1}, {name: "id", unique: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
 						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
 						// db.address.createIndex({"address.district": 1}, {name: "district"});
@@ -326,7 +326,7 @@ const anyks = require("./lib.anyks");
 						// Сохраняем результат в базу данных
 						if(result) (new Address(result)).save();
 						// Создаем индексы
-						// db.address.createIndex({id: 1}, {name: "id"});
+						// db.address.createIndex({id: 1}, {name: "id", unique: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
 						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
 						// db.address.createIndex({"address.district": 1}, {name: "district"});
