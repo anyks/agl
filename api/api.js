@@ -144,7 +144,7 @@ const anyks = require("./lib.anyks");
 				'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
 				'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false',
 				'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
-			].map(val => val.replace("$address", address));
+			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
 				// const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
