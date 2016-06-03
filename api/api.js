@@ -88,8 +88,6 @@ const anyks = require("./lib.anyks");
 
 				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
-				console.log("=============");
-
 				const ya = {
 					"pos":							idObj.anyks.fnShowProps(nobj, "pos"),
 					"kind":							idObj.anyks.fnShowProps(nobj, "kind"),
@@ -103,7 +101,7 @@ const anyks = require("./lib.anyks");
 					"LocalityName":					idObj.anyks.fnShowProps(nobj, "LocalityName"),
 					"ThoroughfareName":				idObj.anyks.fnShowProps(nobj, "ThoroughfareName"),
 					"description":					idObj.anyks.fnShowProps(nobj, "description"),
-					"name":							idObj.anyks.fnShowProps(nobj, "name")
+					"name":							idObj.anyks.fnShowProps(nobj, "name").split(" ")
 				};
 
 				console.log("+++++++++", obj.status, ya);
