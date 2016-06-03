@@ -232,7 +232,7 @@ const anyks = require("./lib.anyks");
 					}
 				};
 
-				console.log("+++++++++", obj.status, osm);
+				console.log("+++++++++", obj.status, osm, obj[0]);
 
 			};
 			/**
