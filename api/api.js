@@ -229,18 +229,18 @@ const anyks = require("./lib.anyks");
 		getAddressFromGPS(lat, lng){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
-			// Подключаем модуль закачки данных
-			const fetch = require('node-fetch');
-			// Массив с геокодерами
-			const urlsGeo = [
-				'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
-				'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
-				'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
-			].map(val => val.replace("$lat", lat).replace("$lng", lng));
-			// Получаем объект запроса с геокодера
-			const init = obj => {
-				// Создаем промис для обработки
-				return new Promise(resolve => {
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Подключаем модуль закачки данных
+				const fetch = require('node-fetch');
+				// Массив с геокодерами
+				const urlsGeo = [
+					'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
+					'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
+					'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
+				].map(val => val.replace("$lat", lat).replace("$lng", lng));
+				// Получаем объект запроса с геокодера
+				const init = obj => {
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
 						// Подключаем модель метро
@@ -261,39 +261,43 @@ const anyks = require("./lib.anyks");
 						// Выводим результат
 						resolve(result);
 					});
-				});
-			};
-			/**
-			 * *getData Генератор для получения данных с геокодеров
-			 * @return {Boolean} результат запроса из базы
-			 */
-			const getData = function * (){
-				// Выполняем запрос с геокодера Yandex
-				const yandex = yield fetch(urlsGeo[0]).then(
-					res => (res.status === 200 ? res.json() : false),
-					err => false
-				);
-				// Выполняем запрос с геокодера Google
-				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-					res => (res.status === 200 ? res.json() : false),
-					err => false
-				) : false);
-				// Выполняем запрос с геокодера OpenStreet Maps
-				const osm = (!google ? yield fetch(urlsGeo[2]).then(
-					res => (res.status === 200 ? res.json() : false),
-					err => false
-				) : false);
-				// Создаем объект ответа
-				const obj = (
-					yandex ? {data: yandex, status: "yandex"} :
-					(google ? {data: google, status: "google"} :
-					(osm ? {data: osm, status: "osm"} : false))
-				);
-				// Выполняем инициализацию
-				init(obj);
-			};
-			// Запускаем коннект
-			exec(getData());
+				};
+				/**
+				 * *getData Генератор для получения данных с геокодеров
+				 * @return {Boolean} результат запроса из базы
+				 */
+				const getData = function * (){
+					/*
+					// Выполняем запрос с геокодера Yandex
+					const yandex = yield fetch(urlsGeo[0]).then(
+						res => (res.status === 200 ? res.json() : false),
+						err => false
+					);
+					*/
+					const yandex = false;
+					
+					// Выполняем запрос с геокодера Google
+					const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+						res => (res.status === 200 ? res.json() : false),
+						err => false
+					) : false);
+					// Выполняем запрос с геокодера OpenStreet Maps
+					const osm = (!google ? yield fetch(urlsGeo[2]).then(
+						res => (res.status === 200 ? res.json() : false),
+						err => false
+					) : false);
+					// Создаем объект ответа
+					const obj = (
+						yandex ? {data: yandex, status: "yandex"} :
+						(google ? {data: google, status: "google"} :
+						(osm ? {data: osm, status: "osm"} : false))
+					);
+					// Выполняем инициализацию
+					init(obj);
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
 		}
 		/**
 		 * getAddressFromGPS Метод получения данных адреса по строке
@@ -303,18 +307,18 @@ const anyks = require("./lib.anyks");
 		getAddressFromString(address){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
-			// Подключаем модуль закачки данных
-			const fetch = require('node-fetch');
-			// Массив с геокодерами
-			const urlsGeo = [
-				'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
-				'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
-				'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
-			].map(val => val.replace("$address", encodeURI(address)));
-			// Получаем объект запроса с геокодера
-			const init = obj => {
-				// Создаем промис для обработки
-				return new Promise(resolve => {
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Подключаем модуль закачки данных
+				const fetch = require('node-fetch');
+				// Массив с геокодерами
+				const urlsGeo = [
+					'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
+					'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
+					'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
+				].map(val => val.replace("$address", encodeURI(address)));
+				// Получаем объект запроса с геокодера
+				const init = obj => {
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
 						// Подключаем модель метро
@@ -335,39 +339,39 @@ const anyks = require("./lib.anyks");
 						// Выводим результат
 						resolve(result);
 					});
-				});
-			};
-			/**
-			 * *getData Генератор для получения данных с геокодеров
-			 * @return {Boolean} результат запроса из базы
-			 */
-			const getData = function * (){
-				// Выполняем запрос с геокодера Yandex
-				const yandex = yield fetch(urlsGeo[0]).then(
-					res => (res.status === 200 ? res.json() : false),
-					err => false
-				);
-				// Выполняем запрос с геокодера Google
-				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-					res => (res.status === 200 ? res.json() : false),
-					err => false
-				) : false);
-				// Выполняем запрос с геокодера OpenStreet Maps
-				const osm = (!google ? yield fetch(urlsGeo[2]).then(
-					res => (res.status === 200 ? res.json() : false),
-					err => false
-				) : false);
-				// Создаем объект ответа
-				const obj = (
-					yandex ? {data: yandex, status: "yandex"} :
-					(google ? {data: google, status: "google"} :
-					(osm ? {data: osm, status: "osm"} : false))
-				);
-				// Выполняем инициализацию
-				init(obj);
-			};
-			// Запускаем коннект
-			exec(getData());
+				};
+				/**
+				 * *getData Генератор для получения данных с геокодеров
+				 * @return {Boolean} результат запроса из базы
+				 */
+				const getData = function * (){
+					// Выполняем запрос с геокодера Yandex
+					const yandex = yield fetch(urlsGeo[0]).then(
+						res => (res.status === 200 ? res.json() : false),
+						err => false
+					);
+					// Выполняем запрос с геокодера Google
+					const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+						res => (res.status === 200 ? res.json() : false),
+						err => false
+					) : false);
+					// Выполняем запрос с геокодера OpenStreet Maps
+					const osm = (!google ? yield fetch(urlsGeo[2]).then(
+						res => (res.status === 200 ? res.json() : false),
+						err => false
+					) : false);
+					// Создаем объект ответа
+					const obj = (
+						yandex ? {data: yandex, status: "yandex"} :
+						(google ? {data: google, status: "google"} :
+						(osm ? {data: osm, status: "osm"} : false))
+					);
+					// Выполняем инициализацию
+					init(obj);
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
 		}
 		/**
 		 * updateMetro Метод обновления данных базы данных метро
