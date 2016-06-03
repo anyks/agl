@@ -69,7 +69,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {String} str строка для генерации
 		 * @return {String}     сгенерированный ключ
 		 */
-		generateKey(str){
+		generateKey(str = null){
 			// Подключаем модуль md5
 			const md5 = require('MD5');
 			// Генерируем от текущего времени
@@ -233,26 +233,34 @@ const anyks = require("./lib.anyks");
 					case "osm":
 						// Получаем данные с геокодера
 						data = obj.data[0];
+						// Получаем основные данные
+						let lat			= $.fnShowProps(data, "lat");
+						let lng			= $.fnShowProps(data, "lon");
+						let gps			= [parseFloat(lng), parseFloat(lat)];
+						let zip			= $.fnShowProps(data, "postcode");
+						let city		= $.fnShowProps(data, "city");
+						let code		= $.fnShowProps(data, "country_code");
+						let street		= $.fnShowProps(data, "road");
+						let region		= $.fnShowProps(data, "state");
+						let country		= $.fnShowProps(data, "country");
+						let district	= $.fnShowProps(data, "state_district");
+						let boundingbox	= $.fnShowProps(data, "boundingbox");
+						let description	= $.fnShowProps(data, "display_name");
+						let id			= idObj.generateKey(
+							country.toLowerCase() +
+							region.toLowerCase() +
+							city.toLowerCase() +
+							street.toLowerCase()
+						);
 						// Формируем объект
 						result = {
-							"id":	idObj.generateKey(str),
-							"lat":	$.fnShowProps(data, "lat"),
-							"lng":	$.fnShowProps(data, "lon"),
-							"gps":	[
-								parseFloat($.fnShowProps(data, "lon")),
-								parseFloat($$.fnShowProps(data, "lat"))
-							],
-							"boundingbox": $.fnShowProps(data, "boundingbox"),
-							"description": $.fnShowProps(data, "display_name"),
-							"address": {
-								"zip":		$.fnShowProps(data, "postcode"),
-								"city":		$.fnShowProps(data, "city"),
-								"code":		$.fnShowProps(data, "country_code"),
-								"screet":	$.fnShowProps(data, "road"),
-								"region":	$.fnShowProps(data, "state"),
-								"country":	$.fnShowProps(data, "country"),
-								"district":	$.fnShowProps(data, "state_district")
-							}
+							id,
+							lat,
+							lng,
+							gps,
+							boundingbox,
+							description,
+							address: {zip, city, code, street, region, country, district}
 						};
 					break;
 				}
