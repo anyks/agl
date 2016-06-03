@@ -264,7 +264,7 @@ const anyks = require("./lib.anyks");
 					break;
 				}
 
-				console.log("+++++++", data, obj);
+				console.log("+++++++", result);
 
 				// Создаем модель
 				const model = (new Models("address")).getData();
