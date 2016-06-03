@@ -140,7 +140,7 @@ const anyks = require("./lib.anyks");
 			// Подключаем модуль закачки данных
 			const fetch = require('node-fetch');
 
-			console.log("+++++++", address);
+			try {
 
 			// Массив с геокодерами
 			const urlsGeo = [
@@ -149,7 +149,8 @@ const anyks = require("./lib.anyks");
 				'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 			].map(val => val.replace("$address", address));
 
-			console.log("+++++++", urlGeo);
+			} catch(e) {console.log("+++++++", e);}
+			
 
 			// Получаем объект запроса с геокодера
 			const init = obj => {
