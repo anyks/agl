@@ -270,9 +270,29 @@ const anyks = require("./lib.anyks");
 						if($.isArray(data) && data.length){
 							// Получаем данные с геокодера
 							data = data[0];
-
-							console.log("+++++++++", data);
-							return;
+							// Получаем основные данные
+							let lat			= $.fnShowProps(data, "pos").split(" ")[1];
+							let lng			= $.fnShowProps(data, "pos").split(" ")[0];
+							let city		= $.fnShowProps(data, "LocalityName");
+							let code		= $.fnShowProps(data, "CountryNameCode").toLowerCase();
+							let street		= $.fnShowProps(data, "ThoroughfareName");
+							let region		= $.fnShowProps(data, "AdministrativeAreaName");
+							let country		= $.fnShowProps(data, "CountryName");
+							let district	= $.fnShowProps(data, "SubAdministrativeAreaName");
+							let description	= $.fnShowProps(data, "text");
+							let gps			= [parseFloat(lng), parseFloat(lat)];
+							let id			= idObj.generateKey(
+								country.toLowerCase() +
+								region.toLowerCase() +
+								city.toLowerCase() +
+								street.toLowerCase()
+							);
+							// Формируем объект
+							result = {
+								id, lat, lng, gps,
+								description,
+								address: {city, code, street, region, country, district}
+							};
 						}
 					break;
 					// Google
