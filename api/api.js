@@ -225,9 +225,6 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
-				
-				
-
 				// Данные с геокодера
 				let data = {}, result = false;
 				// Определяем тип геокодера
@@ -263,6 +260,8 @@ const anyks = require("./lib.anyks");
 						};
 					break;
 				}
+				// Подключаем модель метро
+				const Models = require('../models/address');
 				// Создаем модель
 				const model = (new Models("address")).getData();
 				// Создаем схему
