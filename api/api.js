@@ -121,7 +121,30 @@ const anyks = require("./lib.anyks");
 				console.log("+++++++++", obj.status, JSON.stringify(ga));
 				*/
 				
-				console.log("+++++++++", obj.status, JSON.stringify(obj));
+				const nobj = obj.data;
+
+				const osm = {
+					"place_id":		idObj.anyks.fnShowProps(nobj, "place_id"),
+					"boundingbox":	idObj.anyks.fnShowProps(nobj, "boundingbox"),
+					"lat":			idObj.anyks.fnShowProps(nobj, "lat"),
+					"lon":			idObj.anyks.fnShowProps(nobj, "lon"),
+					"display_name": idObj.anyks.fnShowProps(nobj, "display_name"),
+					"class":		idObj.anyks.fnShowProps(nobj, "class"),
+					"type":			idObj.anyks.fnShowProps(nobj, "type"),
+					"importance":	idObj.anyks.fnShowProps(nobj, "importance"),
+					"icon":			idObj.anyks.fnShowProps(nobj, "icon"),
+					"address": {
+						"road":				idObj.anyks.fnShowProps(nobj, "road"),
+						"town":				idObj.anyks.fnShowProps(nobj, "town"),
+						"state_district":	idObj.anyks.fnShowProps(nobj, "state_district"),
+						"state":			idObj.anyks.fnShowProps(nobj, "state"),
+						"postcode":			idObj.anyks.fnShowProps(nobj, "postcode"),
+						"country":			idObj.anyks.fnShowProps(nobj, "country"),
+						"country_code":		idObj.anyks.fnShowProps(nobj, "country_code")
+					}
+				};
+
+				console.log("+++++++++", obj.status, osm);
 
 			};
 			/**
