@@ -231,33 +231,56 @@ const anyks = require("./lib.anyks");
 				switch(obj.status){
 					// OpenStreetMaps
 					case "osm":
-						// Получаем данные с геокодера
-						data = obj.data[0];
-						// Получаем основные данные
-						let lat			= $.fnShowProps(data, "lat");
-						let lng			= $.fnShowProps(data, "lon");
-						let gps			= [parseFloat(lng), parseFloat(lat)];
-						let zip			= $.fnShowProps(data, "postcode");
-						let city		= $.fnShowProps(data, "city");
-						let code		= $.fnShowProps(data, "country_code");
-						let street		= $.fnShowProps(data, "road");
-						let region		= $.fnShowProps(data, "state");
-						let country		= $.fnShowProps(data, "country");
-						let district	= $.fnShowProps(data, "state_district");
-						let boundingbox	= $.fnShowProps(data, "boundingbox");
-						let description	= $.fnShowProps(data, "display_name");
-						let id			= idObj.generateKey(
-							country.toLowerCase() +
-							region.toLowerCase() +
-							city.toLowerCase() +
-							street.toLowerCase()
-						);
-						// Формируем объект
-						result = {
-							id, lat, lng, gps,
-							boundingbox, description,
-							address: {zip, city, code, street, region, country, district}
+						// Если данные существуют
+						if($.isArray(obj.data) && obj.data.length){
+							// Получаем данные с геокодера
+							data = obj.data[0];
+							// Получаем основные данные
+							let lat			= $.fnShowProps(data, "lat");
+							let lng			= $.fnShowProps(data, "lon");
+							let zip			= $.fnShowProps(data, "postcode");
+							let city		= $.fnShowProps(data, "city");
+							let code		= $.fnShowProps(data, "country_code");
+							let street		= $.fnShowProps(data, "road");
+							let region		= $.fnShowProps(data, "state");
+							let country		= $.fnShowProps(data, "country");
+							let district	= $.fnShowProps(data, "state_district");
+							let boundingbox	= $.fnShowProps(data, "boundingbox");
+							let description	= $.fnShowProps(data, "display_name");
+							let gps			= [parseFloat(lng), parseFloat(lat)];
+							let id			= idObj.generateKey(
+								country.toLowerCase() +
+								region.toLowerCase() +
+								city.toLowerCase() +
+								street.toLowerCase()
+							);
+							// Формируем объект
+							result = {
+								id, lat, lng, gps,
+								boundingbox, description,
+								address: {zip, city, code, street, region, country, district}
+							};
+						}
+					break;
+					// Yandex
+					case "yandex":
+
+					break;
+					// Google
+					case "google":
+
+						data = obj.data.results[0];
+
+						const ga = {
+							"location":				data.geometry.location,
+							"location_type":		data.geometry.location_type,
+							"address_components":	data.address_components,
+							"formatted_address":	data.formatted_address
 						};
+
+						console.log("++++++", ga);
+
+						return;
 					break;
 				}
 				// Подключаем модель метро
@@ -267,12 +290,18 @@ const anyks = require("./lib.anyks");
 				// Создаем схему
 				const Address = idObj.clients.mongo.model("Address", model);
 				// Сохраняем результат в базу данных
-				if(result) (new Address(result)).save((e, el) => console.log(e, el));
+				if(result) (new Address(result)).save();
+				// Создаем индексы
+				// db.address.createIndex({id: 1}, {name: "id"});
+				// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
+				// db.address.createIndex({"address.zip": 1}, {name: "zip"});
+				// db.address.createIndex({"address.district": 1}, {name: "district"});
+				// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
+				// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
 				// Выводим результат
 				return result;
 
 
-				
 
 
 				/*
@@ -304,22 +333,19 @@ const anyks = require("./lib.anyks");
 			 * @return {Boolean} результат запроса из базы
 			 */
 			const getData = function * (){
+				const yandex = false;
 				/*
 				// Выполняем запрос с геокодера Yandex
 				const yandex = yield fetch(urlsGeo[0]).then(
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				);
+				*/
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				) : false);
-				*/
-			
-				const yandex = false;
-				const google = false;
-
 				// Выполняем запрос с геокодера OpenStreet Maps
 				const osm = (!google ? yield fetch(urlsGeo[2]).then(
 					res => (res.status === 200 ? res.json() : false),
