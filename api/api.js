@@ -226,7 +226,7 @@ const anyks = require("./lib.anyks");
 			// Получаем объект запроса с геокодера
 			const init = obj => {
 				
-				try {
+				
 
 				// Данные с геокодера
 				let data = {}, result = false;
@@ -263,20 +263,17 @@ const anyks = require("./lib.anyks");
 						};
 					break;
 				}
-
-				console.log("+++++++", result);
-
 				// Создаем модель
 				const model = (new Models("address")).getData();
 				// Создаем схему
 				const Address = idObj.clients.mongo.model("Address", model);
 				// Сохраняем результат в базу данных
-				if(result) (new Address(result)).save();
+				if(result) (new Address(result)).save((e, el) => console.log(e, el));
 				// Выводим результат
 				return result;
 
 
-				} catch(e) {console.log("++++++", e, data);}
+				
 
 
 				/*
