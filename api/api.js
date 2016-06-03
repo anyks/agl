@@ -78,7 +78,7 @@ const anyks = require("./lib.anyks");
 			// Массив с геокодерами
 			const urlsGeo = [
 				'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
-				'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false',
+				'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
 				'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
 			].map(val => val.replace("$lat", lat).replace("$lng", lng));
 			// Получаем объект запроса с геокодера
@@ -159,7 +159,7 @@ const anyks = require("./lib.anyks");
 			// Массив с геокодерами
 			const urlsGeo = [
 				'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
-				'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false',
+				'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
 				'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
