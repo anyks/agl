@@ -278,7 +278,7 @@ const anyks = require("./lib.anyks");
 							let lng	= $.fnShowProps(data.geometry.location, "lng");
 							let gps	= [parseFloat(lng), parseFloat(lat)];
 							// Описание адреса
-							let description = data.geometry.formatted_address;
+							let description = data.formatted_address;
 							// Переменные адреса
 							let zip, city, code, street, region, district;
 							// Переходим по всему массиву с компонентами адреса
