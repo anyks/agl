@@ -271,8 +271,14 @@ const anyks = require("./lib.anyks");
 						// Если данные существуют
 						if($.isArray(obj.data.results)
 						&& obj.data.results.length){
+							
+							try {
+
 							// Получаем данные с геокодера
 							data = obj.data.results[0];
+
+							console.log("--------", data);
+
 							// Координаты запроса
 							let lat	= $.fnShowProps(data.geometry.location, "lat");
 							let lng	= $.fnShowProps(data.geometry.location, "lng");
@@ -309,6 +315,10 @@ const anyks = require("./lib.anyks");
 								description,
 								address: {zip, city, code, street, region, country, district}
 							};
+
+							console.log("*********", result);
+
+							} catch(e) { console.log("++++++", e); }
 						}
 					break;
 				}
