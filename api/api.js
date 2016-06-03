@@ -45,17 +45,15 @@ const anyks = require("./lib.anyks");
 	};
 	/**
 	 * parseAnswerGeoCoder Функция обработки результата полученного с геокодера
-	 * @param  {Object} obj ответ с геокодера
-	 * @return {Object}     результат обработки
+	 * @param  {Object} obj   ответ с геокодера
+	 * @param  {Object} idObj идентификатор текущего объекта
+	 * @return {Object}       результат обработки
 	 */
-	const parseAnswerGeoCoder = obj => {
+	const parseAnswerGeoCoder = (obj, idObj) => {
 		// Создаем промис для обработки
 		return new Promise(resolve => {
 			// Данные с геокодера
 			let data = {}, result = false;
-
-			console.log("+++++", obj);
-
 			// Определяем тип геокодера
 			switch(obj.status){
 				// OpenStreetMaps
@@ -180,9 +178,6 @@ const anyks = require("./lib.anyks");
 					}
 				break;
 			}
-
-			console.log("+++++1", result);
-
 			// Выводим результат
 			resolve(result);
 		});
@@ -247,7 +242,7 @@ const anyks = require("./lib.anyks");
 				// Создаем промис для обработки
 				return new Promise(resolve => {
 					// Выполняем обработку результата геокодера
-					parseAnswerGeoCoder(obj).then(result => {
+					parseAnswerGeoCoder(obj, idObj).then(result => {
 						// Подключаем модель метро
 						const Models = require('../models/address');
 						// Создаем модель
@@ -321,7 +316,7 @@ const anyks = require("./lib.anyks");
 				// Создаем промис для обработки
 				return new Promise(resolve => {
 					// Выполняем обработку результата геокодера
-					parseAnswerGeoCoder(obj).then(result => {
+					parseAnswerGeoCoder(obj, idObj).then(result => {
 						// Подключаем модель метро
 						const Models = require('../models/address');
 						// Создаем модель
