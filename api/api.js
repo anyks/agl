@@ -149,6 +149,8 @@ const anyks = require("./lib.anyks");
 			const init = obj => {
 				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
+				console.log("-------", nobj);
+
 				const ya = {
 					"pos":							idObj.anyks.fnShowProps(nobj, "pos").split(" "),
 					"kind":							idObj.anyks.fnShowProps(nobj, "kind"),
