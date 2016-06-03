@@ -280,6 +280,9 @@ const anyks = require("./lib.anyks");
 							let country		= $.fnShowProps(data, "CountryName");
 							let district	= $.fnShowProps(data, "SubAdministrativeAreaName");
 							let description	= $.fnShowProps(data, "text");
+							let lowerCorner	= $.fnShowProps(data, "lowerCorner").split(" ");
+							let upperCorner = $.fnShowProps(data, "upperCorner").split(" ");
+							let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
 							let gps			= [parseFloat(lng), parseFloat(lat)];
 							let id			= idObj.generateKey(
 								country.toLowerCase() +
@@ -290,7 +293,7 @@ const anyks = require("./lib.anyks");
 							// Формируем объект
 							result = {
 								id, lat, lng, gps,
-								description,
+								boundingbox, description,
 								address: {city, code, street, region, country, district}
 							};
 						}
