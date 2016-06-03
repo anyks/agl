@@ -183,6 +183,7 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
+				/*
 				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
 				const ya = {
@@ -202,6 +203,8 @@ const anyks = require("./lib.anyks");
 				};
 
 				console.log("+++++++++", obj.status, ya);
+				*/
+				console.log("+++++++++", JSON.stringify(obj));
 
 			};
 			/**
@@ -209,6 +212,7 @@ const anyks = require("./lib.anyks");
 			 * @return {Boolean} результат запроса из базы
 			 */
 			const getData = function * (){
+				/*
 				// Выполняем запрос с геокодера Yandex
 				const yandex = yield fetch(urlsGeo[0]).then(
 					res => (res.status === 200 ? res.json() : false),
@@ -219,6 +223,11 @@ const anyks = require("./lib.anyks");
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				) : false);
+				*/
+			
+				const yandex = false;
+				const google = false;
+
 				// Выполняем запрос с геокодера OpenStreet Maps
 				const osm = (!google ? yield fetch(urlsGeo[2]).then(
 					res => (res.status === 200 ? res.json() : false),
