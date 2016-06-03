@@ -264,21 +264,24 @@ const anyks = require("./lib.anyks");
 					break;
 					// Yandex
 					case "yandex":
+						// Получаем массив данных
+						data = $.fnShowProps(obj.data, "featureMember");
+						// Если данные существуют
+						if($.isArray(data) && data.length){
+							// Получаем данные с геокодера
+							data = data[0];
 
+							console.log("+++++++++", data);
+							return;
+						}
 					break;
 					// Google
 					case "google":
 						// Если данные существуют
 						if($.isArray(obj.data.results)
 						&& obj.data.results.length){
-							
-							try {
-
 							// Получаем данные с геокодера
 							data = obj.data.results[0];
-
-							console.log("--------", data);
-
 							// Координаты запроса
 							let lat	= $.fnShowProps(data.geometry.location, "lat");
 							let lng	= $.fnShowProps(data.geometry.location, "lng");
@@ -319,10 +322,6 @@ const anyks = require("./lib.anyks");
 								description,
 								address: {zip, city, code, street, region, country, district}
 							};
-
-							console.log("*********", result);
-
-							} catch(e) { console.log("++++++", e); }
 						}
 					break;
 				}
@@ -376,14 +375,11 @@ const anyks = require("./lib.anyks");
 			 * @return {Boolean} результат запроса из базы
 			 */
 			const getData = function * (){
-				const yandex = false;
-				/*
 				// Выполняем запрос с геокодера Yandex
 				const yandex = yield fetch(urlsGeo[0]).then(
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				);
-				*/
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 					res => (res.status === 200 ? res.json() : false),
