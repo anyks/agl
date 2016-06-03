@@ -306,7 +306,7 @@ const anyks = require("./lib.anyks");
 							// Формируем объект
 							result = {
 								id, lat, lng, gps,
-								boundingbox, description,
+								description,
 								address: {zip, city, code, street, region, country, district}
 							};
 						}
