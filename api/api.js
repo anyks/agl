@@ -53,6 +53,9 @@ const anyks = require("./lib.anyks");
 		return new Promise(resolve => {
 			// Данные с геокодера
 			let data = {}, result = false;
+
+			console.log("+++++", obj);
+
 			// Определяем тип геокодера
 			switch(obj.status){
 				// OpenStreetMaps
@@ -177,6 +180,9 @@ const anyks = require("./lib.anyks");
 					}
 				break;
 			}
+
+			console.log("+++++1", result);
+
 			// Выводим результат
 			resolve(result);
 		});
