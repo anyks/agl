@@ -147,10 +147,8 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
-				// const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
+				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
 
-				console.log("-------", obj);
-				/*
 				const ya = {
 					"pos":							idObj.anyks.fnShowProps(nobj, "pos").split(" "),
 					"kind":							idObj.anyks.fnShowProps(nobj, "kind"),
@@ -168,21 +166,15 @@ const anyks = require("./lib.anyks");
 				};
 
 				console.log("+++++++++", obj.status, ya);
-				*/
+
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
 			 * @return {Boolean} результат запроса из базы
 			 */
 			const getData = function * (){
-				
-				console.log("+++++++0", urlsGeo[0]);
-
 				// Выполняем запрос с геокодера Yandex
-				const yandex = yield fetch(urlsGeo[0]).then(res => res, err => false);
-
-				console.log("+++++++1", yandex);
-				/*
+				const yandex = yield fetch(urlsGeo[0]).then(res => res.json(), err => false);
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(res => res.json(), err => false) : false);
 				// Выполняем запрос с геокодера OpenStreet Maps
@@ -195,7 +187,6 @@ const anyks = require("./lib.anyks");
 				);
 				// Выполняем инициализацию
 				init(obj);
-				*/
 			};
 			// Запускаем коннект
 			exec(getData());
