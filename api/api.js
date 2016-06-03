@@ -263,6 +263,9 @@ const anyks = require("./lib.anyks");
 						};
 					break;
 				}
+
+				console.log("+++++++", data, obj);
+
 				// Создаем модель
 				const model = (new Models("address")).getData();
 				// Создаем схему
