@@ -268,19 +268,48 @@ const anyks = require("./lib.anyks");
 					break;
 					// Google
 					case "google":
-
-						data = obj.data.results[0];
-
-						const ga = {
-							"location":				data.geometry.location,
-							"location_type":		data.geometry.location_type,
-							"address_components":	data.address_components,
-							"formatted_address":	data.formatted_address
-						};
-
-						console.log("++++++", ga);
-
-						return;
+						// Если данные существуют
+						if($.isArray(obj.data.results)
+						&& obj.data.results.length){
+							// Получаем данные с геокодера
+							data = obj.data.results[0];
+							// Координаты запроса
+							let lat	= $.fnShowProps(data.geometry.location, "lat");
+							let lng	= $.fnShowProps(data.geometry.location, "lng");
+							let gps	= [parseFloat(lng), parseFloat(lat)];
+							// Описание адреса
+							let description = data.geometry.formatted_address;
+							// Переменные адреса
+							let zip, city, code, street, region, district;
+							// Переходим по всему массиву с компонентами адреса
+							data.address_components.forEach(obj => {
+								// Ищем почтовый индекс
+								if(obj.types.indexOf('postal_code') > -1) zip = obj.long_name;
+								// Ищем город
+								else if(obj.types.indexOf('locality') > -1) city = obj.long_name;
+								// Ищем код страны
+								else if(obj.types.indexOf('country') > -1) code = obj.short_name.toLowerCase();
+								// Ищем название улицы
+								else if(obj.types.indexOf('route') > -1) street = obj.long_name;
+								// Ищем название региона
+								else if(obj.types.indexOf('administrative_area_level_1') > -1) region = obj.long_name;
+								// Ищем название района
+								else if(obj.types.indexOf('administrative_area_level_2') > -1) district = obj.long_name;
+							});
+							// Генерируем идентификатор объекта
+							let id = idObj.generateKey(
+								country.toLowerCase() +
+								region.toLowerCase() +
+								city.toLowerCase() +
+								street.toLowerCase()
+							);
+							// Формируем объект
+							result = {
+								id, lat, lng, gps,
+								boundingbox, description,
+								address: {zip, city, code, street, region, country, district}
+							};
+						}
 					break;
 				}
 				// Подключаем модель метро
