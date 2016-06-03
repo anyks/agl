@@ -111,11 +111,16 @@ const anyks = require("./lib.anyks");
 			 * @return {Boolean} результат запроса из базы
 			 */
 			const getData = function * (){
+				/*
 				// Выполняем запрос с геокодера Yandex
 				const yandex = yield fetch(urlsGeo[0]).then(
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				);
+				*/
+				
+				const yandex = false;
+
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 					res => (res.status === 200 ? res.json() : false),
