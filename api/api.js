@@ -117,7 +117,7 @@ const anyks = require("./lib.anyks");
 					"formatted_address":	nobj.formatted_address
 				};
 
-				console.log("+++++++++", obj.status, ga);
+				console.log("+++++++++", obj.status, JSON.stringify(ga));
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
