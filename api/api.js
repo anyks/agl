@@ -44,6 +44,144 @@ const anyks = require("./lib.anyks");
 		} else callback(next.value);
 	};
 	/**
+	 * parseAnswerGeoCoder Функция обработки результата полученного с геокодера
+	 * @param  {Object} obj ответ с геокодера
+	 * @return {Object}     результат обработки
+	 */
+	const parseAnswerGeoCoder = obj => {
+		// Создаем промис для обработки
+		return new Promise(resolve => {
+			// Данные с геокодера
+			let data = {}, result = false;
+			// Определяем тип геокодера
+			switch(obj.status){
+				// OpenStreetMaps
+				case "osm":
+					// Получаем данные с геокодера
+					data = (
+						$.isArray(obj.data) && obj.data.length ? obj.data[0] :
+						($.isset(obj.data) && $.isObject(obj.data) ? obj.data : false)
+					);
+					// Если данные существуют
+					if($.isset(data)){
+						// Получаем основные данные
+						let lat			= $.fnShowProps(data, "lat");
+						let lng			= $.fnShowProps(data, "lon");
+						let zip			= $.fnShowProps(data, "postcode");
+						let city		= $.fnShowProps(data, "city");
+						let code		= $.fnShowProps(data, "country_code");
+						let street		= $.fnShowProps(data, "road");
+						let region		= $.fnShowProps(data, "state");
+						let country		= $.fnShowProps(data, "country");
+						let district	= $.fnShowProps(data, "state_district");
+						let boundingbox	= $.fnShowProps(data, "boundingbox");
+						let description	= $.fnShowProps(data, "display_name");
+						let gps			= [parseFloat(lng), parseFloat(lat)];
+						let id			= idObj.generateKey(
+							country.toLowerCase() +
+							region.toLowerCase() +
+							city.toLowerCase() +
+							street.toLowerCase()
+						);
+						// Формируем объект
+						result = {
+							id, lat, lng, gps,
+							boundingbox, description,
+							address: {zip, city, code, street, region, country, district}
+						};
+					}
+				break;
+				// Yandex
+				case "yandex":
+					// Получаем массив данных
+					data = $.fnShowProps(obj.data, "featureMember");
+					// Если данные существуют
+					if($.isArray(data) && data.length){
+						// Получаем данные с геокодера
+						data = data[0];
+						// Получаем основные данные
+						let lat			= $.fnShowProps(data, "pos").split(" ")[1];
+						let lng			= $.fnShowProps(data, "pos").split(" ")[0];
+						let city		= $.fnShowProps(data, "LocalityName");
+						let code		= $.fnShowProps(data, "CountryNameCode").toLowerCase();
+						let street		= $.fnShowProps(data, "ThoroughfareName");
+						let region		= $.fnShowProps(data, "AdministrativeAreaName");
+						let country		= $.fnShowProps(data, "CountryName");
+						let district	= $.fnShowProps(data, "SubAdministrativeAreaName");
+						let description	= $.fnShowProps(data, "text");
+						let lowerCorner	= $.fnShowProps(data, "lowerCorner").split(" ");
+						let upperCorner = $.fnShowProps(data, "upperCorner").split(" ");
+						let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
+						let gps			= [parseFloat(lng), parseFloat(lat)];
+						let id			= idObj.generateKey(
+							country.toLowerCase() +
+							region.toLowerCase() +
+							city.toLowerCase() +
+							street.toLowerCase()
+						);
+						// Формируем объект
+						result = {
+							id, lat, lng, gps,
+							boundingbox, description,
+							address: {city, code, street, region, country, district}
+						};
+					}
+				break;
+				// Google
+				case "google":
+					// Если данные существуют
+					if($.isArray(obj.data.results)
+					&& obj.data.results.length){
+						// Получаем данные с геокодера
+						data = obj.data.results[0];
+						// Координаты запроса
+						let lat	= $.fnShowProps(data.geometry.location, "lat");
+						let lng	= $.fnShowProps(data.geometry.location, "lng");
+						let gps	= [parseFloat(lng), parseFloat(lat)];
+						// Описание адреса
+						let description = data.formatted_address;
+						// Переменные адреса
+						let zip, city, code, street, region, country, district;
+						// Переходим по всему массиву с компонентами адреса
+						data.address_components.forEach(obj => {
+							// Ищем почтовый индекс
+							if(obj.types.indexOf('postal_code') > -1) zip = obj.long_name;
+							// Ищем город
+							else if(obj.types.indexOf('locality') > -1) city = obj.long_name;
+							// Ищем код и название страны
+							else if(obj.types.indexOf('country') > -1){
+								// Получаем название страны
+								country	= obj.long_name;
+								// Получаем код страны
+								code	= obj.short_name.toLowerCase();
+							// Ищем название улицы
+							} else if(obj.types.indexOf('route') > -1) street = obj.long_name;
+							// Ищем название региона
+							else if(obj.types.indexOf('administrative_area_level_1') > -1) region = obj.long_name;
+							// Ищем название района
+							else if(obj.types.indexOf('administrative_area_level_2') > -1) district = obj.long_name;
+						});
+						// Генерируем идентификатор объекта
+						let id = idObj.generateKey(
+							country.toLowerCase() +
+							region.toLowerCase() +
+							city.toLowerCase() +
+							street.toLowerCase()
+						);
+						// Формируем объект
+						result = {
+							id, lat, lng, gps,
+							description,
+							address: {zip, city, code, street, region, country, district}
+						};
+					}
+				break;
+			}
+			// Выводим результат
+			resolve(result);
+		});
+	};
+	/**
 	 * Класс Agl с базовыми методами
 	 */
 	class Agl {
@@ -100,96 +238,45 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$lat", lat).replace("$lng", lng));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
-				// obj.data.response.GeoObjectCollection.metaDataProperty.GeocoderResponseMetaData
-				// obj.data.response.GeoObjectCollection.featureMember[0].GeoObject
-
-				/*
-				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
-
-				const ya = {
-					"pos":							idObj.anyks.fnShowProps(nobj, "pos").split(" "),
-					"kind":							idObj.anyks.fnShowProps(nobj, "kind"),
-					"text":							idObj.anyks.fnShowProps(nobj, "text"),
-					"precision":					idObj.anyks.fnShowProps(nobj, "precision"),
-					"AddressLine":					idObj.anyks.fnShowProps(nobj, "AddressLine"),
-					"CountryNameCode":				idObj.anyks.fnShowProps(nobj, "CountryNameCode"),
-					"CountryName":					idObj.anyks.fnShowProps(nobj, "CountryName"),
-					"AdministrativeAreaName":		idObj.anyks.fnShowProps(nobj, "AdministrativeAreaName"),
-					"SubAdministrativeAreaName":	idObj.anyks.fnShowProps(nobj, "SubAdministrativeAreaName"),
-					"LocalityName":					idObj.anyks.fnShowProps(nobj, "LocalityName"),
-					"ThoroughfareName":				idObj.anyks.fnShowProps(nobj, "ThoroughfareName"),
-					"description":					idObj.anyks.fnShowProps(nobj, "description"),
-					"name":							idObj.anyks.fnShowProps(nobj, "name")
-				};
-
-				console.log("+++++++++", obj.status, ya);
-				*/
-				
-				/*
-				const nobj = obj.data.results[0];
-
-				const ga = {
-					"location":				nobj.geometry.location,
-					"location_type":		nobj.geometry.location_type,
-					"address_components":	nobj.address_components,
-					"formatted_address":	nobj.formatted_address
-				};
-
-				console.log("+++++++++", obj.status, JSON.stringify(ga));
-				*/
-				
-				const nobj = obj.data;
-
-				const osm = {
-					"place_id":		idObj.anyks.fnShowProps(nobj, "place_id"),
-					"boundingbox":	idObj.anyks.fnShowProps(nobj, "boundingbox"),
-					"lat":			idObj.anyks.fnShowProps(nobj, "lat"),
-					"lon":			idObj.anyks.fnShowProps(nobj, "lon"),
-					"display_name": idObj.anyks.fnShowProps(nobj, "display_name"),
-					"class":		idObj.anyks.fnShowProps(nobj, "class"),
-					"type":			idObj.anyks.fnShowProps(nobj, "osm_type"),
-					"id":			idObj.anyks.fnShowProps(nobj, "osm_id"),
-					"importance":	idObj.anyks.fnShowProps(nobj, "importance"),
-					"icon":			idObj.anyks.fnShowProps(nobj, "icon"),
-					"address": {
-						"road":				idObj.anyks.fnShowProps(nobj, "road"),
-						"city":				idObj.anyks.fnShowProps(nobj, "city"),
-						"town":				idObj.anyks.fnShowProps(nobj, "town"),
-						"state_district":	idObj.anyks.fnShowProps(nobj, "state_district"),
-						"state":			idObj.anyks.fnShowProps(nobj, "state"),
-						"postcode":			idObj.anyks.fnShowProps(nobj, "postcode"),
-						"country":			idObj.anyks.fnShowProps(nobj, "country"),
-						"country_code":		idObj.anyks.fnShowProps(nobj, "country_code")
-					}
-				};
-
-				console.log("+++++++++", obj.status, osm);
-
+				// Создаем промис для обработки
+				return new Promise(resolve => {
+					// Выполняем обработку результата геокодера
+					parseAnswerGeoCoder(obj).then(result => {
+						// Подключаем модель метро
+						const Models = require('../models/address');
+						// Создаем модель
+						const model = (new Models("address")).getData();
+						// Создаем схему
+						const Address = idObj.clients.mongo.model("Address", model);
+						// Сохраняем результат в базу данных
+						if(result) (new Address(result)).save();
+						// Создаем индексы
+						// db.address.createIndex({id: 1}, {name: "id"});
+						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
+						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
+						// db.address.createIndex({"address.district": 1}, {name: "district"});
+						// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
+						// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
+						// Выводим результат
+						resolve(result);
+					});
+				});
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
 			 * @return {Boolean} результат запроса из базы
 			 */
 			const getData = function * (){
-				/*
 				// Выполняем запрос с геокодера Yandex
 				const yandex = yield fetch(urlsGeo[0]).then(
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				);
-				*/
-				
-				const yandex = false;
-				/*
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				) : false);
-				*/
-				
-				const google = false;
-
 				// Выполняем запрос с геокодера OpenStreet Maps
 				const osm = (!google ? yield fetch(urlsGeo[2]).then(
 					res => (res.status === 200 ? res.json() : false),
@@ -225,173 +312,29 @@ const anyks = require("./lib.anyks");
 			].map(val => val.replace("$address", encodeURI(address)));
 			// Получаем объект запроса с геокодера
 			const init = obj => {
-				// Данные с геокодера
-				let data = {}, result = false;
-				// Определяем тип геокодера
-				switch(obj.status){
-					// OpenStreetMaps
-					case "osm":
-						// Если данные существуют
-						if($.isArray(obj.data) && obj.data.length){
-							// Получаем данные с геокодера
-							data = obj.data[0];
-							// Получаем основные данные
-							let lat			= $.fnShowProps(data, "lat");
-							let lng			= $.fnShowProps(data, "lon");
-							let zip			= $.fnShowProps(data, "postcode");
-							let city		= $.fnShowProps(data, "city");
-							let code		= $.fnShowProps(data, "country_code");
-							let street		= $.fnShowProps(data, "road");
-							let region		= $.fnShowProps(data, "state");
-							let country		= $.fnShowProps(data, "country");
-							let district	= $.fnShowProps(data, "state_district");
-							let boundingbox	= $.fnShowProps(data, "boundingbox");
-							let description	= $.fnShowProps(data, "display_name");
-							let gps			= [parseFloat(lng), parseFloat(lat)];
-							let id			= idObj.generateKey(
-								country.toLowerCase() +
-								region.toLowerCase() +
-								city.toLowerCase() +
-								street.toLowerCase()
-							);
-							// Формируем объект
-							result = {
-								id, lat, lng, gps,
-								boundingbox, description,
-								address: {zip, city, code, street, region, country, district}
-							};
-						}
-					break;
-					// Yandex
-					case "yandex":
-						// Получаем массив данных
-						data = $.fnShowProps(obj.data, "featureMember");
-						// Если данные существуют
-						if($.isArray(data) && data.length){
-							// Получаем данные с геокодера
-							data = data[0];
-							// Получаем основные данные
-							let lat			= $.fnShowProps(data, "pos").split(" ")[1];
-							let lng			= $.fnShowProps(data, "pos").split(" ")[0];
-							let city		= $.fnShowProps(data, "LocalityName");
-							let code		= $.fnShowProps(data, "CountryNameCode").toLowerCase();
-							let street		= $.fnShowProps(data, "ThoroughfareName");
-							let region		= $.fnShowProps(data, "AdministrativeAreaName");
-							let country		= $.fnShowProps(data, "CountryName");
-							let district	= $.fnShowProps(data, "SubAdministrativeAreaName");
-							let description	= $.fnShowProps(data, "text");
-							let lowerCorner	= $.fnShowProps(data, "lowerCorner").split(" ");
-							let upperCorner = $.fnShowProps(data, "upperCorner").split(" ");
-							let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
-							let gps			= [parseFloat(lng), parseFloat(lat)];
-							let id			= idObj.generateKey(
-								country.toLowerCase() +
-								region.toLowerCase() +
-								city.toLowerCase() +
-								street.toLowerCase()
-							);
-							// Формируем объект
-							result = {
-								id, lat, lng, gps,
-								boundingbox, description,
-								address: {city, code, street, region, country, district}
-							};
-						}
-					break;
-					// Google
-					case "google":
-						// Если данные существуют
-						if($.isArray(obj.data.results)
-						&& obj.data.results.length){
-							// Получаем данные с геокодера
-							data = obj.data.results[0];
-							// Координаты запроса
-							let lat	= $.fnShowProps(data.geometry.location, "lat");
-							let lng	= $.fnShowProps(data.geometry.location, "lng");
-							let gps	= [parseFloat(lng), parseFloat(lat)];
-							// Описание адреса
-							let description = data.formatted_address;
-							// Переменные адреса
-							let zip, city, code, street, region, country, district;
-							// Переходим по всему массиву с компонентами адреса
-							data.address_components.forEach(obj => {
-								// Ищем почтовый индекс
-								if(obj.types.indexOf('postal_code') > -1) zip = obj.long_name;
-								// Ищем город
-								else if(obj.types.indexOf('locality') > -1) city = obj.long_name;
-								// Ищем код и название страны
-								else if(obj.types.indexOf('country') > -1){
-									// Получаем название страны
-									country	= obj.long_name;
-									// Получаем код страны
-									code	= obj.short_name.toLowerCase();
-								// Ищем название улицы
-								} else if(obj.types.indexOf('route') > -1) street = obj.long_name;
-								// Ищем название региона
-								else if(obj.types.indexOf('administrative_area_level_1') > -1) region = obj.long_name;
-								// Ищем название района
-								else if(obj.types.indexOf('administrative_area_level_2') > -1) district = obj.long_name;
-							});
-							// Генерируем идентификатор объекта
-							let id = idObj.generateKey(
-								country.toLowerCase() +
-								region.toLowerCase() +
-								city.toLowerCase() +
-								street.toLowerCase()
-							);
-							// Формируем объект
-							result = {
-								id, lat, lng, gps,
-								description,
-								address: {zip, city, code, street, region, country, district}
-							};
-						}
-					break;
-				}
-				// Подключаем модель метро
-				const Models = require('../models/address');
-				// Создаем модель
-				const model = (new Models("address")).getData();
-				// Создаем схему
-				const Address = idObj.clients.mongo.model("Address", model);
-				// Сохраняем результат в базу данных
-				if(result) (new Address(result)).save();
-				// Создаем индексы
-				// db.address.createIndex({id: 1}, {name: "id"});
-				// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
-				// db.address.createIndex({"address.zip": 1}, {name: "zip"});
-				// db.address.createIndex({"address.district": 1}, {name: "district"});
-				// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
-				// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
-				// Выводим результат
-				return result;
-
-
-
-
-				/*
-				const nobj = obj.data.response.GeoObjectCollection.featureMember[0];
-
-				const ya = {
-					"pos":							idObj.anyks.fnShowProps(nobj, "pos").split(" "),
-					"kind":							idObj.anyks.fnShowProps(nobj, "kind"),
-					"text":							idObj.anyks.fnShowProps(nobj, "text"),
-					"precision":					idObj.anyks.fnShowProps(nobj, "precision"),
-					"AddressLine":					idObj.anyks.fnShowProps(nobj, "AddressLine"),
-					"CountryNameCode":				idObj.anyks.fnShowProps(nobj, "CountryNameCode"),
-					"CountryName":					idObj.anyks.fnShowProps(nobj, "CountryName"),
-					"AdministrativeAreaName":		idObj.anyks.fnShowProps(nobj, "AdministrativeAreaName"),
-					"SubAdministrativeAreaName":	idObj.anyks.fnShowProps(nobj, "SubAdministrativeAreaName"),
-					"LocalityName":					idObj.anyks.fnShowProps(nobj, "LocalityName"),
-					"ThoroughfareName":				idObj.anyks.fnShowProps(nobj, "ThoroughfareName"),
-					"description":					idObj.anyks.fnShowProps(nobj, "description"),
-					"name":							idObj.anyks.fnShowProps(nobj, "name")
-				};
-
-				console.log("+++++++++", obj.status, ya);
-				*/
-
-
+				// Создаем промис для обработки
+				return new Promise(resolve => {
+					// Выполняем обработку результата геокодера
+					parseAnswerGeoCoder(obj).then(result => {
+						// Подключаем модель метро
+						const Models = require('../models/address');
+						// Создаем модель
+						const model = (new Models("address")).getData();
+						// Создаем схему
+						const Address = idObj.clients.mongo.model("Address", model);
+						// Сохраняем результат в базу данных
+						if(result) (new Address(result)).save();
+						// Создаем индексы
+						// db.address.createIndex({id: 1}, {name: "id"});
+						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
+						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
+						// db.address.createIndex({"address.district": 1}, {name: "district"});
+						// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
+						// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
+						// Выводим результат
+						resolve(result);
+					});
+				});
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
