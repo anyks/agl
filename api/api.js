@@ -209,7 +209,7 @@ const anyks = require("./lib.anyks");
 				*/
 			
 
-				const nobj = obj[0];
+				const nobj = obj.data[0];
 
 				const osm = {
 					"place_id":		idObj.anyks.fnShowProps(nobj, "place_id"),
@@ -221,7 +221,7 @@ const anyks = require("./lib.anyks");
 					"type":			idObj.anyks.fnShowProps(nobj, "type"),
 					"importance":	idObj.anyks.fnShowProps(nobj, "importance"),
 					"icon":			idObj.anyks.fnShowProps(nobj, "icon"),
-					"address":{
+					"address": {
 						"road":				idObj.anyks.fnShowProps(nobj, "road"),
 						"town":				idObj.anyks.fnShowProps(nobj, "town"),
 						"state_district":	idObj.anyks.fnShowProps(nobj, "state_district"),
@@ -232,7 +232,7 @@ const anyks = require("./lib.anyks");
 					}
 				};
 
-				console.log("+++++++++", obj.status, osm, obj[0]);
+				console.log("+++++++++", obj.status, osm);
 
 			};
 			/**
