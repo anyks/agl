@@ -179,7 +179,7 @@ const anyks = require("./lib.anyks");
 				console.log("+++++++0", urlsGeo[0]);
 
 				// Выполняем запрос с геокодера Yandex
-				const yandex = yield fetch(urlsGeo[0]).then(res => res.json(), err => false);
+				const yandex = yield fetch(urlsGeo[0]).then(res => res, err => false);
 
 				console.log("+++++++1", yandex);
 				/*
