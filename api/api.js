@@ -108,6 +108,7 @@ const anyks = require("./lib.anyks");
 				console.log("+++++++++", obj.status, ya);
 				*/
 				
+				/*
 				const nobj = obj.data.results[0];
 
 				const ga = {
@@ -118,6 +119,10 @@ const anyks = require("./lib.anyks");
 				};
 
 				console.log("+++++++++", obj.status, JSON.stringify(ga));
+				*/
+				
+				console.log("+++++++++", obj.status, JSON.stringify(obj));
+
 			};
 			/**
 			 * *getData Генератор для получения данных с геокодеров
@@ -133,12 +138,16 @@ const anyks = require("./lib.anyks");
 				*/
 				
 				const yandex = false;
-
+				/*
 				// Выполняем запрос с геокодера Google
 				const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 					res => (res.status === 200 ? res.json() : false),
 					err => false
 				) : false);
+				*/
+				
+				const google = false;
+
 				// Выполняем запрос с геокодера OpenStreet Maps
 				const osm = (!google ? yield fetch(urlsGeo[2]).then(
 					res => (res.status === 200 ? res.json() : false),
