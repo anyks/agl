@@ -224,13 +224,18 @@ const anyks = require("./lib.anyks");
 								
 								
 
-								arr[i].regionId = idObj.schemes.Regions.findOne({id: "3700000000000"}).id;
+								idObj.schemes.Regions.findOne({id: "3700000000000"}, function(error, story){
+
+									arr[i].regionId = story.id;
+									(new schema(arr[i])).save();
+
+								});
 
 								// Копируем внешние ключи
 								//Object.assign(arr[i], parentIds);
 							}
 							// Сохраняем данные
-							(new schema(arr[i])).save();
+							//(new schema(arr[i])).save();
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
