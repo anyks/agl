@@ -16,6 +16,8 @@ const anyks = require("./lib.anyks");
 	const name = "agl";
 	// Версия системы
 	const version = "1.0";
+	// Ключ кладра
+	const kladr = "57500faf0a69decc7d8b4568";
 	// Интервал проверки обновления 24 часов
 	const intUpdateMetro = (24 * 31);
 	// Отладочная информация
@@ -190,16 +192,18 @@ const anyks = require("./lib.anyks");
 		 * constructor Конструктор класса
 		 */
 		constructor(){
-			// Устанавливаем название системы
-			this.name = name;
-			// Устанавливаем версию системы
-			this.version = version;
-			// Устанавливаем тип отладки
-			this.debug = debug;
 			// Устанавливаем объект api anyks
 			this.anyks = $;
+			// Устанавливаем название системы
+			this.name = name;
 			// Устанавливаем объект клиентов
 			this.clients = {};
+			// Устанавливаем тип отладки
+			this.debug = debug;
+			// Устанавливаем ключ кладра
+			this.keyKladr = kladr;
+			// Устанавливаем версию системы
+			this.version = version;
 			// Запоминаем интервал обновления базы данных метро
 			this.intervalUpdateMetro = intUpdateMetro  * 3600000;
 		}
@@ -219,6 +223,106 @@ const anyks = require("./lib.anyks");
 			let key = (mkey.substr(0, 8) + mkey.substr(24, 31));
 			// Выводим результат
 			return key.replace(key.substr(4, 8), mkey.substr(8, 16));
+		}
+		/**
+		 * searchRegion Метод поиска региона
+		 * @param  {String} str строка запроса
+		 * @return {Promise}    промис результата
+		 */
+		searchRegion(str){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Подключаем модуль кладра
+					const kladr = require("kladrapi").ApiQuery;
+					// Выполняем поиск в кладре
+					kladr(idObj.keyKladr, 'foontick', {
+						ContentName:	str,
+						ContentType:	'region',
+						WithParent:		0,
+						Limit:			10
+					}, (err, res) => {
+						// Если возникает ошибка тогда выводим её
+						if($.isset(err)){
+							// Выводим сообщение об ошибке
+							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
+							// Выводим результат
+							resolve(false);
+						// Если данные пришли
+						} else if($.isObject(res) && $.isArray(res.result)){
+							// Выводим результат
+							resolve(res.result);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
+			}));
+		}
+		/**
+		 * searchDistrict Метод поиска района
+		 * @param  {String} str      строка запроса
+		 * @param  {String} parentId идентификатор родителя
+		 * @return {Promise}         промис результата
+		 */
+		searchDistrict(str, parentId){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Подключаем модуль кладра
+				const kladr = require("kladrapi").ApiQuery;
+
+			}));
+		}
+		/**
+		 * searchCity Метод поиска города
+		 * @param  {String} str      строка запроса
+		 * @param  {String} parentId идентификатор родителя
+		 * @return {Promise}         промис результата
+		 */
+		searchCity(str, parentId){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Подключаем модуль кладра
+				const kladr = require("kladrapi").ApiQuery;
+
+			}));
+		}
+		/**
+		 * searchStreet Метод поиска улицы
+		 * @param  {String} str      строка запроса
+		 * @param  {String} parentId идентификатор родителя
+		 * @return {Promise}         промис результата
+		 */
+		searchStreet(str, parentId){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Подключаем модуль кладра
+				const kladr = require("kladrapi").ApiQuery;
+
+			}));
+		}
+		/**
+		 * searchHouse Метод поиска дома
+		 * @param  {String} str      строка запроса
+		 * @param  {String} parentId идентификатор родителя
+		 * @return {Promise}         промис результата
+		 */
+		searchHouse(str, parentId){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Подключаем модуль кладра
+				const kladr = require("kladrapi").ApiQuery;
+
+			}));
 		}
 		/**
 		 * getAddressFromGPS Метод получения данных адреса по GPS координатам
@@ -252,7 +356,7 @@ const anyks = require("./lib.anyks");
 						// Сохраняем результат в базу данных
 						if(result) (new Address(result)).save();
 						// Создаем индексы
-						// db.address.createIndex({id: 1}, {name: "id", unique: true});
+						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
 						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
 						// db.address.createIndex({"address.district": 1}, {name: "district"});
@@ -326,7 +430,7 @@ const anyks = require("./lib.anyks");
 						// Сохраняем результат в базу данных
 						if(result) (new Address(result)).save();
 						// Создаем индексы
-						// db.address.createIndex({id: 1}, {name: "id", unique: true});
+						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
 						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
 						// db.address.createIndex({"address.district": 1}, {name: "district"});
