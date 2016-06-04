@@ -398,7 +398,7 @@ const anyks = require("./lib.anyks");
 							
 							console.log("**********", res.result[0].parents.reduce((sum, val) => {
 								// Формируем строку отчета
-								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+								return ($.isObject(sum) && $.isset(sum) ? sum.name + " " + sum.type : sum)
 								+ ", " + val.name + " " + val.type;
 							}));
 
