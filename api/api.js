@@ -329,11 +329,11 @@ const anyks = require("./lib.anyks");
 							// Выполняем поиск GPS координат для текущего адреса
 							getGPSForAddress(res.result, "Россия", idObj, idObj.schemes.Regions)
 							.then(result => idObj.log([
-								"получение gps координат для адреса",
+								"получение gps координат для адреса:",
 								res.result.reduce((sum, val) => {
 									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.typeShort + "." + sum.name)
-									+ ", " + val.typeShort + "." + val.name;
+									return ($.isString(sum) ? sum : sum.typeShort + ". " + sum.name)
+									+ ", " + val.typeShort + ". " + val.name;
 								}),
 								result
 							], "info"));
