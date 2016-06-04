@@ -186,13 +186,14 @@ const anyks = require("./lib.anyks");
 	};
 	/**
 	 * getGPSForAddress Функция получения gps координат для указанного адреса
-	 * @param  {Array}   arr     Массив с адресами для получения данных
-	 * @param  {String}  address префикс для адреса
-	 * @param  {Object}  idObj   идентификатор текущего объекта
-	 * @param  {Object}  schema  схема для сохранения
-	 * @return {Promise}         промис ответа
+	 * @param  {Array}   arr       Массив с адресами для получения данных
+	 * @param  {String}  address   префикс для адреса
+	 * @param  {Object}  idObj     идентификатор текущего объекта
+	 * @param  {Object}  schema    схема для сохранения
+	 * @param  {Object}  parentIds объект с внешними идентификаторами
+	 * @return {Promise}           промис ответа
 	 */
-	const getGPSForAddress = (arr, address, idObj, schema) => {
+	const getGPSForAddress = (arr, address, idObj, schema, parentIds = null) => {
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
 			/**
@@ -217,6 +218,11 @@ const anyks = require("./lib.anyks");
 							arr[i].lat = res.lat;
 							arr[i].lng = res.lng;
 							arr[i].gps = res.gps;
+							// Если объект внешних ключей существует тогда добавляем их
+							if($.isset(parentIds) && $.isObject(parentIds)){
+								// Копируем внешние ключи
+								Object.assign(arr[i], parentIds);
+							}
 							// Сохраняем данные
 							(new schema(arr[i])).save();
 						}
@@ -245,18 +251,24 @@ const anyks = require("./lib.anyks");
 			const ModelAddress = require('../models/address');
 			// Подключаем модель регионов
 			const ModelRegions = require('../models/regions');
+			// Подключаем модель района
+			const ModelDistricts = require('../models/districts');
 			// Подключаем модель метро
 			const ModelMetro = require('../models/metro');
 			// Создаем модель адресов
 			const modelAddress = (new ModelAddress("address")).getData();
 			// Создаем модель регионов
 			const modelRegions = (new ModelRegions("regions")).getData();
+			// Создаем модель районов
+			const modelDistricts = (new ModelDistricts("districts")).getData();
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
 			// Создаем схему адресов
 			const Address = idObj.clients.mongo.model("Address", modelAddress);
 			// Создаем схему регионов
 			const Regions = idObj.clients.mongo.model("Regions", modelRegions);
+			// Создаем схему районов
+			const Districts = idObj.clients.mongo.model("Districts", modelDistricts);
 			// Создаем схему метро
 			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
 			// Сохраняем схемы
@@ -335,7 +347,7 @@ const anyks = require("./lib.anyks");
 									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
 									+ ", " + val.name + " " + val.typeShort + ".";
 								}),
-								result
+								(result ? "Ok" : "Not ok")
 							], "info"));
 							// Выводим результат
 							resolve(res.result);
@@ -356,9 +368,49 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Подключаем модуль кладра
-				const kladr = require("kladrapi").ApiQuery;
-
+				try {
+					// Подключаем модуль кладра
+					const kladr = require("kladrapi").ApiQuery;
+					// Выполняем поиск в кладре
+					kladr(idObj.keyKladr, 'foontick', {
+						ContentName:	str,
+						ContentType:	'district',
+						ParentType:		'region',
+						ParentId:		parentId,
+						WithParent:		1,
+						Limit:			10
+					}, (err, res) => {
+						// Если возникает ошибка тогда выводим её
+						if($.isset(err)){
+							// Выводим сообщение об ошибке
+							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
+							// Выводим результат
+							resolve(false);
+						// Если данные пришли
+						} else if($.isObject(res) && $.isArray(res.result)){
+							// Формируем первоначальную строку адреса
+							let address = "Россия" + ", " + res.result.parents.reduce((sum, val) => {
+								// Формируем строку отчета
+								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+								+ ", " + val.name + " " + val.type;
+							});
+							// Выполняем поиск GPS координат для текущего адреса
+							getGPSForAddress(res.result, address, idObj, idObj.schemes.Districts, {regionId: parentId})
+							.then(result => idObj.log([
+								"получение gps координат для адреса:",
+								res.result.reduce((sum, val) => {
+									// Формируем строку отчета
+									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
+									+ ", " + val.name + " " + val.typeShort + ".";
+								}),
+								(result ? "Ok" : "Not ok")
+							], "info"));
+							// Выводим результат
+							resolve(res.result);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
 			}));
 		}
 		/**
@@ -434,13 +486,6 @@ const anyks = require("./lib.anyks");
 					parseAnswerGeoCoder(obj, idObj).then(result => {
 						// Сохраняем результат в базу данных
 						if(result) (new idObj.schemes.Address(result)).save();
-						// Создаем индексы
-						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
-						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
-						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
-						// db.address.createIndex({"address.district": 1}, {name: "district"});
-						// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
-						// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
 						// Выводим результат
 						resolve(result);
 					});
@@ -502,13 +547,6 @@ const anyks = require("./lib.anyks");
 					parseAnswerGeoCoder(obj, idObj).then(result => {
 						// Сохраняем результат в базу данных
 						if(result) (new idObj.schemes.Address(result)).save();
-						// Создаем индексы
-						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
-						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
-						// db.address.createIndex({"address.zip": 1}, {name: "zip"});
-						// db.address.createIndex({"address.district": 1}, {name: "district"});
-						// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
-						// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
 						// Выводим результат
 						resolve(result);
 					});
@@ -604,6 +642,48 @@ const anyks = require("./lib.anyks");
 			.then(res => res.json(), e => idObj.log(["get metro", e], "error"))
 			// Обрабатываем полученные данные
 			.then(getData, e => idObj.log(["parse metro", e], "error"));
+		}
+		/**
+		 * initEmptyDatabases Метод инициализации чистой базы данных
+		 */
+		initEmptyDatabases(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Подключаемся к коллекции address
+					const address = idObj.clients.mongo.connection.db.collection("address");
+					// Подключаемся к коллекции regions
+					const regions = idObj.clients.mongo.connection.db.collection("regions");
+					// Создаем индексы для базы адресов
+					address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+					address.createIndex({lat: 1, lng: 1}, {name: "gps"});
+					address.createIndex({"address.zip": 1}, {name: "zip"});
+					address.createIndex({"address.district": 1}, {name: "district"});
+					address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
+					address.createIndex({gps: "2dsphere"}, {name: "locations"});
+					// Создаем индексы для базы регионов
+					regions.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+					regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
+					regions.createIndex({name: 1}, {name: "name"});
+					regions.createIndex({type: 1}, {name: "type"});
+					regions.createIndex({typeShort: 1}, {name: "typeShort"});
+					regions.createIndex({zip: 1}, {name: "zip"});
+					regions.createIndex({okato: 1}, {name: "okato"});
+					regions.createIndex({contentType: 1}, {name: "contentType"});
+					regions.createIndex({gps: "2dsphere"}, {name: "locations"});
+					// Выполняем обновление базы данных метро
+					idObj.updateMetro();
+					// Сообщаем что работа завершена
+					resolve(true);
+				} catch(e) {
+					// Выводим сообщение в консоль
+					idObj.log(["что-то с инициализацией базы данных", e], "error");
+					// Сообщаем что работа завершена
+					resolve(false);
+				}
+			}));
 		}
 		/**
 		 * mongo Метод подключения к MongoDB

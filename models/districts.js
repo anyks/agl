@@ -43,6 +43,10 @@
 				zip: {
 						type:		Number,
 						optional:	true
+				},
+				regionId: {
+					type:	String,
+					ref:	'Regions'
 				}
 			}, {collection: this.collection});
 		}

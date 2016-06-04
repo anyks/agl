@@ -19,6 +19,13 @@
 		}
 		// Создаем новую схему для метро
 		getData(){
+			// Индексы
+			// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+			// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
+			// db.address.createIndex({"address.zip": 1}, {name: "zip"});
+			// db.address.createIndex({"address.district": 1}, {name: "district"});
+			// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
+			// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
 			// Выводим коллекцию Cian
 			return new mongo.Schema({
 				id:				String,
