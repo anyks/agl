@@ -713,7 +713,8 @@ const anyks = require("./lib.anyks");
 					idObj.clients.mongo = require('mongoose');
 					// Подключаем модуль Mongoose DBRef
 					const dbref = require("mongoose-dbref");
-					
+					// Устанавливаем плагин
+					dbref.install(idObj.clients.mongo);
 					/**
 					 * connection Функция обработки подключения к базе
 					 */
@@ -725,10 +726,6 @@ const anyks = require("./lib.anyks");
 					}
 					// Подключаемся к сокету: http://mongoosejs.com/docs/connections.html
 					idObj.clients.mongo.connect("mongodb://" + config.host + ":" + config.port + "/" + config.db, config.options);
-
-					// Устанавливаем плагин
-					dbref.installPatches(idObj.clients.mongo);
-
 					// Обработчик подключения к базе данных
 					idObj.clients.mongo.connection.once('open', connection);
 					// Обработчик ошибки
