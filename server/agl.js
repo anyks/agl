@@ -150,7 +150,7 @@
 			// agl.getAddressFromGPS(55.5689216, 37.4896679);
 			// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
 			
-			searchRegion("И").then(rs => console.log(rs));
+			agl.searchRegion("И").then(rs => console.log(rs));
 		};
 		/**
 		 * *connect Генератор для коннекта баз данных
