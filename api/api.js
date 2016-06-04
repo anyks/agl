@@ -226,6 +226,9 @@ const anyks = require("./lib.anyks");
 								// Копируем внешние ключи
 								Object.assign(arr[i], parentIds);
 							}
+
+							console.log("--------", arr[i]);
+
 							// Сохраняем данные
 							(new schema(arr[i])).save();
 						}
