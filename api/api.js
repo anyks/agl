@@ -332,8 +332,8 @@ const anyks = require("./lib.anyks");
 								"получение gps координат для адреса:",
 								res.result.reduce((sum, val) => {
 									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.typeShort + ". " + sum.name)
-									+ ", " + val.typeShort + ". " + val.name;
+									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
+									+ ", " + val.name + " " + val.typeShort + ".";
 								}),
 								result
 							], "info"));
