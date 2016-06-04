@@ -399,7 +399,7 @@ const anyks = require("./lib.anyks");
 								+ ", " + val.name + " " + val.type;
 							});
 							*/
-							console.log("+++++2", res.result.parents);
+							console.log("+++++2", res.result);
 
 							/*
 							// Выполняем поиск GPS координат для текущего адреса
