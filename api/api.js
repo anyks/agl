@@ -277,9 +277,9 @@ const anyks = require("./lib.anyks");
 											arr[i].lat = res.lat;
 											arr[i].lng = res.lng;
 											arr[i].gps = res.gps;
-											// Идем дальше
-											getGPS(arr, i + 1);
 										}
+										// Идем дальше
+										getGPS(arr, i + 1);
 									});
 								} else console.log("++++++1", arr);
 								// Выходим
