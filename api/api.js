@@ -215,7 +215,7 @@ const anyks = require("./lib.anyks");
 						// Если результат найден
 						if($.isset(res)){
 							// Выполняем сохранение данных
-							arr[i]._id		= arr[i].id;
+							arr[i]["_id"]	= arr[i].id;
 							arr[i].lat 		= res.lat;
 							arr[i].lng 		= res.lng;
 							arr[i].gps 		= res.gps;
