@@ -381,7 +381,7 @@ const anyks = require("./lib.anyks");
 						Limit:			10
 					}, (err, res) => {
 						
-						console.log("+++++", res, $.isset(res));
+						console.log("+++++1", res, $.isset(res));
 
 						// Если возникает ошибка тогда выводим её
 						if($.isset(err) && !$.isset(res)){
