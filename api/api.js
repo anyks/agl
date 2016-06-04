@@ -387,7 +387,7 @@ const anyks = require("./lib.anyks");
 						// Если возникает ошибка тогда выводим её
 						if($.isset(err)){
 							// Выводим сообщение об ошибке
-							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
+							idObj.log(["произошла ошибка поиска в базе Kladr", err, res], "error");
 							// Выводим результат
 							resolve(false);
 						// Если данные пришли
