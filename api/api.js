@@ -383,6 +383,7 @@ const anyks = require("./lib.anyks");
 						
 						console.log("+++++1", res, $.isset(res));
 
+						/*
 						// Если возникает ошибка тогда выводим её
 						if($.isset(err) && !$.isset(res)){
 							// Выводим сообщение об ошибке
@@ -411,6 +412,7 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							resolve(res.result);
 						}
+						*/
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
