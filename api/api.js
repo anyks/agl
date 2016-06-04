@@ -373,15 +373,18 @@ const anyks = require("./lib.anyks");
 					const kladr = require("kladrapi").ApiQuery;
 
 
-					var ret = kladr('57500faf0a69decc7d8b4568', 'foontick',
-    // {ContentName: 'Шуя', ContentType: 'city', WithParent: true, ParentId: '3700000000000', ParentType: 'region', Limit: 10},
-    // {ContentName: 'И', ContentType: 'region', WithParent: 0, Limit: 10},
-    {ContentName: "Ш", ContentType: 'district', ParentType: 'region', ParentId: '3700000000000', WithParent: 1, Limit: 10},
-    // {ContentName: 'Комсомольская', ContentType: 'street', WithParent: true, ParentId: '3701900100000', ParentType: 'city', Limit: 10},
-    function(err, ret) {
-        console.log(err, ret.result);
-    }
-);
+
+
+					console.log("---------1", {ContentName: "Ш", ContentType: 'district', ParentType: 'region', ParentId: '3700000000000', WithParent: 1, Limit: 10}, '57500faf0a69decc7d8b4568');
+
+					console.log("---------2",  {
+						ContentName:	str,
+						ContentType:	'district',
+						ParentType:		'region',
+						ParentId:		parentId,
+						WithParent:		1,
+						Limit:			10
+					}, idObj.keyKladr);
 
 
 					// Выполняем поиск в кладре
