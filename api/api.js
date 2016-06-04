@@ -395,6 +395,9 @@ const anyks = require("./lib.anyks");
 							resolve(false);
 						// Если данные пришли
 						} else if($.isObject(res) && $.isArray(res.result)){
+							
+							console.log("**********", res.result[0].parents);
+
 							// Формируем первоначальную строку адреса
 							let address = "Россия" + ", " + res.result[0].parents.reduce((sum, val) => {
 								
