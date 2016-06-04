@@ -406,7 +406,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
 						// Сохраняем результат в базу данных
-						if(result) (new idObj.scheme.Address(result)).save();
+						if(result) (new idObj.schemes.Address(result)).save();
 						// Создаем индексы
 						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
@@ -477,7 +477,7 @@ const anyks = require("./lib.anyks");
 						try {
 
 						// Сохраняем результат в базу данных
-						if(result) (new idObj.scheme.Address(result)).save();
+						if(result) (new idObj.schemes.Address(result)).save();
 						// Создаем индексы
 						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
@@ -563,7 +563,7 @@ const anyks = require("./lib.anyks");
 						return line;
 					});
 					// Сохраняем результат
-					return (new idObj.scheme.Metro(obj)).save();
+					return (new idObj.schemes.Metro(obj)).save();
 				});
 				// Создаем индексы
 				metro.createIndex({name: 1}, {name: "city"});
