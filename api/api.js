@@ -372,6 +372,10 @@ const anyks = require("./lib.anyks");
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
 					// Выполняем поиск в кладре
+					// 
+					str = "Ш";
+					parentId = "3700000000000";
+
 					kladr(idObj.keyKladr, 'foontick', {
 						ContentName:	str,
 						ContentType:	'district',
