@@ -380,6 +380,9 @@ const anyks = require("./lib.anyks");
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
+						
+						console.log("+++++", res, $.isset(res));
+
 						// Если возникает ошибка тогда выводим её
 						if($.isset(err) && !$.isset(res)){
 							// Выводим сообщение об ошибке
