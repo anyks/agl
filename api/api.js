@@ -466,9 +466,6 @@ const anyks = require("./lib.anyks");
 				const init = obj => {
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
-						
-						console.log("!!!!!!!!!!!!", result);
-
 						// Подключаем модель метро
 						const Models = require('../models/address');
 						// Создаем модель
@@ -493,11 +490,17 @@ const anyks = require("./lib.anyks");
 				 * @return {Boolean} результат запроса из базы
 				 */
 				const getData = function * (){
+					
+					console.log("!!!!!!!!!!!!-1", urlsGeo[0]);
+
 					// Выполняем запрос с геокодера Yandex
 					const yandex = yield fetch(urlsGeo[0]).then(
 						res => (res.status === 200 ? res.json() : false),
 						err => false
 					);
+
+					console.log("!!!!!!!!!!!!-2", yandex);
+
 					// Выполняем запрос с геокодера Google
 					const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 						res => (res.status === 200 ? res.json() : false),
