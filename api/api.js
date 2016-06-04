@@ -222,17 +222,14 @@ const anyks = require("./lib.anyks");
 							// Если объект внешних ключей существует тогда добавляем их
 							if($.isset(parentIds) && $.isObject(parentIds)){
 								// Копируем внешние ключи
-								Object.assign(arr[i], parentIds);
+								// Object.assign(arr[i], parentIds);
+
+								Object.assign({$ref: 'regions', regionId: parentIds.regionId}, arr[i]);
+
+								
 							}
-
-							console.log("--------", arr[i]);
-
-							try {
-
-
-								// Сохраняем данные
-								(new schema(arr[i])).save((err, dd) => console.log(err, dd));
-							} catch(e) {console.log(e);}
+							// Сохраняем данные
+							(new schema(arr[i])).save();
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
