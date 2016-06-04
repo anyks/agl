@@ -81,10 +81,10 @@ const anyks = require("./lib.anyks");
 						let description	= $.fnShowProps(data, "display_name");
 						let gps			= [parseFloat(lng), parseFloat(lat)];
 						let id			= idObj.generateKey(
-							country.toLowerCase() +
-							region.toLowerCase() +
-							city.toLowerCase() +
-							street.toLowerCase()
+							($.isset(country) ? country.toLowerCase() : "") +
+							($.isset(region) ? region.toLowerCase() : "") +
+							($.isset(city) ? city.toLowerCase() : "") +
+							($.isset(street) ? street.toLowerCase() : "")
 						);
 						// Формируем объект
 						result = {
@@ -102,9 +102,6 @@ const anyks = require("./lib.anyks");
 					if($.isArray(data) && data.length){
 						// Получаем данные с геокодера
 						data = data[0];
-
-						try {
-
 						// Получаем основные данные
 						let lat			= $.fnShowProps(data, "pos").split(" ")[1];
 						let lng			= $.fnShowProps(data, "pos").split(" ")[0];
@@ -131,10 +128,6 @@ const anyks = require("./lib.anyks");
 							boundingbox, description,
 							address: {city, code, street, region, country, district}
 						};
-
-						} catch(e) {console.log("!!!!!!!!!!!!!!-2", e);}
-
-						
 					}
 				break;
 				// Google
@@ -173,10 +166,10 @@ const anyks = require("./lib.anyks");
 						});
 						// Генерируем идентификатор объекта
 						let id = idObj.generateKey(
-							country.toLowerCase() +
-							region.toLowerCase() +
-							city.toLowerCase() +
-							street.toLowerCase()
+							($.isset(country) ? country.toLowerCase() : "") +
+							($.isset(region) ? region.toLowerCase() : "") +
+							($.isset(city) ? city.toLowerCase() : "") +
+							($.isset(street) ? street.toLowerCase() : "")
 						);
 						// Формируем объект
 						result = {
@@ -270,9 +263,6 @@ const anyks = require("./lib.anyks");
 							const getGPS = (arr, i = 0) => {
 								// Если данные не все получены
 								if(i < arr.length){
-									
-									console.log("**********", "Россия" + " " + arr[i].name + " " + arr[i].type);
-
 									// Выполняем запрос данных
 									idObj.getAddressFromString(
 										"Россия" +
@@ -281,18 +271,12 @@ const anyks = require("./lib.anyks");
 										" " +
 										arr[i].type
 									).then(res => {
-										
-										console.log("======", res);
-
 										// Если результат найден
 										if($.isset(res)){
 											// Выполняем сохранение данных
 											arr[i].lat = res.lat;
 											arr[i].lng = res.lng;
 											arr[i].gps = res.gps;
-
-											console.log("=======", arr[i]);
-
 											// Идем дальше
 											getGPS(arr, i + 1);
 										}
