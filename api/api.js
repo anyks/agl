@@ -227,8 +227,9 @@ const anyks = require("./lib.anyks");
 								Object.assign(arr[i], parentIds);
 							}
 							// Сохраняем данные
-							(new schema(arr[i])).save(() => {
+							(new schema(arr[i])).save((e1, e2) => {
 
+								console.log("++++++", e1, e2);
 								/*
 								idObj.schemes.Districts.findOne({id: arr[i].id})
 								.populate('regionId')
