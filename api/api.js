@@ -261,6 +261,9 @@ const anyks = require("./lib.anyks");
 							 * @param  {Number} i  индекс массива
 							 */
 							const getGPS = (arr, i = 0) => {
+								
+								console.log("!!!!!!!!!!!!!", arr[i]);
+
 								// Если данные не все получены
 								if(i < arr.length){
 									// Выполняем запрос данных
