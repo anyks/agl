@@ -372,14 +372,18 @@ const anyks = require("./lib.anyks");
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
 					// Выполняем поиск в кладре
-					var ret = kladr(idObj.keyKladr, 'foontick', {
+					kladr(idObj.keyKladr, 'foontick', {
 						ContentName:	str,
 						ContentType:	'district',
 						ParentType:		'region',
 						ParentId:		parentId,
 						WithParent:		1,
 						Limit:			10
-					}, function(err, res){
+					}, (err, res) => {
+						
+						console.log("+++++", res);
+
+						/*
 						// Если возникает ошибка тогда выводим её
 						if($.isset(err)){
 							// Выводим сообщение об ошибке
@@ -408,6 +412,7 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							resolve(res.result);
 						}
+						*/
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
