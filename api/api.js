@@ -346,7 +346,7 @@ const anyks = require("./lib.anyks");
 						// Если данные пришли
 						} else if($.isObject(res) && $.isArray(res.result)){
 							// Выполняем поиск GPS координат для текущего адреса
-							getGPSForAddress(res.result, "Россия", idObj, idObj.schemes.Regions)
+							getGPSForAddress(res.result, "Россия,", idObj, idObj.schemes.Regions)
 							.then(result => idObj.log([
 								"получение gps координат для адреса:",
 								(res.result.length > 1 ? res.result.reduce((sum, val) => {
@@ -401,7 +401,7 @@ const anyks = require("./lib.anyks");
 								// Формируем строку отчета
 								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
 								+ ", " + val.name + " " + val.type;
-							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type);
+							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
 							// Выполняем поиск GPS координат для текущего адреса
 							getGPSForAddress(res.result, address, idObj, idObj.schemes.Districts, {regionId: parentId})
 							.then(result => idObj.log([
