@@ -474,6 +474,9 @@ const anyks = require("./lib.anyks");
 						const Address = idObj.clients.mongo.model("Address", model);
 						// Сохраняем результат в базу данных
 						if(result) (new Address(result)).save();
+
+						console.log("!!!!!!!!!!!!", result);
+
 						// Создаем индексы
 						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
