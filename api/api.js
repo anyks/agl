@@ -330,12 +330,12 @@ const anyks = require("./lib.anyks");
 							getGPSForAddress(res.result, "Россия", idObj, idObj.schemes.Regions)
 							.then(result => idObj.log([
 								"получение gps координат для адреса",
-								res.result,
-								result.reduce((sum, val) => {
+								res.result.reduce((sum, val) => {
 									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.type + " " + sum.name)
-									+ ", " + val.type + " " + val.name;
-								})
+									return ($.isString(sum) ? sum : sum.typeShort + "." + sum.name)
+									+ ", " + val.typeShort + "." + val.name;
+								}),
+								result
 							], "info"));
 							// Выводим результат
 							resolve(res.result);
