@@ -5,6 +5,10 @@
 (function(){
 	// Подключаем модуль Mongoose
 	const mongo = require('mongoose');
+	// Подключаем модуль Mongoose DBRef
+	const dbref = require("mongoose-dbref");
+	// Загружаем типы данных
+	dbref.loadTypes(mongo);
 	/**
 	 * Класс модели
 	 */
@@ -43,10 +47,14 @@
 				zip: {
 						type:		Number,
 						optional:	true
-				},
+				}
 				regionId: {
+					/*
 					type:	String,
 					ref:	'Regions'
+					*/
+					type:		mongo.SchemaTypes.DBRef,
+					optional:	false
 				}
 			}, {collection: this.collection});
 		}

@@ -223,19 +223,20 @@ const anyks = require("./lib.anyks");
 							if($.isset(parentIds) && $.isObject(parentIds)){
 								
 								
-
+								/*
 								idObj.schemes.Regions.findOne({id: "3700000000000"}, function(error, story){
 
 									arr[i].regionId = story.id;
 									(new schema(arr[i])).save();
 
 								});
+								*/
 
 								// Копируем внешние ключи
 								//Object.assign(arr[i], parentIds);
 							}
 							// Сохраняем данные
-							//(new schema(arr[i])).save();
+							(new schema(arr[i])).save();
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
@@ -710,6 +711,10 @@ const anyks = require("./lib.anyks");
 				try {
 					// Подключаем модуль Mongoose
 					idObj.clients.mongo = require('mongoose');
+					// Подключаем модуль Mongoose DBRef
+					const dbref = require("mongoose-dbref");
+					// Устанавливаем плагин
+					dbref.installPatches(idObj.clients.mongo);
 					/**
 					 * connection Функция обработки подключения к базе
 					 */
