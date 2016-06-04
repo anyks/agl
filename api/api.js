@@ -202,7 +202,7 @@ const anyks = require("./lib.anyks");
 			// Создаем модель адресов
 			const modelAddress = (new ModelAddress("address")).getData();
 			// Создаем модель регионов
-			const modelRegions = (new ModelMetro("regions")).getData();
+			const modelRegions = (new ModelRegions("regions")).getData();
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
 			// Создаем схему адресов
