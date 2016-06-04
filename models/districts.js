@@ -45,12 +45,8 @@
 						optional:	true
 				},
 				regionId: {
-					/*
 					type:	String,
 					ref:	'Regions'
-					*/
-					type:		DBRef.Schema,
-					optional:	false
 				}
 			}, {collection: this.collection});
 		}

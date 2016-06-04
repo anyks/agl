@@ -221,12 +221,13 @@ const anyks = require("./lib.anyks");
 							arr[i].parents	= undefined;
 							// Если объект внешних ключей существует тогда добавляем их
 							if($.isset(parentIds) && $.isObject(parentIds)){
-								// Копируем внешние ключи
-								// Object.assign(arr[i], parentIds);
-
-								Object.assign({$ref: 'regions', regionId: parentIds.regionId}, arr[i]);
-
 								
+								
+
+								arr[i].regionId = idObj.schemes.Regions.findOne({id: "3700000000000"}).id;
+
+								// Копируем внешние ключи
+								//Object.assign(arr[i], parentIds);
 							}
 							// Сохраняем данные
 							(new schema(arr[i])).save();
