@@ -280,7 +280,7 @@ const anyks = require("./lib.anyks");
 			// Создаем схему метро
 			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
 			// Сохраняем схемы
-			idObj.schemes = {Address, Regions, Metro};
+			idObj.schemes = {Address, Regions, Districts, Metro};
 		}
 		/**
 		 * constructor Конструктор класса
