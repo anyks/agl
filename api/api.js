@@ -263,6 +263,9 @@ const anyks = require("./lib.anyks");
 							const getGPS = (arr, i = 0) => {
 								// Если данные не все получены
 								if(i < arr.length){
+									
+									console.log("**********", arr[i]);
+
 									// Выполняем запрос данных
 									idObj.getAddressFromString(
 										"Россия" +
