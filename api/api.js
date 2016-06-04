@@ -371,11 +371,20 @@ const anyks = require("./lib.anyks");
 				try {
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
-					// Выполняем поиск в кладре
-					// 
-					str = "Ш";
-					parentId = "3700000000000";
 
+
+					var ret = kladr('57500faf0a69decc7d8b4568', 'foontick',
+    // {ContentName: 'Шуя', ContentType: 'city', WithParent: true, ParentId: '3700000000000', ParentType: 'region', Limit: 10},
+    // {ContentName: 'И', ContentType: 'region', WithParent: 0, Limit: 10},
+    {ContentName: "Ш", ContentType: 'district', ParentType: 'region', ParentId: '3700000000000', WithParent: 1, Limit: 10},
+    // {ContentName: 'Комсомольская', ContentType: 'street', WithParent: true, ParentId: '3701900100000', ParentType: 'city', Limit: 10},
+    function(err, ret) {
+        console.log(err, ret.result);
+    }
+);
+
+
+					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
 						ContentName:	str,
 						ContentType:	'district',
@@ -387,7 +396,7 @@ const anyks = require("./lib.anyks");
 						// Если возникает ошибка тогда выводим её
 						if($.isset(err)){
 							// Выводим сообщение об ошибке
-							idObj.log(["произошла ошибка поиска в базе Kladr", err, res], "error");
+							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
 							// Выводим результат
 							resolve(false);
 						// Если данные пришли
