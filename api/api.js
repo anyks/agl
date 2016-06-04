@@ -120,10 +120,10 @@ const anyks = require("./lib.anyks");
 						let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
 						let gps			= [parseFloat(lng), parseFloat(lat)];
 						let id			= idObj.generateKey(
-							country.toLowerCase() +
-							region.toLowerCase() +
-							city.toLowerCase() +
-							street.toLowerCase()
+							($.isset(country) ? country.toLowerCase() : "") +
+							($.isset(region) ? region.toLowerCase() : "") +
+							($.isset(city) ? city.toLowerCase() : "") +
+							($.isset(street) ? street.toLowerCase() : "")
 						);
 						// Формируем объект
 						result = {
