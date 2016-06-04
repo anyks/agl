@@ -460,7 +460,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
 						
-						console.log("-----------1", result);
+						try {
 
 						// Подключаем модель метро
 						const Models = require('../models/address');
@@ -478,7 +478,8 @@ const anyks = require("./lib.anyks");
 						// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
 						// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
 						
-						console.log("-----------2", result);
+						} catch(e) {console.log("-----------2", e);}
+						
 
 						// Выводим результат
 						resolve(result);
