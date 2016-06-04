@@ -215,7 +215,7 @@ const anyks = require("./lib.anyks");
 						// Если результат найден
 						if($.isset(res)){
 							// Выполняем сохранение данных
-							arr[i]["_id"]	= arr[i].id;
+							arr[i]._id		= arr[i].id;
 							arr[i].lat 		= res.lat;
 							arr[i].lng 		= res.lng;
 							arr[i].gps 		= res.gps;
@@ -229,14 +229,13 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные
 							(new schema(arr[i])).save((e1, e2) => {
 
-								console.log("++++++", e1, e2);
-								/*
+								
 								idObj.schemes.Districts.findOne({id: arr[i].id})
 								.populate('regionId')
 								.exec(function(err, data){
 									console.log("!!!!!!!!!!!!!!!!", err, data);
 								});
-								*/
+								
 
 							});
 						}
