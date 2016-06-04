@@ -189,6 +189,26 @@ const anyks = require("./lib.anyks");
 	 */
 	class Agl {
 		/**
+		 * createModels Метод создания объектов
+		 * @param  {Object} idObj идентификатор текущего объекта
+		 */
+		static createModels(idObj){
+			// Подключаем модель адреса
+			const ModelAddress = require('../models/address');
+			// Подключаем модель метро
+			const ModelMetro = require('../models/metro');
+			// Создаем модель адресов
+			const modelAddress = (new ModelAddress("address")).getData();
+			// Создаем модель метро
+			const modelMetro = (new ModelMetro("metro")).getData();
+			// Создаем схему адресов
+			const Address = idObj.clients.mongo.model("Address", modelAddress);
+			// Создаем схему метро
+			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
+			// Сохраняем схемы
+			idObj.schemes = {Address, Metro};
+		}
+		/**
 		 * constructor Конструктор класса
 		 */
 		constructor(){
@@ -385,14 +405,8 @@ const anyks = require("./lib.anyks");
 				const init = obj => {
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
-						// Подключаем модель метро
-						const Models = require('../models/address');
-						// Создаем модель
-						const model = (new Models("address")).getData();
-						// Создаем схему
-						const Address = idObj.clients.mongo.model("Address", model);
 						// Сохраняем результат в базу данных
-						if(result) (new Address(result)).save();
+						if(result) (new idObj.scheme.Address(result)).save();
 						// Создаем индексы
 						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
@@ -462,14 +476,8 @@ const anyks = require("./lib.anyks");
 						
 						try {
 
-						// Подключаем модель метро
-						const Models = require('../models/address');
-						// Создаем модель
-						const model = (new Models("address")).getData();
-						// Создаем схему
-						const Address = idObj.clients.mongo.model("Address", model);
 						// Сохраняем результат в базу данных
-						if(result) (new Address(result)).save();
+						if(result) (new idObj.scheme.Address(result)).save();
 						// Создаем индексы
 						// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 						// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
@@ -535,12 +543,6 @@ const anyks = require("./lib.anyks");
 			 * @param  {Array} arr объект данными метро
 			 */
 			const getData = arr => {
-				// Подключаем модель метро
-				const Models = require('../models/metro');
-				// Создаем модель
-				const model = (new Models("metro")).getData();
-				// Создаем схему
-				const Metro = idObj.clients.mongo.model("Metro", model);
 				// Подключаемся к коллекции metro
 				const metro = idObj.clients.mongo.connection.db.collection("metro");
 				// Удаляем всю коллекцию
@@ -561,7 +563,7 @@ const anyks = require("./lib.anyks");
 						return line;
 					});
 					// Сохраняем результат
-					return (new Metro(obj)).save();
+					return (new idObj.scheme.Metro(obj)).save();
 				});
 				// Создаем индексы
 				metro.createIndex({name: 1}, {name: "city"});
@@ -599,7 +601,12 @@ const anyks = require("./lib.anyks");
 					/**
 					 * connection Функция обработки подключения к базе
 					 */
-					const connection = () => resolve(idObj.clients.mongo);
+					const connection = () => {
+						// Подключаем основные модели
+						Agl.createModels(idObj);
+						// Выводим результат
+						resolve(idObj.clients.mongo);
+					}
 					// Подключаемся к сокету: http://mongoosejs.com/docs/connections.html
 					idObj.clients.mongo.connect("mongodb://" + config.host + ":" + config.port + "/" + config.db, config.options);
 					// Обработчик подключения к базе данных
