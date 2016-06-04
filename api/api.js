@@ -102,6 +102,7 @@ const anyks = require("./lib.anyks");
 					if($.isArray(data) && data.length){
 						// Получаем данные с геокодера
 						data = data[0];
+						try {
 						// Получаем основные данные
 						let lat			= $.fnShowProps(data, "pos").split(" ")[1];
 						let lng			= $.fnShowProps(data, "pos").split(" ")[0];
@@ -128,6 +129,7 @@ const anyks = require("./lib.anyks");
 							boundingbox, description,
 							address: {city, code, street, region, country, district}
 						};
+						} catch(e) {console.log("++++++", e);}
 					}
 				break;
 				// Google
