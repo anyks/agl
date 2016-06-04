@@ -261,9 +261,6 @@ const anyks = require("./lib.anyks");
 							 * @param  {Number} i  индекс массива
 							 */
 							const getGPS = (arr, i = 0) => {
-								
-								console.log("!!!!!!!!!!!!!", arr[i]);
-
 								// Если данные не все получены
 								if(i < arr.length){
 									// Выполняем запрос данных
@@ -491,6 +488,9 @@ const anyks = require("./lib.anyks");
 						res => (res.status === 200 ? res.json() : false),
 						err => false
 					);
+
+					console.log("=========!", yandex);
+
 					// Выполняем запрос с геокодера Google
 					const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 						res => (res.status === 200 ? res.json() : false),
