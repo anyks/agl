@@ -204,6 +204,9 @@ const anyks = require("./lib.anyks");
 			const getGPS = (arr, i = 0) => {
 				// Если данные не все получены
 				if(i < arr.length){
+					
+					console.log("++++++++", address + " " + arr[i].name + " " + arr[i].type);
+
 					// Выполняем запрос данных
 					idObj.getAddressFromString(
 						address +
@@ -380,9 +383,6 @@ const anyks = require("./lib.anyks");
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
-						
-						console.log("+++++1", res, $.isset(res));
-
 						// Если возникает ошибка тогда выводим её
 						if($.isset(err) && !$.isset(res)){
 							// Выводим сообщение об ошибке
