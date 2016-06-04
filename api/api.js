@@ -227,8 +227,12 @@ const anyks = require("./lib.anyks");
 
 							console.log("--------", arr[i]);
 
-							// Сохраняем данные
-							(new schema(arr[i])).save(err => console.log(err));
+							try {
+
+
+								// Сохраняем данные
+								(new schema(arr[i])).save((err, dd) => console.log(err, dd));
+							} catch(e) {console.log(e);}
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
