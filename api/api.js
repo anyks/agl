@@ -391,13 +391,16 @@ const anyks = require("./lib.anyks");
 							resolve(false);
 						// Если данные пришли
 						} else if($.isObject(res) && $.isArray(res.result)){
-							/*
 							// Формируем первоначальную строку адреса
 							let address = "Россия" + ", " + res.result.parents.reduce((sum, val) => {
 								// Формируем строку отчета
 								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
 								+ ", " + val.name + " " + val.type;
 							});
+
+							console.log("+++++2", address);
+
+							/*
 							// Выполняем поиск GPS координат для текущего адреса
 							getGPSForAddress(res.result, address, idObj, idObj.schemes.Districts, {regionId: parentId})
 							.then(result => idObj.log([
