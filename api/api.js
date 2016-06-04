@@ -103,7 +103,7 @@ const anyks = require("./lib.anyks");
 						// Получаем данные с геокодера
 						data = data[0];
 
-						console.log("!!!!!!!!!!!!!!-1", data);
+						try {
 
 						// Получаем основные данные
 						let lat			= $.fnShowProps(data, "pos").split(" ")[1];
@@ -132,7 +132,9 @@ const anyks = require("./lib.anyks");
 							address: {city, code, street, region, country, district}
 						};
 
-						console.log("!!!!!!!!!!!!!!-2", result);
+						} catch(e) {console.log("!!!!!!!!!!!!!!-2", e);}
+
+						
 					}
 				break;
 				// Google
