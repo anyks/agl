@@ -31,7 +31,6 @@
 			// db.regions.createIndex({gps: "2dsphere"}, {name: "locations"});
 			// Выводим коллекцию Cian
 			return new mongo.Schema({
-				id:				String,
 				name:			String,
 				lat:			String,
 				lng:			String,

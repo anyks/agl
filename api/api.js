@@ -215,9 +215,11 @@ const anyks = require("./lib.anyks");
 						// Если результат найден
 						if($.isset(res)){
 							// Выполняем сохранение данных
+							arr[i]._id		= arr[i].id;
 							arr[i].lat 		= res.lat;
 							arr[i].lng 		= res.lng;
 							arr[i].gps 		= res.gps;
+							arr[i].id		= undefined;
 							arr[i].parents	= undefined;
 							// Если объект внешних ключей существует тогда добавляем их
 							if($.isset(parentIds) && $.isObject(parentIds)){
@@ -227,12 +229,13 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные
 							(new schema(arr[i])).save(() => {
 
-
+								/*
 								idObj.schemes.Districts.findOne({id: arr[i].id})
 								.populate('regionId')
 								.exec(function(err, data){
 									console.log("!!!!!!!!!!!!!!!!", err, data);
 								});
+								*/
 
 							});
 						}
@@ -668,14 +671,14 @@ const anyks = require("./lib.anyks");
 					// Подключаемся к коллекции regions
 					const regions = idObj.clients.mongo.connection.db.collection("regions");
 					// Создаем индексы для базы адресов
-					address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+					// address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 					address.createIndex({lat: 1, lng: 1}, {name: "gps"});
 					address.createIndex({"address.zip": 1}, {name: "zip"});
 					address.createIndex({"address.district": 1}, {name: "district"});
 					address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
 					address.createIndex({gps: "2dsphere"}, {name: "locations"});
 					// Создаем индексы для базы регионов
-					regions.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+					// regions.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 					regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
 					regions.createIndex({name: 1}, {name: "name"});
 					regions.createIndex({type: 1}, {name: "type"});
