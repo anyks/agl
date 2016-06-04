@@ -254,6 +254,42 @@ const anyks = require("./lib.anyks");
 						} else if($.isObject(res) && $.isArray(res.result)){
 							// Выводим результат
 							resolve(res.result);
+
+
+							/**
+							 * getGPS Рекурсивная функция поиска gps координат для города
+							 * @param  {Array} arr массив объектов для обхода
+							 * @param  {Number} i  индекс массива
+							 */
+							const getGPS = (arr, i = 0) => {
+								// Если данные не все получены
+								if(i < arr.length){
+									// Выполняем запрос данных
+									idObj.getAddressFromString(
+										"Россия" +
+										" " +
+										arr[i].name +
+										" " +
+										arr[i].type
+									).then(res => {
+										// Если результат найден
+										if($.isset(res)){
+											// Выполняем сохранение данных
+											arr[i].lat = res.lat;
+											arr[i].lng = res.lng;
+											arr[i].gps = ree.gps;
+											// Идем дальше
+											getGPS(arr, i + 1);
+										}
+									});
+								} else console.log("++++++", arr);
+								// Выходим
+								return;
+							};
+							// Выполняем запрос на получение gps данных
+							getGPS(res.result);
+
+
 						}
 					});
 				// Обрабатываем возникшую ошибку
