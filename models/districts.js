@@ -41,9 +41,9 @@
 				typeShort:		String,
 				contentType:	String,
 				zip: {
-						type:		Number,
-						optional:	true
-				}
+					type:		Number,
+					optional:	true
+				},
 				regionId: {
 					type:	String,
 					ref:	"Regions"
