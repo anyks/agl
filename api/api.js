@@ -349,11 +349,11 @@ const anyks = require("./lib.anyks");
 							getGPSForAddress(res.result, "Россия", idObj, idObj.schemes.Regions)
 							.then(result => idObj.log([
 								"получение gps координат для адреса:",
-								res.result.reduce((sum, val) => {
+								(res.result.length > 1 ? res.result.reduce((sum, val) => {
 									// Формируем строку отчета
 									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
 									+ ", " + val.name + " " + val.typeShort + ".";
-								}),
+								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
 								(result ? "Ok" : "Not ok")
 							], "info"));
 							// Выводим результат
@@ -395,31 +395,22 @@ const anyks = require("./lib.anyks");
 							resolve(false);
 						// Если данные пришли
 						} else if($.isObject(res) && $.isArray(res.result)){
-							
-							console.log("**********", res.result[0].parents.reduce((sum, val) => {
-								// Формируем строку отчета
-								return ($.isObject(sum) && $.isset(sum) ? sum.name + " " + sum.type : sum)
-								+ ", " + val.name + " " + val.type;
-							}));
-
 							// Формируем первоначальную строку адреса
-							let address = "Россия" + ", " + res.result[0].parents.reduce((sum, val) => {
-								
-								console.log("********", sum, val);
-
+							let address = "Россия" + ", "
+							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
 								// Формируем строку отчета
 								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
 								+ ", " + val.name + " " + val.type;
-							});
+							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type);
 							// Выполняем поиск GPS координат для текущего адреса
 							getGPSForAddress(res.result, address, idObj, idObj.schemes.Districts, {regionId: parentId})
 							.then(result => idObj.log([
 								"получение gps координат для адреса:",
-								res.result.reduce((sum, val) => {
+								(res.result.length > 1 ? res.result.reduce((sum, val) => {
 									// Формируем строку отчета
 									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
 									+ ", " + val.name + " " + val.typeShort + ".";
-								}),
+								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
 								(result ? "Ok" : "Not ok")
 							], "info"));
 							// Выводим результат
