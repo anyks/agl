@@ -300,8 +300,6 @@ const anyks = require("./lib.anyks");
 										}
 										// Идем дальше
 										getGPS(arr, i + 1);
-
-										console.log("========================", arr[i]);
 									});
 								} else console.log("++++++1", arr);
 								// Выходим
@@ -473,9 +471,6 @@ const anyks = require("./lib.anyks");
 				const init = obj => {
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
-						
-						try {
-
 						// Сохраняем результат в базу данных
 						if(result) (new idObj.schemes.Address(result)).save();
 						// Создаем индексы
@@ -485,10 +480,6 @@ const anyks = require("./lib.anyks");
 						// db.address.createIndex({"address.district": 1}, {name: "district"});
 						// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
 						// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
-						
-						} catch(e) {console.log("-----------2", e);}
-						
-
 						// Выводим результат
 						resolve(result);
 					});
