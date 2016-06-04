@@ -264,7 +264,7 @@ const anyks = require("./lib.anyks");
 								// Если данные не все получены
 								if(i < arr.length){
 									
-									console.log("**********", arr[i]);
+									console.log("**********", "Россия" + " " + arr[i].name + " " + arr[i].type);
 
 									// Выполняем запрос данных
 									idObj.getAddressFromString(
