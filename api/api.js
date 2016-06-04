@@ -218,9 +218,10 @@ const anyks = require("./lib.anyks");
 						// Если результат найден
 						if($.isset(res)){
 							// Выполняем сохранение данных
-							arr[i].lat = res.lat;
-							arr[i].lng = res.lng;
-							arr[i].gps = res.gps;
+							arr[i].lat 		= res.lat;
+							arr[i].lng 		= res.lng;
+							arr[i].gps 		= res.gps;
+							arr[i].parents	= undefined;
 							// Если объект внешних ключей существует тогда добавляем их
 							if($.isset(parentIds) && $.isObject(parentIds)){
 								// Копируем внешние ключи
