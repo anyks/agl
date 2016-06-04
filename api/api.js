@@ -102,9 +102,6 @@ const anyks = require("./lib.anyks");
 					if($.isArray(data) && data.length){
 						// Получаем данные с геокодера
 						data = data[0];
-
-						console.log("---------0", data);
-
 						// Получаем основные данные
 						let lat			= $.fnShowProps(data, "pos").split(" ")[1];
 						let lng			= $.fnShowProps(data, "pos").split(" ")[0];
@@ -131,8 +128,6 @@ const anyks = require("./lib.anyks");
 							boundingbox, description,
 							address: {city, code, street, region, country, district}
 						};
-
-						console.log("---------1", result);
 					}
 				break;
 				// Google
@@ -464,6 +459,9 @@ const anyks = require("./lib.anyks");
 				const init = obj => {
 					// Выполняем обработку результата геокодера
 					parseAnswerGeoCoder(obj, idObj).then(result => {
+						
+						console.log("-----------1", result);
+
 						// Подключаем модель метро
 						const Models = require('../models/address');
 						// Создаем модель
@@ -479,6 +477,9 @@ const anyks = require("./lib.anyks");
 						// db.address.createIndex({"address.district": 1}, {name: "district"});
 						// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
 						// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
+						
+						console.log("-----------2", result);
+
 						// Выводим результат
 						resolve(result);
 					});
