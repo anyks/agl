@@ -380,12 +380,8 @@ const anyks = require("./lib.anyks");
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
-						
-						console.log("+++++", res);
-
-						/*
 						// Если возникает ошибка тогда выводим её
-						if($.isset(err)){
+						if($.isset(err) && !$.isset(res)){
 							// Выводим сообщение об ошибке
 							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
 							// Выводим результат
@@ -412,7 +408,6 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							resolve(res.result);
 						}
-						*/
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
