@@ -252,8 +252,7 @@ const anyks = require("./lib.anyks");
 							resolve(false);
 						// Если данные пришли
 						} else if($.isObject(res) && $.isArray(res.result)){
-							// Выводим результат
-							resolve(res.result);
+							
 
 
 							/**
@@ -272,6 +271,9 @@ const anyks = require("./lib.anyks");
 										" " +
 										arr[i].type
 									).then(res => {
+										
+										console.log("======", res);
+
 										// Если результат найден
 										if($.isset(res)){
 											// Выполняем сохранение данных
@@ -292,7 +294,8 @@ const anyks = require("./lib.anyks");
 							// Выполняем запрос на получение gps данных
 							getGPS(res.result);
 
-
+							// Выводим результат
+							resolve(res.result);
 						}
 					});
 				// Обрабатываем возникшую ошибку
