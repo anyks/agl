@@ -227,17 +227,7 @@ const anyks = require("./lib.anyks");
 								Object.assign(arr[i], parentIds);
 							}
 							// Сохраняем данные
-							(new schema(arr[i])).save((e1, e2) => {
-
-								
-								idObj.schemes.Districts.findOne({id: arr[i].id})
-								.populate('regionId')
-								.exec(function(err, data){
-									console.log("!!!!!!!!!!!!!!!!", err, data);
-								});
-								
-
-							});
+							(new schema(arr[i])).save();
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
