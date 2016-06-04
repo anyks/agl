@@ -185,6 +185,54 @@ const anyks = require("./lib.anyks");
 		});
 	};
 	/**
+	 * getGPSForAddress Функция получения gps координат для указанного адреса
+	 * @param  {Array}   arr     Массив с адресами для получения данных
+	 * @param  {String}  address префикс для адреса
+	 * @param  {Object}  idObj   идентификатор текущего объекта
+	 * @param  {Object}  schema  схема для сохранения
+	 * @return {Promise}         промис ответа
+	 */
+	const getGPSForAddress = (arr, address, idObj, schema) => {
+		// Создаем промис для обработки
+		return (new Promise(resolve => {
+			/**
+			 * getGPS Рекурсивная функция поиска gps координат для города
+			 * @param  {Array} arr массив объектов для обхода
+			 * @param  {Number} i  индекс массива
+			 */
+			const getGPS = (arr, i = 0) => {
+				// Если данные не все получены
+				if(i < arr.length){
+					// Выполняем запрос данных
+					idObj.getAddressFromString(
+						address +
+						" " +
+						arr[i].name +
+						" " +
+						arr[i].type
+					).then(res => {
+						// Если результат найден
+						if($.isset(res)){
+							// Выполняем сохранение данных
+							arr[i].lat = res.lat;
+							arr[i].lng = res.lng;
+							arr[i].gps = res.gps;
+							// Сохраняем данные
+							(new schema(arr[i])).save();
+						}
+						// Идем дальше
+						getGPS(arr, i + 1);
+					});
+				// Сообщаем что все сохранено удачно
+				} else resolve(true);
+				// Выходим
+				return;
+			};
+			// Выполняем запрос на получение gps данных
+			getGPS(arr);
+		});
+	};
+	/**
 	 * Класс Agl с базовыми методами
 	 */
 	class Agl {
@@ -278,51 +326,13 @@ const anyks = require("./lib.anyks");
 							resolve(false);
 						// Если данные пришли
 						} else if($.isObject(res) && $.isArray(res.result)){
-							
-
-
-							/**
-							 * getGPS Рекурсивная функция поиска gps координат для города
-							 * @param  {Array} arr массив объектов для обхода
-							 * @param  {Number} i  индекс массива
-							 */
-							const getGPS = (arr, i = 0) => {
-								// Если данные не все получены
-								if(i < arr.length){
-									// Выполняем запрос данных
-									idObj.getAddressFromString(
-										"Россия" +
-										" " +
-										arr[i].name +
-										" " +
-										arr[i].type
-									).then(res => {
-										// Если результат найден
-										if($.isset(res)){
-											// Выполняем сохранение данных
-											arr[i].lat = res.lat;
-											arr[i].lng = res.lng;
-											arr[i].gps = res.gps;
-											// Сохраняем данные
-											(new idObj.schemes.Regions(arr[i])).save();
-											// Создаем индексы
-											// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
-											// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
-											// db.address.createIndex({"address.zip": 1}, {name: "zip"});
-											// db.address.createIndex({"address.district": 1}, {name: "district"});
-											// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
-											// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
-										}
-										// Идем дальше
-										getGPS(arr, i + 1);
-									});
-								}
-								// Выходим
-								return;
-							};
-							// Выполняем запрос на получение gps данных
-							getGPS(res.result);
-
+							// Выполняем поиск GPS координат для текущего адреса
+							getGPSForAddress(res.result, "Россия", idObj, idObj.schemes.Regions)
+							.then(result => idObj.log([
+								"получение gps координат для адреса",
+								res.result,
+								result
+							], "info"));
 							// Выводим результат
 							resolve(res.result);
 						}
