@@ -32,7 +32,7 @@
 				description:	String,
 				address: {
 					zip: {
-						type:		String,
+						type:		Number,
 						optional:	true
 					},
 					city: {

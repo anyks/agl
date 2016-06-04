@@ -70,7 +70,6 @@ const anyks = require("./lib.anyks");
 						// Получаем основные данные
 						let lat			= $.fnShowProps(data, "lat");
 						let lng			= $.fnShowProps(data, "lon");
-						let zip			= $.fnShowProps(data, "postcode");
 						let city		= $.fnShowProps(data, "city");
 						let code		= $.fnShowProps(data, "country_code");
 						let street		= $.fnShowProps(data, "road");
@@ -79,6 +78,7 @@ const anyks = require("./lib.anyks");
 						let district	= $.fnShowProps(data, "state_district");
 						let boundingbox	= $.fnShowProps(data, "boundingbox");
 						let description	= $.fnShowProps(data, "display_name");
+						let zip			= parseInt($.fnShowProps(data, "postcode"), 10);
 						let gps			= [parseFloat(lng), parseFloat(lat)];
 						let id			= idObj.generateKey(
 							($.isset(country) ? country.toLowerCase() : "") +
@@ -148,7 +148,7 @@ const anyks = require("./lib.anyks");
 						// Переходим по всему массиву с компонентами адреса
 						data.address_components.forEach(obj => {
 							// Ищем почтовый индекс
-							if(obj.types.indexOf('postal_code') > -1) zip = obj.long_name;
+							if(obj.types.indexOf('postal_code') > -1) zip = parseInt(obj.long_name, 10);
 							// Ищем город
 							else if(obj.types.indexOf('locality') > -1) city = obj.long_name;
 							// Ищем код и название страны
@@ -195,18 +195,24 @@ const anyks = require("./lib.anyks");
 		static createModels(idObj){
 			// Подключаем модель адреса
 			const ModelAddress = require('../models/address');
+			// Подключаем модель регионов
+			const ModelRegions = require('../models/regions');
 			// Подключаем модель метро
 			const ModelMetro = require('../models/metro');
 			// Создаем модель адресов
 			const modelAddress = (new ModelAddress("address")).getData();
+			// Создаем модель регионов
+			const modelRegions = (new ModelMetro("regions")).getData();
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
 			// Создаем схему адресов
 			const Address = idObj.clients.mongo.model("Address", modelAddress);
+			// Создаем схему регионов
+			const Regions = idObj.clients.mongo.model("Regions", modelRegions);
 			// Создаем схему метро
 			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
 			// Сохраняем схемы
-			idObj.schemes = {Address, Metro};
+			idObj.schemes = {Address, Regions, Metro};
 		}
 		/**
 		 * constructor Конструктор класса
@@ -297,11 +303,20 @@ const anyks = require("./lib.anyks");
 											arr[i].lat = res.lat;
 											arr[i].lng = res.lng;
 											arr[i].gps = res.gps;
+											// Сохраняем данные
+											(new idObj.schemes.Regions(arr[i])).save();
+											// Создаем индексы
+											// db.address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+											// db.address.createIndex({lat: 1, lng: 1}, {name: "gps"});
+											// db.address.createIndex({"address.zip": 1}, {name: "zip"});
+											// db.address.createIndex({"address.district": 1}, {name: "district"});
+											// db.address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
+											// db.address.createIndex({gps: "2dsphere"}, {name: "locations"});
 										}
 										// Идем дальше
 										getGPS(arr, i + 1);
 									});
-								} else console.log("++++++1", arr);
+								}
 								// Выходим
 								return;
 							};
