@@ -335,7 +335,7 @@ const anyks = require("./lib.anyks");
 									// Формируем строку отчета
 									return ($.isString(sum) ? sum : sum.type + " " + sum.name)
 									+ ", " + val.type + " " + val.name;
-								});
+								})
 							], "info"));
 							// Выводим результат
 							resolve(res.result);
