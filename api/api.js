@@ -204,9 +204,6 @@ const anyks = require("./lib.anyks");
 			const getGPS = (arr, i = 0) => {
 				// Если данные не все получены
 				if(i < arr.length){
-					
-					console.log("++++++++", address + " " + arr[i].name + " " + arr[i].type);
-
 					// Выполняем запрос данных
 					idObj.getAddressFromString(
 						address +
@@ -231,7 +228,7 @@ const anyks = require("./lib.anyks");
 							console.log("--------", arr[i]);
 
 							// Сохраняем данные
-							(new schema(arr[i])).save();
+							(new schema(arr[i])).save(err => console.log(err));
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
