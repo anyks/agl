@@ -277,12 +277,15 @@ const anyks = require("./lib.anyks");
 											// Выполняем сохранение данных
 											arr[i].lat = res.lat;
 											arr[i].lng = res.lng;
-											arr[i].gps = ree.gps;
+											arr[i].gps = res.gps;
+
+											console.log("=======", arr[i]);
+
 											// Идем дальше
 											getGPS(arr, i + 1);
 										}
 									});
-								} else console.log("++++++", arr);
+								} else console.log("++++++1", arr);
 								// Выходим
 								return;
 							};
