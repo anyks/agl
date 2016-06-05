@@ -19,15 +19,7 @@
 		}
 		// Создаем новую схему для метро
 		getData(){
-			// Индексы
-			// metro.createIndex({name: 1}, {name: "city"});
-			// metro.createIndex({"lines.hex_color": 1}, {name: "color"});
-			// metro.createIndex({"lines.name": 1}, {name: "lines"});
-			// metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
-			// metro.createIndex({"lines.stations.order": 1}, {name: "order"});
-			// metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
-			// metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
-			// Выводим коллекцию Cian
+			// Выводим коллекцию
 			return new mongo.Schema({
 				"id":	String,
 				"name":	String,
