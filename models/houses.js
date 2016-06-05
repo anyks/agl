@@ -49,7 +49,12 @@
 				streetId: {
 					type:		String,
 					ref:		"Streets"
-				}
+				},
+				metro: [{
+					type:		String,
+					ref:		"Metro_stations",
+					optional:	true
+				}]
 			}, {collection: this.collection});
 		}
 	}

@@ -77,7 +77,7 @@ const anyks = require("./lib.anyks");
 						let boundingbox	= $.fnShowProps(data, "boundingbox");
 						let description	= $.fnShowProps(data, "display_name");
 						let zip			= parseInt($.fnShowProps(data, "postcode"), 10);
-						let gps			= [parseFloat(lng), parseFloat(lat)];
+						let gps			= [parseFloat(lat), parseFloat(lng)];
 						let _id			= idObj.generateKey(
 							($.isset(country) ? country.toLowerCase() : "") +
 							($.isset(region) ? region.toLowerCase() : "") +
@@ -113,7 +113,7 @@ const anyks = require("./lib.anyks");
 						let lowerCorner	= $.fnShowProps(data, "lowerCorner").split(" ");
 						let upperCorner = $.fnShowProps(data, "upperCorner").split(" ");
 						let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
-						let gps			= [parseFloat(lng), parseFloat(lat)];
+						let gps			= [parseFloat(lat), parseFloat(lng)];
 						let _id			= idObj.generateKey(
 							($.isset(country) ? country.toLowerCase() : "") +
 							($.isset(region) ? region.toLowerCase() : "") +
@@ -138,7 +138,7 @@ const anyks = require("./lib.anyks");
 						// Координаты запроса
 						let lat	= $.fnShowProps(data.geometry.location, "lat");
 						let lng	= $.fnShowProps(data.geometry.location, "lng");
-						let gps	= [parseFloat(lng), parseFloat(lat)];
+						let gps	= [parseFloat(lat), parseFloat(lng)];
 						// Описание адреса
 						let description = data.formatted_address;
 						// Переменные адреса
@@ -152,9 +152,9 @@ const anyks = require("./lib.anyks");
 							// Ищем код и название страны
 							else if(obj.types.indexOf('country') > -1){
 								// Получаем название страны
-								country	= obj.long_name;
+								country = obj.long_name;
 								// Получаем код страны
-								code	= obj.short_name.toLowerCase();
+								code = obj.short_name.toLowerCase();
 							// Ищем название улицы
 							} else if(obj.types.indexOf('route') > -1) street = obj.long_name;
 							// Ищем название региона
@@ -216,7 +216,6 @@ const anyks = require("./lib.anyks");
 							arr[i].lat 	= res.lat;
 							arr[i].lng 	= res.lng;
 							arr[i].gps 	= res.gps;
-							arr[i].id	= undefined;
 							// Если объект внешних ключей существует тогда добавляем их
 							if($.isArray(arr[i].parents)){
 								// Переходим по всему массиву данных
@@ -231,21 +230,26 @@ const anyks = require("./lib.anyks");
 									}
 								});
 							}
-
-							/*
-							switch(arr[i].contentType){
-								case 'street':
-								
-								break;
-								case 'building':
-
-								break;
-								default: 
-							}
-							*/
-
+							// Если это улица или дом то ищем ближайшие станции метро
+							if((arr[i].contentType === 'street')
+							|| (arr[i].contentType === 'building')){
+								// Выполняем поиск ближайших станций метро
+								idObj.searchMetroFromGPS(
+									parseFloat(arr[i].lat),
+									parseFloat(arr[i].lng)
+								).then(metro => {
+									// Если метро передано
+									if($.isArray(metro) && metro.length){
+										// Создаем пустой массив с метро
+										arr[i].metro = [];
+										// Переходим по всему массиву данных
+										metro.forEach(val => arr[i].metro.push(val._id));
+									}
+									// Сохраняем данные
+									(new schema(arr[i])).save();
+								});
 							// Сохраняем данные
-							(new schema(arr[i])).save();
+							} else (new schema(arr[i])).save();
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
@@ -733,6 +737,49 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * searchMetroFromGPS Метод поиска ближайшего метро по GPS координатам
+		 * @param  {Number} lat      широта
+		 * @param  {Number} lng      долгота
+		 * @param  {Number} distance дистанция поиска в метрах
+		 * @return {Promise}         промис содержащий найденные станции метро
+		 */
+		searchMetroFromGPS(lat, lng, distance = 3000){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Выполняем поиск ближайшего метро
+					idObj.schemes.Metro_stations.find({
+						'gps': {
+							$near: {
+								$geometry: {
+									type: 'Point',
+									// Широта и долгота поиска
+									coordinates: [lat, lng]
+								},
+								$maxDistance: distance
+							}
+						}
+					// Запрашиваем данные метро
+					}).exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isArray(data)){
+							// Выводим результат
+							resolve(data);
+						// Сообщаем что данные не найдены
+						} else {
+							// Выводим в консоль сообщение что данные метро не найдены
+							idObj.log(["станции метро по gps координатам не найдены:", "lat =", lat, "lng =", lng, err, data], "error");
+							// Выводим сообщение что ничего не найдено
+							resolve(false);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с поиском блжайших станций метро по GPS координатам", e], "error");}
+			}));
+		}
+		/**
 		 * updateRegions Метод обновления данных базы регионов
 		 */
 		updateRegions(){
@@ -956,35 +1003,6 @@ const anyks = require("./lib.anyks");
 				});
 			}));
 		}
-
-		test(){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Запрашиваем все данные метро
-			idObj.schemes.Metro_stations.find({
-				'gps': {
-					$near: {
-						$geometry: {
-							type: 'Point',
-							// Широта и долгота поиска
-							coordinates: [43.913199, 56.266497]
-						},
-						// Расстояние 3 Км.
-						$maxDistance: 3000
-					}
-				}
-			// Запрашиваем данные метро
-			}).exec((err, data) => {
-				// Если ошибки нет
-				if(!$.isset(err) && $.isArray(data)){
-					// Переходим по всем станциям метро
-					data.forEach(val => {
-						console.log("Станция метро:", val);
-					});
-				}
-			});
-		}
-
 		/**
 		 * updateMetro Метод обновления данных базы метро
 		 */
@@ -1022,7 +1040,7 @@ const anyks = require("./lib.anyks");
 							// Переходим по всем станциям метро
 							line.stations.forEach(station => {
 								// Формируемновый ключ gps;
-								station.gps = [station.lng, station.lat];
+								station.gps = [station.lat, station.lng];
 								// Выводим результат
 								return station;
 							});
@@ -1064,7 +1082,7 @@ const anyks = require("./lib.anyks");
 											station.cityId	= arr[i]._id;
 											station.lineId	= line._id;
 											// Формируемновый ключ gps;
-											station.gps = [station.lng, station.lat];
+											station.gps = [station.lat, station.lng];
 											// Формируем массив станций для линии
 											line.stationsIds.push(station._id);
 											// Сохраняем станцию метро
