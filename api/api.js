@@ -967,7 +967,7 @@ const anyks = require("./lib.anyks");
 						$geometry: {
 							type: 'Point',
 							// Широта и долгота поиска
-							coordinates: [55.61873, 37.505912]
+							coordinates: [56.266497, 43.913199]
 						},
 						// Расстояние 3 Км.
 						$maxDistance: 3000
