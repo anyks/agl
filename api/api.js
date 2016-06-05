@@ -649,7 +649,6 @@ const anyks = require("./lib.anyks");
 				};
 				/**
 				 * *getData Генератор для получения данных с геокодеров
-				 * @return {Boolean} результат запроса из базы
 				 */
 				const getData = function * (){
 					// Выполняем запрос с геокодера Yandex
@@ -710,7 +709,6 @@ const anyks = require("./lib.anyks");
 				};
 				/**
 				 * *getData Генератор для получения данных с геокодеров
-				 * @return {Boolean} результат запроса из базы
 				 */
 				const getData = function * (){
 					// Выполняем запрос с геокодера Yandex
@@ -827,6 +825,80 @@ const anyks = require("./lib.anyks");
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с поиском блжайших станций метро по GPS координатам", e], "error");}
+			}));
+		}
+		/**
+		 * updateTimeZones Метод обновления временных зон у тех элементов адресов у которых ранее временная зона была не найдена
+		 * @return {Promise} промис содержащий результат обновления временных зон
+		 */
+		updateTimeZones(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * getTimezone Функция запроса временной зоны
+				 * @param  {Object} scheme схема базы данных
+				 * @return {Promise}       промис содержащий результат ответа
+				 */
+				const getTimezone = scheme => {
+					// Создаем промис для обработки
+					return (new Promise(resolve => {
+						// Запрашиваем все данные городов
+						scheme.find({timezone: null})
+						// Запрашиваем данные регионов
+						.exec((err, data) => {
+							// Если ошибки нет
+							if(!$.isset(err) && $.isArray(data) && data.length){
+								/**
+								 * getData Рекурсивная функция перехода по массиву
+								 * @param  {Number} i индекс текущего значения массива
+								 */
+								const getData = (i = 0) => {
+									// Если не все данные пришли тогда продолжаем загружать
+									if(i < data.length){
+										// Получаем данные временной зоны
+										idObj.getTimezone(data[i].lat, data[i].lng).then(timezone => {
+											// Если временная зона пришла
+											if(timezone){
+												// Сохраняем временную зону
+												data[i].timezone = timezone;
+												// Сохраняем временную зону
+												(new scheme(data[i])).save(() => getData(i + 1));
+											// Просто продолжаем дальше
+											} else getData(i + 1);
+										});
+									// Если все загружено тогда сообщаем об этом
+									} else resolve(true);
+								};
+								// Запускаем запрос данных
+								getData();
+							// Сообщаем что такие данные не найдены
+							} else resolve(false);
+						});
+					}));
+				};
+				/**
+				 * *getData Генератор для получения данных временной зоны
+				 */
+				const getData = function * (){
+					// Выполняем запрос временной зоны для регионов
+					const regions = yield getTimezone(idObj.schemes.Regions);
+					// Выполняем запрос временной зоны для районов
+					const districts = yield getTimezone(idObj.schemes.Districts);
+					// Выполняем запрос временной зоны для городов
+					const cities = yield getTimezone(idObj.schemes.Cities);
+					// Выполняем запрос временной зоны для улиц
+					const streets = yield getTimezone(idObj.schemes.Streets);
+					// Выполняем запрос временной зоны для домов
+					const houses = yield getTimezone(idObj.schemes.Houses);
+					// Выводим в консоль что все данные временной зоны обновлены
+					idObj.log("все временные зоны обновлены удачно!", "info");
+					// Сообщаем что все выполнено
+					resolve(true);
+				};
+				// Запускаем коннект
+				exec(getData());
 			}));
 		}
 		/**
@@ -1199,7 +1271,6 @@ const anyks = require("./lib.anyks");
 				try {
 					/**
 					 * *updateDB Генератор для получения обновления данных
-					 * @return {Boolean} результат запроса из базы
 					 */
 					const updateDB = function * (){
 						// Выполняем обновление базы данных регионов
