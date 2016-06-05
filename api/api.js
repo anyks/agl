@@ -901,7 +901,7 @@ const anyks = require("./lib.anyks");
 									// Если данные не все загружены то загружаем дальше
 									if(j < citiesChar.length){
 										// Выполняем поиск городов
-										idObj.searchCity(citiesChar[j], null, data[i]._id, 100).then(result => {
+										idObj.searchCity(citiesChar[j], data[i]._id, null, 100).then(result => {
 											// Если это массив
 											if($.isArray(result)){
 												// Переходим по всему массиву
