@@ -28,12 +28,12 @@
 				"order":	Number,
 				"gps":		[Number, Number],
 				"cityId": {
-					type:	String,
-					ref:	"Metro_cities"
+					"type":	String,
+					"ref":	"Metro_cities"
 				},
 				"lineId": {
-					type:	String,
-					ref:	"Metro_lines"
+					"type":	String,
+					"ref":	"Metro_lines"
 				}
 			}, {collection: this.collection});
 		}

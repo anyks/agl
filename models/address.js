@@ -21,44 +21,44 @@
 		getData(){
 			// Выводим коллекцию
 			return new mongo.Schema({
-				_id:			String,
-				lat:			String,
-				lng:			String,
-				gps:			[Number],
-				boundingbox: {
-					type:		[String],
-					optional:	true
-				},
-				description:	String,
-				address: {
-					zip: {
-						type:		Number,
-						optional:	true
+				"_id":			String,
+				"lat":			String,
+				"lng":			String,
+				"gps":			[Number],
+				"boundingbox": [{
+					"type":		String,
+					"optional":	true
+				}],
+				"description":	String,
+				"address": {
+					"zip": {
+						"type":		Number,
+						"optional":	true
 					},
-					city: {
-						type:		String,
-						optional:	true
+					"city": {
+						"type":		String,
+						"optional":	true
 					},
-					code: {
-						type:		String,
-						optional:	false
+					"code": {
+						"type":		String,
+						"optional":	false
 					},
-					street: {
-						type:		String,
-						optional:	true
+					"street": {
+						"type":		String,
+						"optional":	true
 					},
-					region: {
-						type:		String,
-						optional:	true
+					"region": {
+						"type":		String,
+						"optional":	true
 					},
-					country: {
-						type:		String,
-						optional:	false
+					"country": {
+						"type":		String,
+						"optional":	false
 					},
-					district: {
-						type:		String,
-						optional:	true
-					},
+					"district": {
+						"type":		String,
+						"optional":	true
+					}
 				}
 			}, {collection: this.collection});
 		}

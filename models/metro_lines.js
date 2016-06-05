@@ -25,12 +25,12 @@
 				"name":		String,
 				"color":	String,
 				"cityId": {
-					type:	String,
-					ref:	"Metro_cities"
+					"type":	String,
+					"ref":	"Metro_cities"
 				},
 				"stationsIds": [{
-					type:	String,
-					ref:	"Metro_stations"
+					"type":	String,
+					"ref":	"Metro_stations"
 				}]
 			}, {collection: this.collection});
 		}

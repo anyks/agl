@@ -24,8 +24,8 @@
 				"_id":	String,
 				"name":	String,
 				"linesIds": [{
-					type:	String,
-					ref:	"Metro_lines"
+					"type":	String,
+					"ref":	"Metro_lines"
 				}]
 			}, {collection: this.collection});
 		}

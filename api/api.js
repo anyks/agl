@@ -216,40 +216,45 @@ const anyks = require("./lib.anyks");
 							arr[i].lat 	= res.lat;
 							arr[i].lng 	= res.lng;
 							arr[i].gps 	= res.gps;
-							// Если объект внешних ключей существует тогда добавляем их
-							if($.isArray(arr[i].parents)){
-								// Переходим по всему массиву данных
-								arr[i].parents.forEach(val => {
-									// Определяем тип контента
-									switch(val.contentType){
-										// Формируем внешние ключи
-										case 'region':		arr[i].regionId		= val.id;	break;
-										case 'district':	arr[i].districtId	= val.id;	break;
-										case 'city':		arr[i].cityId		= val.id;	break;
-										case 'street':		arr[i].streetId		= val.id;	break;
-									}
-								});
-							}
-							// Если это улица или дом то ищем ближайшие станции метро
-							if((arr[i].contentType === 'street')
-							|| (arr[i].contentType === 'building')){
-								// Выполняем поиск ближайших станций метро
-								idObj.searchMetroFromGPS(
-									parseFloat(arr[i].lat),
-									parseFloat(arr[i].lng)
-								).then(metro => {
-									// Если метро передано
-									if($.isArray(metro) && metro.length){
-										// Создаем пустой массив с метро
-										arr[i].metro = [];
-										// Переходим по всему массиву данных
-										metro.forEach(val => arr[i].metro.push(val._id));
-									}
-									// Сохраняем данные
-									(new schema(arr[i])).save();
-								});
-							// Сохраняем данные
-							} else (new schema(arr[i])).save();
+							// Выполняем поиск временную зону
+							idObj.getTimezone(arr[i].lat, arr[i].lng).then(timezone => {
+								// Если временная зона найдена
+								if(timezone) arr[i].timezone = timezone;
+								// Если объект внешних ключей существует тогда добавляем их
+								if($.isArray(arr[i].parents)){
+									// Переходим по всему массиву данных
+									arr[i].parents.forEach(val => {
+										// Определяем тип контента
+										switch(val.contentType){
+											// Формируем внешние ключи
+											case 'region':		arr[i].regionId		= val.id;	break;
+											case 'district':	arr[i].districtId	= val.id;	break;
+											case 'city':		arr[i].cityId		= val.id;	break;
+											case 'street':		arr[i].streetId		= val.id;	break;
+										}
+									});
+								}
+								// Если это улица или дом то ищем ближайшие станции метро
+								if((arr[i].contentType === 'street')
+								|| (arr[i].contentType === 'building')){
+									// Выполняем поиск ближайших станций метро
+									idObj.searchMetroFromGPS(
+										parseFloat(arr[i].lat),
+										parseFloat(arr[i].lng)
+									).then(metro => {
+										// Если метро передано
+										if($.isArray(metro) && metro.length){
+											// Создаем пустой массив с метро
+											arr[i].metro = [];
+											// Переходим по всему массиву данных
+											metro.forEach(val => arr[i].metro.push(val._id));
+										}
+										// Сохраняем данные
+										(new schema(arr[i])).save();
+									});
+								// Сохраняем данные
+								} else (new schema(arr[i])).save();
+							});
 						}
 						// Идем дальше
 						getGPS(arr, i + 1);
@@ -734,6 +739,47 @@ const anyks = require("./lib.anyks");
 				};
 				// Запускаем коннект
 				exec(getData());
+			}));
+		}
+		/**
+		 * getTimezone Метод получения данных временной зоны по GPS координатам
+		 * @param  {Number} lat широта
+		 * @param  {Number} lng долгота
+		 * @return {Promise}    промис содержащий данные временной зоны
+		 */
+		getTimezone(lat, lng){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Подключаем модуль закачки данных
+					const fetch = require('node-fetch');
+					// Создаем штамп времени
+					const timestamp = Math.round((new Date()).valueOf() / 1000);
+					// Адрес запроса
+					const url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$lng&language=ru&timestamp=$tm";
+					/**
+					 * getData Функция обработки полученных данных временной зоны
+					 * @param  {Object} json объект данных временной зоны
+					 */
+					const getData = json => {
+						// Если ответ пришел
+						if(json.status === "OK") resolve(json);
+						// Сообщаем что ничего не найдено
+						else resolve(false);
+					};
+					// Выполняем запрос данных
+					fetch(url
+						.replace("$lat", lat)
+						.replace("$lng", lng)
+						.replace("$tm", timestamp)
+					// Преобразуем полученный объект
+					).then(res => res.json(), e => idObj.log(["get timezone", e], "error"))
+					// Обрабатываем полученные данные
+					.then(getData, e => idObj.log(["parse timezone", e], "error"));
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с поиском временной зоны", e], "error");}
 			}));
 		}
 		/**
