@@ -190,10 +190,9 @@ const anyks = require("./lib.anyks");
 	 * @param  {String}  address   префикс для адреса
 	 * @param  {Object}  idObj     идентификатор текущего объекта
 	 * @param  {Object}  schema    схема для сохранения
-	 * @param  {Object}  parentIds объект с внешними идентификаторами
 	 * @return {Promise}           промис ответа
 	 */
-	const getGPSForAddress = (arr, address, idObj, schema, parentIds = null) => {
+	const getGPSForAddress = (arr, address, idObj, schema) => {
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
 			/**
@@ -220,11 +219,21 @@ const anyks = require("./lib.anyks");
 							arr[i].lng 		= res.lng;
 							arr[i].gps 		= res.gps;
 							arr[i].id		= undefined;
-							arr[i].parents	= undefined;
 							// Если объект внешних ключей существует тогда добавляем их
-							if($.isset(parentIds) && $.isObject(parentIds)){
-								// Копируем внешние ключи
-								Object.assign(arr[i], parentIds);
+							if($.isArray(arr[i].parents)){
+								// Переходим по всему массиву данных
+								arr[i].parents.forEach(val => {
+									// Определяем тип контента
+									switch(val.contentType){
+										// Формируем внешние ключи
+										case 'region':		arr[i].regionId = val.id;	break;
+										case 'district':	arr[i].districtId = val.id;	break;
+										case 'city':		arr[i].cityId = val.id;		break;
+										case 'street':		arr[i].streetId = val.id;	break;
+									}
+								});
+								// Удаляем родительский элемент
+								arr[i].parents = undefined;
 							}
 							// Сохраняем данные
 							(new schema(arr[i])).save();
@@ -256,6 +265,8 @@ const anyks = require("./lib.anyks");
 			const ModelRegions = require('../models/regions');
 			// Подключаем модель района
 			const ModelDistricts = require('../models/districts');
+			// Подключаем модель городов
+			const ModelCities = require('../models/cities');
 			// Подключаем модель метро
 			const ModelMetro = require('../models/metro');
 			// Создаем модель адресов
@@ -264,6 +275,8 @@ const anyks = require("./lib.anyks");
 			const modelRegions = (new ModelRegions("regions")).getData();
 			// Создаем модель районов
 			const modelDistricts = (new ModelDistricts("districts")).getData();
+			// Создаем модель городов
+			const modelCities = (new ModelCities("cities")).getData();
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
 			// Создаем схему адресов
@@ -272,10 +285,12 @@ const anyks = require("./lib.anyks");
 			const Regions = idObj.clients.mongo.model("Regions", modelRegions);
 			// Создаем схему районов
 			const Districts = idObj.clients.mongo.model("Districts", modelDistricts);
+			// Создаем схему городов
+			const Cities = idObj.clients.mongo.model("Cities", modelCities);
 			// Создаем схему метро
 			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
 			// Сохраняем схемы
-			idObj.schemes = {Address, Regions, Districts, Metro};
+			idObj.schemes = {Address, Regions, Districts, Cities, Metro};
 		}
 		/**
 		 * constructor Конструктор класса
@@ -363,10 +378,10 @@ const anyks = require("./lib.anyks");
 		/**
 		 * searchDistrict Метод поиска района
 		 * @param  {String} str      строка запроса
-		 * @param  {String} parentId идентификатор родителя
+		 * @param  {String} regionId идентификатор региона
 		 * @return {Promise}         промис результата
 		 */
-		searchDistrict(str, parentId){
+		searchDistrict(str, regionId){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -379,7 +394,7 @@ const anyks = require("./lib.anyks");
 						ContentName:	str,
 						ContentType:	'district',
 						ParentType:		'region',
-						ParentId:		parentId,
+						ParentId:		regionId,
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
@@ -399,7 +414,7 @@ const anyks = require("./lib.anyks");
 								+ ", " + val.name + " " + val.type;
 							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
 							// Выполняем поиск GPS координат для текущего адреса
-							getGPSForAddress(res.result, address, idObj, idObj.schemes.Districts, {regionId: parentId})
+							getGPSForAddress(res.result, address, idObj, idObj.schemes.Districts)
 							.then(result => idObj.log([
 								"получение gps координат для адреса:",
 								(res.result.length > 1 ? res.result.reduce((sum, val) => {
@@ -419,18 +434,60 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchCity Метод поиска города
-		 * @param  {String} str      строка запроса
-		 * @param  {String} parentId идентификатор родителя
-		 * @return {Promise}         промис результата
+		 * @param  {String} str        строка запроса
+		 * @param  {String} regionId   идентификатор региона
+		 * @param  {String} districtId идентификатор района
+		 * @return {Promise}           промис результата
 		 */
-		searchCity(str, parentId){
+		searchCity(str, regionId, districtId = null){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Подключаем модуль кладра
-				const kladr = require("kladrapi").ApiQuery;
-
+				try {
+					// Подключаем модуль кладра
+					const kladr = require("kladrapi").ApiQuery;
+					// Выполняем поиск в кладре
+					kladr(idObj.keyKladr, 'foontick', {
+						ContentName:	str,
+						ContentType:	'city',
+						ParentType:		($.isset(districtId) ? 'district' : 'region'),
+						ParentId:		($.isset(districtId) ? districtId : regionId),
+						WithParent:		1,
+						Limit:			10
+					}, (err, res) => {
+						// Если возникает ошибка тогда выводим её
+						if($.isset(err) && !$.isset(res)){
+							// Выводим сообщение об ошибке
+							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
+							// Выводим результат
+							resolve(false);
+						// Если данные пришли
+						} else if($.isObject(res) && $.isArray(res.result)){
+							// Формируем первоначальную строку адреса
+							let address = "Россия" + ", "
+							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
+								// Формируем строку отчета
+								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+								+ ", " + val.name + " " + val.type;
+							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
+							// Выполняем поиск GPS координат для текущего адреса
+							getGPSForAddress(res.result, address, idObj, idObj.schemes.Cities)
+							.then(result => idObj.log([
+								"получение gps координат для адреса:",
+								(res.result.length > 1 ? res.result.reduce((sum, val) => {
+									// Формируем строку отчета
+									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
+									+ ", " + val.name + " " + val.typeShort + ".";
+								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
+								(result ? "Ok" : "Not ok")
+							], "info"));
+							// Выводим результат
+							resolve(res.result);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
 			}));
 		}
 		/**
@@ -712,7 +769,14 @@ const anyks = require("./lib.anyks");
 						resolve(idObj.clients.mongo);
 					}
 					// Подключаемся к сокету: http://mongoosejs.com/docs/connections.html
-					idObj.clients.mongo.connect("mongodb://" + config.host + ":" + config.port + "/" + config.db, config.options);
+					idObj.clients.mongo.connect(
+						"mongodb://" +
+						config.host +
+						":" +
+						config.port +
+						"/" + config.db,
+						config.options
+					);
 					// Обработчик подключения к базе данных
 					idObj.clients.mongo.connection.once('open', connection);
 					// Обработчик ошибки
@@ -754,7 +818,8 @@ const anyks = require("./lib.anyks");
 					/**
 					 * selectDB Функция выбора базы данных
 					 */
-					const selectDB = () => idObj.clients.redis.select(config.db, () => resolve(idObj.clients.redis));
+					const selectDB = () => idObj.clients.redis
+					.select(config.db, () => resolve(idObj.clients.redis));
 					// Если у сервера есть авторизация
 					if($.isset(config.password)){
 						// Выполняем авторизацию
@@ -786,13 +851,12 @@ const anyks = require("./lib.anyks");
 			// Определяем тип логов
 			switch(type){
 				// Если это вывод ошибок
-				case "error":
-					if(this.debug.errors) console.error(
-						"Error",
-						(new Date()).toLocaleString(),
-						this.name + ":",
-						($.isArray(message) ? message.join(" ") : message)
-					);
+				case "error": if(this.debug.errors) console.error(
+					"Error",
+					(new Date()).toLocaleString(),
+					this.name + ":",
+					($.isArray(message) ? message.join(" ") : message)
+				);
 				break;
 				// Если это информационные сообщения
 				case "info": if(this.debug.message) console.info(
