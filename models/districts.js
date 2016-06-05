@@ -39,11 +39,13 @@
 					ref:	'Regions'
 				},
 				timezone: {
-					dstOffset:		Number,
-					rawOffset:		Number,
-					timeZoneId:		String,
-					timeZoneName:	String,
-					optional:		true
+					type: {
+						dstOffset:		Number,
+						rawOffset:		Number,
+						timeZoneId:		String,
+						timeZoneName:	String
+					},
+					optional: true
 				}
 			}, {collection: this.collection});
 		}
