@@ -267,7 +267,8 @@ const anyks = require("./lib.anyks");
 		} else if($.isObject(res) && $.isArray(res.result)){
 			// Формируем первоначальную строку адреса
 			let address = "Россия" + ", "
-			+ ($.isArray(res.result[0].parents) ? (res.result[0].parents.length > 1 ?
+			+ ($.isArray(res.result[0].parents)
+			&& res.result[0].parents.length ? (res.result[0].parents.length > 1 ?
 			res.result[0].parents.reduce((sum, val) => {
 				// Формируем строку отчета
 				return ($.isString(sum) ? sum : sum.name + " " + sum.type)
@@ -277,11 +278,11 @@ const anyks = require("./lib.anyks");
 			getGPSForAddress(res.result, address, idObj, schema)
 			.then(result => idObj.log([
 				"получение gps координат для адреса:",
-				(res.result.length > 1 ? res.result.reduce((sum, val) => {
+				(res.result.length ? (res.result.length > 1 ? res.result.reduce((sum, val) => {
 					// Формируем строку отчета
 					return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
 					+ ", " + val.name + " " + val.typeShort + ".";
-				}) : res.result[0].name + " " + res.result[0].typeShort + "."),
+				}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
 				(result ? "Ok" : "Not ok")
 			], "info"));
 			// Выводим результат
@@ -514,11 +515,8 @@ const anyks = require("./lib.anyks");
 						ContentType,
 						ContentName
 					}, (err, res) => {
-						
-						console.log("++++++", res);
-
 						// Выполняем обработку данных
-						// processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
+						processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -752,7 +750,7 @@ const anyks = require("./lib.anyks");
 						// Выполняем загрузку данных
 						idObj.searchRegion(regionsChar[i], 100).then(result => {
 							// Если это массив
-							if($.isArray(result)){
+							if($.isArray(result) && result.length){
 								// Переходим по всему массиву
 								const str = (result.length > 1 ? result.reduce((sum, val) => {
 									// Формируем строку отчета
@@ -824,7 +822,7 @@ const anyks = require("./lib.anyks");
 										// Выполняем поиск района
 										idObj.searchDistrict(districsChar[j], data[i]._id, 100).then(result => {
 											// Если это массив
-											if($.isArray(result)){
+											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
 												const str = (result.length > 1 ? result.reduce((sum, val) => {
 													// Формируем строку отчета
@@ -906,7 +904,7 @@ const anyks = require("./lib.anyks");
 										// Выполняем поиск городов
 										idObj.searchCity(citiesChar[j], data[i]._id, null, 100).then(result => {
 											// Если это массив
-											if($.isArray(result)){
+											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
 												const str = (result.length > 1 ? result.reduce((sum, val) => {
 													// Формируем строку отчета
