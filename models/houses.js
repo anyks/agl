@@ -43,6 +43,22 @@
 				zip: {
 					type:		Number,
 					optional:	true
+				},
+				regionId: {
+					type:		String,
+					ref:		"Regions"
+				},
+				districtId: {
+					type:		String,
+					ref:		"Districts"
+				},
+				cityId: {
+					type:		String,
+					ref:		"Cities"
+				},
+				streetId: {
+					type:		String,
+					ref:		"Streets"
 				}
 			}, {collection: this.collection});
 		}

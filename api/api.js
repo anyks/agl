@@ -269,6 +269,8 @@ const anyks = require("./lib.anyks");
 			const ModelCities = require('../models/cities');
 			// Подключаем модель улиц
 			const ModelStreets = require('../models/streets');
+			// Подключаем модель домов
+			const ModelHouses = require('../models/houses');
 			// Подключаем модель метро
 			const ModelMetro = require('../models/metro');
 			// Создаем модель адресов
@@ -281,6 +283,8 @@ const anyks = require("./lib.anyks");
 			const modelCities = (new ModelCities("cities")).getData();
 			// Создаем модель улиц
 			const modelStreets = (new ModelStreets("streets")).getData();
+			// Подключаем модель домов
+			const modelHouses = (new ModelHouses("houses")).getData();
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
 			// Создаем схему адресов
@@ -293,10 +297,12 @@ const anyks = require("./lib.anyks");
 			const Cities = idObj.clients.mongo.model("Cities", modelCities);
 			// Создаем схему улиц
 			const Streets = idObj.clients.mongo.model("Streets", modelStreets);
+			// Создаем схему домов
+			const Houses = idObj.clients.mongo.model("Houses", modelHouses);
 			// Создаем схему метро
 			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
 			// Сохраняем схемы
-			idObj.schemes = {Address, Regions, Districts, Cities, Streets, Metro};
+			idObj.schemes = {Address, Regions, Districts, Cities, Streets, Houses, Metro};
 		}
 		/**
 		 * constructor Конструктор класса
@@ -556,17 +562,58 @@ const anyks = require("./lib.anyks");
 		/**
 		 * searchHouse Метод поиска дома
 		 * @param  {String} str      строка запроса
-		 * @param  {String} parentId идентификатор родителя
+		 * @param  {String} streetId идентификатор улицы
 		 * @return {Promise}         промис результата
 		 */
-		searchHouse(str, parentId){
+		searchHouse(str, streetId){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Подключаем модуль кладра
-				const kladr = require("kladrapi").ApiQuery;
-
+				try {
+					// Подключаем модуль кладра
+					const kladr = require("kladrapi").ApiQuery;
+					// Выполняем поиск в кладре
+					kladr(idObj.keyKladr, 'foontick', {
+						ContentName:	str,
+						ContentType:	'building',
+						ParentType:		'street',
+						ParentId:		streetId,
+						WithParent:		1,
+						Limit:			10
+					}, (err, res) => {
+						// Если возникает ошибка тогда выводим её
+						if($.isset(err) && !$.isset(res)){
+							// Выводим сообщение об ошибке
+							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
+							// Выводим результат
+							resolve(false);
+						// Если данные пришли
+						} else if($.isObject(res) && $.isArray(res.result)){
+							// Формируем первоначальную строку адреса
+							let address = "Россия" + ", "
+							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
+								// Формируем строку отчета
+								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+								+ ", " + val.name + " " + val.type;
+							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
+							// Выполняем поиск GPS координат для текущего адреса
+							getGPSForAddress(res.result, address, idObj, idObj.schemes.Houses)
+							.then(result => idObj.log([
+								"получение gps координат для адреса:",
+								(res.result.length > 1 ? res.result.reduce((sum, val) => {
+									// Формируем строку отчета
+									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
+									+ ", " + val.name + " " + val.typeShort + ".";
+								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
+								(result ? "Ok" : "Not ok")
+							], "info"));
+							// Выводим результат
+							resolve(res.result);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
 			}));
 		}
 		/**

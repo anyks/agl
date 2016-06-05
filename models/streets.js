@@ -54,7 +54,7 @@
 				},
 				cityId: {
 					type:		String,
-					ref:		"Streets"
+					ref:		"Cities"
 				}
 			}, {collection: this.collection});
 		}
