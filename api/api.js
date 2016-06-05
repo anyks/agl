@@ -751,6 +751,8 @@ const anyks = require("./lib.anyks");
 							station.id		= undefined;
 							station.cityId	= obj._id;
 							station.lineId	= line._id;
+							// Формируемновый ключ gps;
+							station.gps = [station.lng, station.lat];
 							// Формируем массив станций для линии
 							line.stationsIds.push(station._id);
 							// Сохраняем станцию метро
