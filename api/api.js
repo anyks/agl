@@ -1095,6 +1095,11 @@ const anyks = require("./lib.anyks");
 					const updateDB = function * (){
 						// Выполняем обновление базы данных регионов
 						const regions = yield idObj.updateRegions();
+
+						console.log("------", regions);
+
+						return;
+
 						// Выполняем обновление базы районов
 						const districts = (regions ? yield idObj.updateDistricts() : false);
 						// Выполняем обновление базы городов
