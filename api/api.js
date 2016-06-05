@@ -742,7 +742,7 @@ const anyks = require("./lib.anyks");
 				// Если данные не все загружены то загружаем дальше
 				if(i < regionsChar.length){
 					// Выполняем загрузку данных
-					idObj.searchRegion(regionsChar[i], 1000).then(result => {
+					idObj.searchRegion(regionsChar[i], 100).then(result => {
 						// Если это массив
 						if($.isArray(result)){
 							
