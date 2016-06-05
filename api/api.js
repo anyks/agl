@@ -212,11 +212,11 @@ const anyks = require("./lib.anyks");
 						// Если результат найден
 						if($.isset(res)){
 							// Выполняем сохранение данных
-							arr[i]._id		= arr[i].id;
-							arr[i].lat 		= res.lat;
-							arr[i].lng 		= res.lng;
-							arr[i].gps 		= res.gps;
-							arr[i].id		= undefined;
+							arr[i]._id	= arr[i].id;
+							arr[i].lat 	= res.lat;
+							arr[i].lng 	= res.lng;
+							arr[i].gps 	= res.gps;
+							arr[i].id	= undefined;
 							// Если объект внешних ключей существует тогда добавляем их
 							if($.isArray(arr[i].parents)){
 								// Переходим по всему массиву данных
@@ -224,15 +224,26 @@ const anyks = require("./lib.anyks");
 									// Определяем тип контента
 									switch(val.contentType){
 										// Формируем внешние ключи
-										case 'region':		arr[i].regionId = val.id;	break;
-										case 'district':	arr[i].districtId = val.id;	break;
-										case 'city':		arr[i].cityId = val.id;		break;
-										case 'street':		arr[i].streetId = val.id;	break;
+										case 'region':		arr[i].regionId		= val.id;	break;
+										case 'district':	arr[i].districtId	= val.id;	break;
+										case 'city':		arr[i].cityId		= val.id;	break;
+										case 'street':		arr[i].streetId		= val.id;	break;
 									}
 								});
-								// Удаляем родительский элемент
-								arr[i].parents = undefined;
 							}
+
+							/*
+							switch(arr[i].contentType){
+								case 'street':
+								
+								break;
+								case 'building':
+
+								break;
+								default: 
+							}
+							*/
+
 							// Сохраняем данные
 							(new schema(arr[i])).save();
 						}
@@ -949,9 +960,28 @@ const anyks = require("./lib.anyks");
 		test(){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
-			// Выполняем поиск городов
-			idObj.searchCity("С", "4700000000000", null, 100).then(result => {
-				console.log("++++++++++", result);
+			// Запрашиваем все данные метро
+			idObj.schemes.Metro_stations.find({
+				'gps': {
+					$near: {
+						$geometry: {
+							type: 'Point',
+							// Широта и долгота поиска
+							coordinates: [55.61873, 37.505912]
+						},
+						// Расстояние 3 Км.
+						$maxDistance: 3000
+					}
+				}
+			// Запрашиваем данные метро
+			}).exec((err, data) => {
+				// Если ошибки нет
+				if(!$.isset(err) && $.isArray(data)){
+					// Переходим по всем станциям метро
+					data.forEach(val => {
+						console.log("Станция метро:", val);
+					});
+				}
 			});
 		}
 
@@ -1010,7 +1040,7 @@ const anyks = require("./lib.anyks");
 						// Если города не все загружены
 						if(i < arr.length){
 							// Запрашиваем все данные городов
-							idObj.schemes.Cities.findOne({name: arr[i].name})
+							idObj.schemes.Cities.findOne({name: arr[i].name, typeShort: "г"})
 							// Запрашиваем данные регионов
 							.exec((err, data) => {
 								// Если ошибки нет
