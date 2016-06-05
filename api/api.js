@@ -407,10 +407,11 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchRegion Метод поиска региона
-		 * @param  {String} str строка запроса
-		 * @return {Promise}    промис результата
+		 * @param  {String} str   строка запроса
+		 * @param  {Number} limit количество результатов к выдаче
+		 * @return {Promise}      промис результата
 		 */
-		searchRegion(str){
+		searchRegion(str, limit = 10){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -418,12 +419,17 @@ const anyks = require("./lib.anyks");
 				try {
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
+					// Создаем переменные
+					const ContentName	= str;
+					const ContentType	= 'region';
+					const WithParent	= 0;
+					const Limit			= limit;
 					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
-						ContentName:	str,
-						ContentType:	'region',
-						WithParent:		0,
-						Limit:			10
+						Limit,
+						WithParent,
+						ContentName,
+						ContentType
 					}, (err, res) => {
 						// Выполняем обработку данных
 						processResultKladr(err, res, idObj.schemes.Regions, idObj, resolve);
@@ -436,9 +442,10 @@ const anyks = require("./lib.anyks");
 		 * searchDistrict Метод поиска района
 		 * @param  {String} str      строка запроса
 		 * @param  {String} regionId идентификатор региона
+		 * @param  {Number} limit    количество результатов к выдаче
 		 * @return {Promise}         промис результата
 		 */
-		searchDistrict(str, regionId){
+		searchDistrict(str, regionId, limit = 10){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -446,14 +453,21 @@ const anyks = require("./lib.anyks");
 				try {
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
+					// Создаем переменные
+					const ContentName	= str;
+					const ContentType	= 'district';
+					const ParentType	= ($.isset(regionId) ? 'region' : undefined);
+					const ParentId		= regionId;
+					const WithParent	= 1;
+					const Limit			= limit;
 					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
-						ContentName:	str,
-						ContentType:	'district',
-						ParentType:		'region',
-						ParentId:		regionId,
-						WithParent:		1,
-						Limit:			10
+						Limit,
+						ParentId,
+						ParentType,
+						WithParent,
+						ContentName,
+						ContentType
 					}, (err, res) => {
 						// Выполняем обработку данных
 						processResultKladr(err, res, idObj.schemes.Districts, idObj, resolve);
@@ -467,9 +481,10 @@ const anyks = require("./lib.anyks");
 		 * @param  {String} str        строка запроса
 		 * @param  {String} regionId   идентификатор региона
 		 * @param  {String} districtId идентификатор района
+		 * @param  {Number} limit      количество результатов к выдаче
 		 * @return {Promise}           промис результата
 		 */
-		searchCity(str, regionId, districtId = null){
+		searchCity(str, regionId, districtId = null, limit = 10){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -477,14 +492,27 @@ const anyks = require("./lib.anyks");
 				try {
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
+					// Создаем переменные
+					const ContentName	= str;
+					const ContentType	= 'city';
+					const ParentType = (
+						$.isset(districtId) || $.isset(regionId) ?
+						($.isset(districtId) ? 'district' : 'region') : undefined
+					);
+					const ParentId = (
+						$.isset(districtId) || $.isset(regionId) ?
+						($.isset(districtId) ? districtId : regionId) : undefined
+					);
+					const WithParent	= 1;
+					const Limit			= limit;
 					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
-						ContentName:	str,
-						ContentType:	'city',
-						ParentType:		($.isset(districtId) ? 'district' : 'region'),
-						ParentId:		($.isset(districtId) ? districtId : regionId),
-						WithParent:		1,
-						Limit:			10
+						Limit,
+						ParentId,
+						ParentType,
+						WithParent,
+						ContentType,
+						ContentName
 					}, (err, res) => {
 						// Выполняем обработку данных
 						processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
@@ -497,9 +525,10 @@ const anyks = require("./lib.anyks");
 		 * searchStreet Метод поиска улицы
 		 * @param  {String} str    строка запроса
 		 * @param  {String} cityId идентификатор города
+		 * @param  {Number} limit  количество результатов к выдаче
 		 * @return {Promise}       промис результата
 		 */
-		searchStreet(str, cityId){
+		searchStreet(str, cityId, limit = 10){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -507,14 +536,21 @@ const anyks = require("./lib.anyks");
 				try {
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
+					// Создаем переменные
+					const ContentName	= str;
+					const ContentType	= 'street';
+					const ParentType	= 'city';
+					const ParentId		= cityId;
+					const WithParent	= 1;
+					const Limit			= limit;
 					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
-						ContentName:	str,
-						ContentType:	'street',
-						ParentType:		'city',
-						ParentId:		cityId,
-						WithParent:		1,
-						Limit:			10
+						Limit,
+						ParentId,
+						ParentType,
+						WithParent,
+						ContentName,
+						ContentType
 					}, (err, res) => {
 						// Выполняем обработку данных
 						processResultKladr(err, res, idObj.schemes.Streets, idObj, resolve);
@@ -527,9 +563,10 @@ const anyks = require("./lib.anyks");
 		 * searchHouse Метод поиска дома
 		 * @param  {String} str      строка запроса
 		 * @param  {String} streetId идентификатор улицы
+		 * @param  {Number} limit    количество результатов к выдаче
 		 * @return {Promise}         промис результата
 		 */
-		searchHouse(str, streetId){
+		searchHouse(str, streetId, limit = 10){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -537,14 +574,21 @@ const anyks = require("./lib.anyks");
 				try {
 					// Подключаем модуль кладра
 					const kladr = require("kladrapi").ApiQuery;
+					// Создаем переменные
+					const ContentName	= str;
+					const ContentType	= 'building';
+					const ParentType	= 'street';
+					const ParentId		= streetId;
+					const WithParent	= 1;
+					const Limit			= limit;
 					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
-						ContentName:	str,
-						ContentType:	'building',
-						ParentType:		'street',
-						ParentId:		streetId,
-						WithParent:		1,
-						Limit:			10
+						Limit,
+						ParentId,
+						ParentType,
+						WithParent,
+						ContentName,
+						ContentType
 					}, (err, res) => {
 						// Выполняем обработку данных
 						processResultKladr(err, res, idObj.schemes.Houses, idObj, resolve);
@@ -698,9 +742,18 @@ const anyks = require("./lib.anyks");
 				// Если данные не все загружены то загружаем дальше
 				if(i < regionsChar.length){
 					// Выполняем загрузку данных
-					idObj.searchRegion(regionsChar[i]).then(result => {
-						// Выводим данные в консоль
-						idObj.log(["регион(ы) загружены [", regionsChar[i], "]:", result], "info");
+					idObj.searchRegion(regionsChar[i], 1000000).then(result => {
+						// Если это массив
+						if($.isArray(result)){
+							// Переходим по всему массиву
+							const str = result.reduce((sum, val) => {
+								// Формируем строку отчета
+								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+								+ ", " + val.name + " " + val.type;
+							});
+							// Выводим данные в консоль
+							idObj.log(["регион(ы) загружены [", regionsChar[i], "]:", str], "info");
+						}
 						// Продолжаем загрузку дальше
 						getRegion(i + 1);
 					});
