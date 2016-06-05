@@ -21,20 +21,20 @@
 		getData(){
 			// Выводим коллекцию
 			return new mongo.Schema({
-				"_id":	String,
-				"name":	String,
-				"url":	String,
-				"lines": [{
-					"id":			String,
-					"name":			String,
-					"hex_color":	String,
-					"stations": [{
-						"id":		String,
-						"name":		String,
-						"lat":		String,
-						"lng":		String,
-						"order":	Number,
-						"gps":		[Number, Number]
+				_id:	String,
+				name:	String,
+				url:	String,
+				lines: [{
+					id:			String,
+					name:		String,
+					hex_color:	String,
+					stations: [{
+						id:		String,
+						name:	String,
+						lat:	String,
+						lng:	String,
+						order:	Number,
+						gps:	[Number, Number]
 					}]
 				}]
 			}, {collection: this.collection});

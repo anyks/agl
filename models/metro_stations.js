@@ -21,19 +21,19 @@
 		getData(){
 			// Выводим коллекцию
 			return new mongo.Schema({
-				"_id":		String,
-				"name":		String,
-				"lat":		String,
-				"lng":		String,
-				"order":	Number,
-				"gps":		[Number, Number],
-				"cityId": {
-					"type":	String,
-					"ref":	"Metro_cities"
+				_id:	String,
+				name:	String,
+				lat:	String,
+				lng:	String,
+				order:	Number,
+				gps:	[Number, Number],
+				cityId: {
+					type:	String,
+					ref:	'Metro_cities'
 				},
-				"lineId": {
-					"type":	String,
-					"ref":	"Metro_lines"
+				lineId: {
+					type:	String,
+					ref:	'Metro_lines'
 				}
 			}, {collection: this.collection});
 		}

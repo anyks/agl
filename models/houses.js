@@ -21,46 +21,46 @@
 		getData(){
 			// Выводим коллекцию
 			return new mongo.Schema({
-				"_id":			String,
-				"name":			String,
-				"lat":			String,
-				"lng":			String,
-				"gps":			[Number],
-				"type":			String,
-				"okato":		String,
-				"typeShort":	String,
-				"contentType":	String,
-				"zip": {
-					"type":		Number,
-					"optional":	true
+				_id:			String,
+				name:			String,
+				lat:			String,
+				lng:			String,
+				gps:			[Number],
+				type:			String,
+				okato:			String,
+				typeShort:		String,
+				contentType:	String,
+				zip: {
+					type:		Number,
+					optional:	true
 				},
-				"regionId": {
-					"type":		String,
-					"ref":		"Regions"
+				regionId: {
+					type:	String,
+					ref:	'Regions'
 				},
-				"districtId": {
-					"type":		String,
-					"ref":		"Districts"
+				districtId: {
+					type:	String,
+					ref:	'Districts'
 				},
-				"cityId": {
-					"type":		String,
-					"ref":		"Cities"
+				cityId: {
+					type:	String,
+					ref:	'Cities'
 				},
-				"streetId": {
-					"type":		String,
-					"ref":		"Streets"
+				streetId: {
+					type:	String,
+					ref:	'Streets'
 				},
-				"metro": [{
-					"type":		String,
-					"ref":		"Metro_stations",
-					"optional":	true
+				metro: [{
+					type:		String,
+					ref:		'Metro_stations',
+					optional:	true
 				}],
-				"timezone": {
-					"dstOffset":	Number,
-					"rawOffset":	Number,
-					"timeZoneId":	String,
-					"timeZoneName":	String,
-					"optional":		true
+				timezone: {
+					dstOffset:		Number,
+					rawOffset:		Number,
+					timeZoneId:		String,
+					timeZoneName:	String,
+					optional:		true
 				}
 			}, {collection: this.collection});
 		}

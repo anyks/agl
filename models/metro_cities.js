@@ -21,11 +21,11 @@
 		getData(){
 			// Выводим коллекцию
 			return new mongo.Schema({
-				"_id":	String,
-				"name":	String,
-				"linesIds": [{
-					"type":	String,
-					"ref":	"Metro_lines"
+				_id:	String,
+				name:	String,
+				linesIds: [{
+					type:	String,
+					ref:	'Metro_lines'
 				}]
 			}, {collection: this.collection});
 		}
