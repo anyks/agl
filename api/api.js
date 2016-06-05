@@ -1092,7 +1092,7 @@ const anyks = require("./lib.anyks");
 					 * *updateDB Генератор для получения обновления данных
 					 * @return {Boolean} результат запроса из базы
 					 */
-					const getData = function * (){
+					const updateDB = function * (){
 						// Выполняем обновление базы данных регионов
 						const regions = yield idObj.updateRegions();
 						// Выполняем обновление базы районов
