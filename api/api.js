@@ -728,10 +728,10 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Массив букв для названий регионов
 			const regionsChar = [
-				"А", "Б", "В", "Г", "Д", "E", "Ё",
-				"Ж", "З", "И", "Й", "К", "Л", "М",
-				"Н", "О", "П", "Р", "С", "Т", "У", "Ф",
-				"Х", "Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+				"А", "Б", "В", "Г", "Д", "E", "Ж",
+				"З", "И", "К", "Л", "М", "Н", "О",
+				"П", "Р", "С", "Т", "У", "Ф", "Х",
+				"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
 			];
 			// Подключаемся к коллекции регионов
 			const regions = idObj.clients.mongo.connection.db.collection("regions");
@@ -745,6 +745,9 @@ const anyks = require("./lib.anyks");
 					idObj.searchRegion(regionsChar[i], 100).then(result => {
 						// Если это массив
 						if($.isArray(result)){
+							
+							console.log("---------", result[result.length - 1]);
+
 							// Переходим по всему массиву
 							const str = result.reduce((sum, val) => {
 								// Формируем строку отчета
