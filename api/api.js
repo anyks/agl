@@ -505,15 +505,6 @@ const anyks = require("./lib.anyks");
 					);
 					const WithParent	= 1;
 					const Limit			= limit;
-
-					console.log("------", {Limit,
-						ParentId,
-						ParentType,
-						WithParent,
-						ContentType,
-						ContentName
-					});
-
 					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
 						Limit,
@@ -523,8 +514,11 @@ const anyks = require("./lib.anyks");
 						ContentType,
 						ContentName
 					}, (err, res) => {
+						
+						console.log("++++++", res);
+
 						// Выполняем обработку данных
-						processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
+						// processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
