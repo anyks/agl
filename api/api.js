@@ -697,10 +697,19 @@ const anyks = require("./lib.anyks");
 			 * @param  {Array} arr объект данными метро
 			 */
 			const getData = arr => {
-				// Подключаемся к коллекции metro
+				// Подключаемся к коллекции метро
 				const metro = idObj.clients.mongo.connection.db.collection("metro");
+				// Подключаемся к коллекции метро городов
+				const metro_cities = idObj.clients.mongo.connection.db.collection("metro_cities");
+				// Подключаемся к коллекции метро линий
+				const metro_lines = idObj.clients.mongo.connection.db.collection("metro_lines");
+				// Подключаемся к коллекции метро станций
+				const metro_stations = idObj.clients.mongo.connection.db.collection("metro_stations");
 				// Удаляем всю коллекцию
 				metro.drop();
+				metro_cities.drop();
+				metro_lines.drop();
+				metro_stations.drop();
 				// Переходим по всему массиву данных
 				// arr.forEach(obj => (new Metro(obj)).save());
 				arr.forEach(obj => {
@@ -728,18 +737,16 @@ const anyks = require("./lib.anyks");
 				metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
 				metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
 
-				try {
+				
 				// Формируем новые коллекции
 				arr.forEach(obj => {
 					// Изменяем идентификатор записи
-					obj._id			= obj.id;
-					obj.id			= undefined;
+					obj._id			= idObj.generateKey(obj.id);
 					obj.linesIds	= [];
 					// Формируем идентификаторы линий
 					obj.lines.forEach(line => {
 						// Формируем линию метро
-						line._id			= line.id;
-						line.id				= undefined;
+						line._id			= idObj.generateKey(line.id + obj.id + line.name);
 						line.cityId			= obj._id;
 						line.stationsIds	= [];
 						// Формируем массив линий для города
@@ -747,7 +754,7 @@ const anyks = require("./lib.anyks");
 						// Переходим по всем станциям метро
 						line.stations.forEach(station => {
 							// Формируем станцию метро
-							station._id		= station.id;
+							station._id		= idObj.generateKey(station.id + line.id + obj.id + station.name);
 							station.id		= undefined;
 							station.cityId	= obj._id;
 							station.lineId	= line._id;
@@ -755,19 +762,16 @@ const anyks = require("./lib.anyks");
 							station.gps = [station.lng, station.lat];
 							// Формируем массив станций для линии
 							line.stationsIds.push(station._id);
-
-							console.log("000000000000", station);
-
 							// Сохраняем станцию метро
-							(new idObj.schemes.Metro_stations(station)).save((e1, e2) => console.log("++++1", e1, e2));
+							(new idObj.schemes.Metro_stations(station)).save();
 						});
 						// Сохраняем линию метро
-						(new idObj.schemes.Metro_lines(line)).save((e1, e2) => console.log("++++2", e1, e2));
+						(new idObj.schemes.Metro_lines(line)).save();
 					});
 					// Сохраняем город метро
-					(new idObj.schemes.Metro_cities(obj)).save((e1, e2) => console.log("++++3", e1, e2));
+					(new idObj.schemes.Metro_cities(obj)).save();
 				});
-				} catch(e) {console.log("------", e);}
+				
 
 				/*
 				// Очищаем таймер обновления метро

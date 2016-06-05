@@ -31,7 +31,6 @@
 			return new mongo.Schema({
 				"_id":	String,
 				"name":	String,
-				"url":	String,
 				"linesIds": [{
 					type:	String,
 					ref:	"Metro_lines"
