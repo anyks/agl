@@ -765,9 +765,13 @@ const anyks = require("./lib.anyks");
 					 */
 					const getData = json => {
 						// Если ответ пришел
-						if(json.status === "OK") resolve(json);
+						if(json.status === "OK"){
+							// Удаляем статус
+							json.status = undefined;
+							// Выводим результат
+							resolve(json);
 						// Сообщаем что ничего не найдено
-						else resolve(false);
+						} else resolve(false);
 					};
 					// Выполняем запрос данных
 					fetch(url
