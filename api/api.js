@@ -251,6 +251,46 @@ const anyks = require("./lib.anyks");
 		}));
 	};
 	/**
+	 * processResultKladr Функция обработки результата полученного с базы данных Кладр
+	 * @param  {Object}   err      объект с ошибкой
+	 * @param  {Object}   res      объект с результатом
+	 * @param  {Object}   schema   объект схемы базы данных
+	 * @param  {Object}   idObj    идентификатор текущего объекта
+	 * @param  {Function} callback функция обратного вызова
+	 */
+	const processResultKladr = (err, res, schema, idObj, callback) => {
+		// Если возникает ошибка тогда выводим её
+		if($.isset(err) && !$.isset(res)){
+			// Выводим сообщение об ошибке
+			idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
+			// Выводим результат
+			callback(false);
+		// Если данные пришли
+		} else if($.isObject(res) && $.isArray(res.result)){
+			// Формируем первоначальную строку адреса
+			let address = "Россия" + ", "
+			+ ($.isArray(res.result[0].parents) ? (res.result[0].parents.length > 1 ?
+			res.result[0].parents.reduce((sum, val) => {
+				// Формируем строку отчета
+				return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+				+ ", " + val.name + " " + val.type;
+			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
+			// Выполняем поиск GPS координат для текущего адреса
+			getGPSForAddress(res.result, address, idObj, schema)
+			.then(result => idObj.log([
+				"получение gps координат для адреса:",
+				(res.result.length > 1 ? res.result.reduce((sum, val) => {
+					// Формируем строку отчета
+					return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
+					+ ", " + val.name + " " + val.typeShort + ".";
+				}) : res.result[0].name + " " + res.result[0].typeShort + "."),
+				(result ? "Ok" : "Not ok")
+			], "info"));
+			// Выводим результат
+			callback(res.result);
+		}
+	};
+	/**
 	 * Класс Agl с базовыми методами
 	 */
 	class Agl {
@@ -360,29 +400,8 @@ const anyks = require("./lib.anyks");
 						WithParent:		0,
 						Limit:			10
 					}, (err, res) => {
-						// Если возникает ошибка тогда выводим её
-						if($.isset(err)){
-							// Выводим сообщение об ошибке
-							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
-							// Выводим результат
-							resolve(false);
-						// Если данные пришли
-						} else if($.isObject(res) && $.isArray(res.result)){
-							// Выполняем поиск GPS координат для текущего адреса
-							getGPSForAddress(res.result, "Россия,", idObj, idObj.schemes.Regions)
-							.then(result => idObj.log([
-								"получение gps координат для адреса:",
-								(res.result.length > 1 ? res.result.reduce((sum, val) => {
-									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
-									+ ", " + val.name + " " + val.typeShort + ".";
-								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
-								(result ? "Ok" : "Not ok")
-							], "info"));
-							// Выводим результат
-							resolve(res.result);
-						}
-					});
+						// Выполняем обработку данных
+						processResultKladr(err, res, idObj.schemes.Regions, idObj, resolve);
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
 			}));
@@ -410,35 +429,8 @@ const anyks = require("./lib.anyks");
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
-						// Если возникает ошибка тогда выводим её
-						if($.isset(err) && !$.isset(res)){
-							// Выводим сообщение об ошибке
-							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
-							// Выводим результат
-							resolve(false);
-						// Если данные пришли
-						} else if($.isObject(res) && $.isArray(res.result)){
-							// Формируем первоначальную строку адреса
-							let address = "Россия" + ", "
-							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
-								// Формируем строку отчета
-								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-								+ ", " + val.name + " " + val.type;
-							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
-							// Выполняем поиск GPS координат для текущего адреса
-							getGPSForAddress(res.result, address, idObj, idObj.schemes.Districts)
-							.then(result => idObj.log([
-								"получение gps координат для адреса:",
-								(res.result.length > 1 ? res.result.reduce((sum, val) => {
-									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
-									+ ", " + val.name + " " + val.typeShort + ".";
-								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
-								(result ? "Ok" : "Not ok")
-							], "info"));
-							// Выводим результат
-							resolve(res.result);
-						}
+						// Выполняем обработку данных
+						processResultKladr(err, res, idObj.schemes.Districts, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -468,35 +460,8 @@ const anyks = require("./lib.anyks");
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
-						// Если возникает ошибка тогда выводим её
-						if($.isset(err) && !$.isset(res)){
-							// Выводим сообщение об ошибке
-							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
-							// Выводим результат
-							resolve(false);
-						// Если данные пришли
-						} else if($.isObject(res) && $.isArray(res.result)){
-							// Формируем первоначальную строку адреса
-							let address = "Россия" + ", "
-							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
-								// Формируем строку отчета
-								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-								+ ", " + val.name + " " + val.type;
-							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
-							// Выполняем поиск GPS координат для текущего адреса
-							getGPSForAddress(res.result, address, idObj, idObj.schemes.Cities)
-							.then(result => idObj.log([
-								"получение gps координат для адреса:",
-								(res.result.length > 1 ? res.result.reduce((sum, val) => {
-									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
-									+ ", " + val.name + " " + val.typeShort + ".";
-								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
-								(result ? "Ok" : "Not ok")
-							], "info"));
-							// Выводим результат
-							resolve(res.result);
-						}
+						// Выполняем обработку данных
+						processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -525,35 +490,8 @@ const anyks = require("./lib.anyks");
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
-						// Если возникает ошибка тогда выводим её
-						if($.isset(err) && !$.isset(res)){
-							// Выводим сообщение об ошибке
-							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
-							// Выводим результат
-							resolve(false);
-						// Если данные пришли
-						} else if($.isObject(res) && $.isArray(res.result)){
-							// Формируем первоначальную строку адреса
-							let address = "Россия" + ", "
-							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
-								// Формируем строку отчета
-								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-								+ ", " + val.name + " " + val.type;
-							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
-							// Выполняем поиск GPS координат для текущего адреса
-							getGPSForAddress(res.result, address, idObj, idObj.schemes.Streets)
-							.then(result => idObj.log([
-								"получение gps координат для адреса:",
-								(res.result.length > 1 ? res.result.reduce((sum, val) => {
-									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
-									+ ", " + val.name + " " + val.typeShort + ".";
-								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
-								(result ? "Ok" : "Not ok")
-							], "info"));
-							// Выводим результат
-							resolve(res.result);
-						}
+						// Выполняем обработку данных
+						processResultKladr(err, res, idObj.schemes.Streets, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -582,35 +520,8 @@ const anyks = require("./lib.anyks");
 						WithParent:		1,
 						Limit:			10
 					}, (err, res) => {
-						// Если возникает ошибка тогда выводим её
-						if($.isset(err) && !$.isset(res)){
-							// Выводим сообщение об ошибке
-							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
-							// Выводим результат
-							resolve(false);
-						// Если данные пришли
-						} else if($.isObject(res) && $.isArray(res.result)){
-							// Формируем первоначальную строку адреса
-							let address = "Россия" + ", "
-							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
-								// Формируем строку отчета
-								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-								+ ", " + val.name + " " + val.type;
-							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
-							// Выполняем поиск GPS координат для текущего адреса
-							getGPSForAddress(res.result, address, idObj, idObj.schemes.Houses)
-							.then(result => idObj.log([
-								"получение gps координат для адреса:",
-								(res.result.length > 1 ? res.result.reduce((sum, val) => {
-									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
-									+ ", " + val.name + " " + val.typeShort + ".";
-								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
-								(result ? "Ok" : "Not ok")
-							], "info"));
-							// Выводим результат
-							resolve(res.result);
-						}
+						// Выполняем обработку данных
+						processResultKladr(err, res, idObj.schemes.Houses, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
