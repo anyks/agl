@@ -726,50 +726,85 @@ const anyks = require("./lib.anyks");
 		updateRegions(){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
-			// Массив букв для названий регионов
-			const regionsChar = [
-				"А", "Б", "В", "Г", "Д", "E", "Ж",
-				"З", "И", "К", "Л", "М", "Н", "О",
-				"П", "Р", "С", "Т", "У", "Ф", "Х",
-				"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
-			];
-			// Подключаемся к коллекции регионов
-			const regions = idObj.clients.mongo.connection.db.collection("regions");
-			// Удаляем колекцию регионов
-			regions.drop();
-			// Рекурсивная функция загрузки региона
-			const getRegion = (i = 0) => {
-				// Если данные не все загружены то загружаем дальше
-				if(i < regionsChar.length){
-					// Выполняем загрузку данных
-					idObj.searchRegion(regionsChar[i], 100).then(result => {
-						// Если это массив
-						if($.isArray(result)){
-							// Переходим по всему массиву
-							const str = (result.length > 1 ? result.reduce((sum, val) => {
-								// Формируем строку отчета
-								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-								+ ", " + val.name + " " + val.type;
-							}) : result[0].name + " " + result[0].type);
-							// Выводим данные в консоль
-							idObj.log(["регион(ы) загружены [", regionsChar[i], "]:", str], "info");
-						}
-						// Продолжаем загрузку дальше
-						getRegion(i + 1);
-					});
-				// Если все данные загружены тогда создаем индексы
-				} else {
-					// Создаем индексы метро
-					regions.createIndex({name: 1}, {name: "region"});
-					regions.createIndex({okato: 1}, {name: "okato"});
-					regions.createIndex({type: 1}, {name: "type"});
-					regions.createIndex({typeShort: 1}, {name: "typeShort"});
-					regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
-					regions.createIndex({gps: "2dsphere"}, {name: "locations"});
-				}
-			};
-			// Выполняем загрузку регионов
-			getRegion();
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Массив букв для названий регионов
+				const regionsChar = [
+					"А", "Б", "В", "Г", "Д", "E", "Ж",
+					"З", "И", "К", "Л", "М", "Н", "О",
+					"П", "Р", "С", "Т", "У", "Ф", "Х",
+					"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+				];
+				// Подключаемся к коллекции регионов
+				const regions = idObj.clients.mongo.connection.db.collection("regions");
+				// Удаляем колекцию регионов
+				regions.drop();
+				// Рекурсивная функция загрузки региона
+				const getRegion = (i = 0) => {
+					// Если данные не все загружены то загружаем дальше
+					if(i < regionsChar.length){
+						// Выполняем загрузку данных
+						idObj.searchRegion(regionsChar[i], 100).then(result => {
+							// Если это массив
+							if($.isArray(result)){
+								// Переходим по всему массиву
+								const str = (result.length > 1 ? result.reduce((sum, val) => {
+									// Формируем строку отчета
+									return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+									+ ", " + val.name + " " + val.type;
+								}) : result[0].name + " " + result[0].type);
+								// Выводим данные в консоль
+								idObj.log(["регион(ы) загружены [", regionsChar[i], "]:", str], "info");
+							}
+							// Продолжаем загрузку дальше
+							getRegion(i + 1);
+						});
+					// Если все данные загружены тогда создаем индексы
+					} else {
+						// Создаем индексы метро
+						regions.createIndex({name: 1}, {name: "region"});
+						regions.createIndex({okato: 1}, {name: "okato"});
+						regions.createIndex({type: 1}, {name: "type"});
+						regions.createIndex({typeShort: 1}, {name: "typeShort"});
+						regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
+						regions.createIndex({gps: "2dsphere"}, {name: "locations"});
+						// Сообщаем что все удачно выполнено
+						resolve(true);
+					}
+				};
+				// Выполняем загрузку регионов
+				getRegion();
+			}));
+		}
+		/**
+		 * updateDistricts Метод обновления данных районов
+		 */
+		updateDistricts(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Массив букв для названий районов
+				const regionsChar = [
+					"А", "Б", "В", "Г", "Д", "E", "Ж",
+					"З", "И", "К", "Л", "М", "Н", "О",
+					"П", "Р", "С", "Т", "У", "Ф", "Х",
+					"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+				];
+				// Подключаемся к коллекции районов
+				const districts = idObj.clients.mongo.connection.db.collection("districts");
+				// Удаляем колекцию районов
+				districts.drop();
+				// Запрашиваем все данные районов
+				idObj.schemes.Districts.find({})
+				// Запрашиваем данные районов
+				.exec((err, data) => {
+					console.log("!!!!!!!!!!!!!!!!", err, data);
+
+					// Сообщаем что все удачно выполнено
+					resolve(true);
+				});
+			}));
 		}
 		/**
 		 * updateMetro Метод обновления данных базы метро
@@ -777,107 +812,112 @@ const anyks = require("./lib.anyks");
 		updateMetro(){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
-			// Подключаем модуль закачки данных
-			const fetch = require('node-fetch');
-			/**
-			 * getData Функция обработки полученных данных с интернета
-			 * @param  {Array} arr объект данными метро
-			 */
-			const getData = arr => {
-				// Подключаемся к коллекции метро
-				const metro = idObj.clients.mongo.connection.db.collection("metro");
-				// Подключаемся к коллекции метро городов
-				const metro_cities = idObj.clients.mongo.connection.db.collection("metro_cities");
-				// Подключаемся к коллекции метро линий
-				const metro_lines = idObj.clients.mongo.connection.db.collection("metro_lines");
-				// Подключаемся к коллекции метро станций
-				const metro_stations = idObj.clients.mongo.connection.db.collection("metro_stations");
-				// Удаляем все коллекции метро
-				metro.drop();
-				metro_cities.drop();
-				metro_lines.drop();
-				metro_stations.drop();
-				// Переходим по всему массиву данных
-				arr.forEach(obj => {
-					// Формируем нужного вида для нас массив
-					obj.lines.forEach(line => {
-						// Переходим по всем станциям метро
-						line.stations.forEach(station => {
-							// Формируемновый ключ gps;
-							station.gps = [station.lng, station.lat];
-							// Выводим результат
-							return station;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Подключаем модуль закачки данных
+				const fetch = require('node-fetch');
+				/**
+				 * getData Функция обработки полученных данных с интернета
+				 * @param  {Array} arr объект данными метро
+				 */
+				const getData = arr => {
+					// Подключаемся к коллекции метро
+					const metro = idObj.clients.mongo.connection.db.collection("metro");
+					// Подключаемся к коллекции метро городов
+					const metro_cities = idObj.clients.mongo.connection.db.collection("metro_cities");
+					// Подключаемся к коллекции метро линий
+					const metro_lines = idObj.clients.mongo.connection.db.collection("metro_lines");
+					// Подключаемся к коллекции метро станций
+					const metro_stations = idObj.clients.mongo.connection.db.collection("metro_stations");
+					// Удаляем все коллекции метро
+					metro.drop();
+					metro_cities.drop();
+					metro_lines.drop();
+					metro_stations.drop();
+					// Переходим по всему массиву данных
+					arr.forEach(obj => {
+						// Формируем нужного вида для нас массив
+						obj.lines.forEach(line => {
+							// Переходим по всем станциям метро
+							line.stations.forEach(station => {
+								// Формируемновый ключ gps;
+								station.gps = [station.lng, station.lat];
+								// Выводим результат
+								return station;
+							});
+							// Выводим полученный массив
+							return line;
 						});
-						// Выводим полученный массив
-						return line;
+						// Сохраняем результат
+						(new idObj.schemes.Metro(obj)).save();
 					});
-					// Сохраняем результат
-					(new idObj.schemes.Metro(obj)).save();
-				});
-				// Формируем новые коллекции
-				arr.forEach(obj => {
-					// Изменяем идентификатор записи
-					obj._id			= idObj.generateKey(obj.id);
-					obj.linesIds	= [];
-					// Формируем идентификаторы линий
-					obj.lines.forEach(line => {
-						// Формируем линию метро
-						line._id			= idObj.generateKey(line.id + obj.id + line.name);
-						line.cityId			= obj._id;
-						line.color			= line.hex_color;
-						line.stationsIds	= [];
-						// Формируем массив линий для города
-						obj.linesIds.push(line._id);
-						// Переходим по всем станциям метро
-						line.stations.forEach(station => {
-							// Формируем станцию метро
-							station._id		= idObj.generateKey(station.id + line.id + obj.id + station.name);
-							station.id		= undefined;
-							station.cityId	= obj._id;
-							station.lineId	= line._id;
-							// Формируемновый ключ gps;
-							station.gps = [station.lng, station.lat];
-							// Формируем массив станций для линии
-							line.stationsIds.push(station._id);
-							// Сохраняем станцию метро
-							(new idObj.schemes.Metro_stations(station)).save();
+					// Формируем новые коллекции
+					arr.forEach(obj => {
+						// Изменяем идентификатор записи
+						obj._id			= idObj.generateKey(obj.id);
+						obj.linesIds	= [];
+						// Формируем идентификаторы линий
+						obj.lines.forEach(line => {
+							// Формируем линию метро
+							line._id			= idObj.generateKey(line.id + obj.id + line.name);
+							line.cityId			= obj._id;
+							line.color			= line.hex_color;
+							line.stationsIds	= [];
+							// Формируем массив линий для города
+							obj.linesIds.push(line._id);
+							// Переходим по всем станциям метро
+							line.stations.forEach(station => {
+								// Формируем станцию метро
+								station._id		= idObj.generateKey(station.id + line.id + obj.id + station.name);
+								station.id		= undefined;
+								station.cityId	= obj._id;
+								station.lineId	= line._id;
+								// Формируемновый ключ gps;
+								station.gps = [station.lng, station.lat];
+								// Формируем массив станций для линии
+								line.stationsIds.push(station._id);
+								// Сохраняем станцию метро
+								(new idObj.schemes.Metro_stations(station)).save();
+							});
+							// Сохраняем линию метро
+							(new idObj.schemes.Metro_lines(line)).save();
 						});
-						// Сохраняем линию метро
-						(new idObj.schemes.Metro_lines(line)).save();
+						// Сохраняем город метро
+						(new idObj.schemes.Metro_cities(obj)).save();
 					});
-					// Сохраняем город метро
-					(new idObj.schemes.Metro_cities(obj)).save();
-				});
-				// Создаем индексы метро
-				metro.createIndex({name: 1}, {name: "city"});
-				metro.createIndex({"lines.hex_color": 1}, {name: "color"});
-				metro.createIndex({"lines.name": 1}, {name: "lines"});
-				metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
-				metro.createIndex({"lines.stations.order": 1}, {name: "order"});
-				metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
-				metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
-				// Создаем индексы для метро городов
-				metro_cities.createIndex({name: 1}, {name: "city"});
-				metro_cities.createIndex({linesIds: 1}, {name: "lines"});
-				// Создаем индексы для метро линий
-				metro_lines.createIndex({name: 1}, {name: "line"});
-				metro_lines.createIndex({cityId: 1}, {name: "city"});
-				metro_lines.createIndex({color: 1}, {name: "color"});
-				metro_lines.createIndex({stationsIds: 1}, {name: "stations"});
-				// Создаем индексы для метро станций
-				metro_stations.createIndex({name: 1}, {name: "station"});
-				metro_stations.createIndex({cityId: 1}, {name: "city"});
-				metro_stations.createIndex({lineId: 1}, {name: "line"});
-				metro_stations.createIndex({order: 1}, {name: "order"});
-				metro_stations.createIndex({lat: 1, lng: 1}, {name: "gps"});
-				metro_stations.createIndex({gps: "2dsphere"}, {name: "locations"});
-			};
-			// Закачиваем данные метро
-			fetch('https://api.hh.ru/metro')
-			// Преобразуем полученный объект
-			.then(res => res.json(), e => idObj.log(["get metro", e], "error"))
-			// Обрабатываем полученные данные
-			.then(getData, e => idObj.log(["parse metro", e], "error"));
+					// Создаем индексы метро
+					metro.createIndex({name: 1}, {name: "city"});
+					metro.createIndex({"lines.hex_color": 1}, {name: "color"});
+					metro.createIndex({"lines.name": 1}, {name: "lines"});
+					metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
+					metro.createIndex({"lines.stations.order": 1}, {name: "order"});
+					metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
+					metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
+					// Создаем индексы для метро городов
+					metro_cities.createIndex({name: 1}, {name: "city"});
+					metro_cities.createIndex({linesIds: 1}, {name: "lines"});
+					// Создаем индексы для метро линий
+					metro_lines.createIndex({name: 1}, {name: "line"});
+					metro_lines.createIndex({cityId: 1}, {name: "city"});
+					metro_lines.createIndex({color: 1}, {name: "color"});
+					metro_lines.createIndex({stationsIds: 1}, {name: "stations"});
+					// Создаем индексы для метро станций
+					metro_stations.createIndex({name: 1}, {name: "station"});
+					metro_stations.createIndex({cityId: 1}, {name: "city"});
+					metro_stations.createIndex({lineId: 1}, {name: "line"});
+					metro_stations.createIndex({order: 1}, {name: "order"});
+					metro_stations.createIndex({lat: 1, lng: 1}, {name: "gps"});
+					metro_stations.createIndex({gps: "2dsphere"}, {name: "locations"});
+					// Сообщаем что все удачно выполнено
+					resolve(true);
+				};
+				// Закачиваем данные метро
+				fetch('https://api.hh.ru/metro')
+				// Преобразуем полученный объект
+				.then(res => res.json(), e => idObj.log(["get metro", e], "error"))
+				// Обрабатываем полученные данные
+				.then(getData, e => idObj.log(["parse metro", e], "error"));
+			}));
 		}
 		/**
 		 * initEmptyDatabases Метод инициализации чистой базы данных

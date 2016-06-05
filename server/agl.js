@@ -146,8 +146,9 @@
 		const init = clients => {
 			// console.log("++++++", clients);
 
-			// agl.updateMetro();
-			agl.updateRegions();
+			// agl.updateMetro().then();
+			// agl.updateRegions().then();
+			agl.updateDistricts().then();
 			// agl.getAddressFromGPS(55.5689216, 37.4896679);
 			// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
 			
