@@ -677,7 +677,49 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * updateMetro Метод обновления данных базы данных метро
+		 * updateRegions Метод обновления данных базы регионов
+		 */
+		updateRegions(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Массив букв для названий регионов
+			const regionsChar = [
+				"А", "Б", "В", "Г", "Д", "E", "Ё",
+				"Ж", "З", "И", "Й", "К", "Л", "М",
+				"Н", "О", "П", "Р", "С", "Т", "У", "Ф",
+				"Х", "Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+			];
+			// Подключаемся к коллекции регионов
+			const regions = idObj.clients.mongo.connection.db.collection("regions");
+			// Удаляем колекцию регионов
+			regions.drop();
+			// Рекурсивная функция загрузки региона
+			const getRegion = (i = 0) => {
+				// Если данные не все загружены то загружаем дальше
+				if(i < regionsChar.length){
+					// Выполняем загрузку данных
+					idObj.searchRegion(regionsChar[i]).then(result => {
+						// Выводим данные в консоль
+						idObj.log(["регион(ы) загружены [", regionsChar[i], "]:", result], "info");
+						// Продолжаем загрузку дальше
+						getRegion(i + 1);
+					});
+				// Если все данные загружены тогда создаем индексы
+				} else {
+					// Создаем индексы метро
+					regions.createIndex({name: 1}, {name: "region"});
+					regions.createIndex({okato: 1}, {name: "okato"});
+					regions.createIndex({type: 1}, {name: "type"});
+					regions.createIndex({typeShort: 1}, {name: "typeShort"});
+					regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
+					regions.createIndex({gps: "2dsphere"}, {name: "locations"});
+				}
+			};
+			// Выполняем загрузку регионов
+			getRegion();
+		}
+		/**
+		 * updateMetro Метод обновления данных базы метро
 		 */
 		updateMetro(){
 			// Получаем идентификатор текущего объекта
