@@ -52,7 +52,7 @@
 					type:		String,
 					ref:		"Districts"
 				},
-				streetId: {
+				cityId: {
 					type:		String,
 					ref:		"Streets"
 				}

@@ -223,9 +223,6 @@ const anyks = require("./lib.anyks");
 							if($.isArray(arr[i].parents)){
 								// Переходим по всему массиву данных
 								arr[i].parents.forEach(val => {
-									
-									console.log("--------", val.contentType);
-
 									// Определяем тип контента
 									switch(val.contentType){
 										// Формируем внешние ключи
