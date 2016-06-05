@@ -146,14 +146,14 @@
 		const init = clients => {
 			// console.log("++++++", clients);
 
-			// agl.updateMetro();
+			agl.updateMetro();
 			// agl.getAddressFromGPS(55.5689216, 37.4896679);
 			// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
 			
 			// agl.searchRegion("И").then(rs => console.log(rs));
 			// agl.searchCity("Ш", "3700000000000").then(rs => console.log(rs));
 			// agl.searchStreet("Ко", "3701900100000").then(rs => console.log(rs));
-			agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
+			// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
 		};
 		/**
 		 * *connect Генератор для коннекта баз данных

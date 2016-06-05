@@ -19,7 +19,7 @@ const anyks = require("./lib.anyks");
 	// Ключ кладра
 	const kladr = "57500faf0a69decc7d8b4568";
 	// Интервал проверки обновления 24 часов
-	const intUpdateMetro = (24 * 31);
+	// const intUpdateMetro = (24 * 31);
 	// Отладочная информация
 	const debug = {
 		// Отображать ошибки
@@ -313,6 +313,12 @@ const anyks = require("./lib.anyks");
 			const ModelHouses = require('../models/houses');
 			// Подключаем модель метро
 			const ModelMetro = require('../models/metro');
+			// Подключаем модель метро с городами
+			const ModelMetro_cities = require('../models/metro_cities');
+			// Подключаем модель метро с линиями
+			const ModelMetro_lines = require('../models/metro_lines');
+			// Подключаем модель метро с станциями
+			const ModelMetro_stations = require('../models/metro_stations');
 			// Создаем модель адресов
 			const modelAddress = (new ModelAddress("address")).getData();
 			// Создаем модель регионов
@@ -327,6 +333,12 @@ const anyks = require("./lib.anyks");
 			const modelHouses = (new ModelHouses("houses")).getData();
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
+			// Создаем модель метро с городами
+			const modelMetro_cities = (new ModelMetro("metro_cities")).getData();
+			// Создаем модель метро с линиями
+			const modelMetro_lines = (new ModelMetro("metro_lines")).getData();
+			// Создаем модель метро с станциями
+			const modelMetro_stations = (new ModelMetro("metro_stations")).getData();
 			// Создаем схему адресов
 			const Address = idObj.clients.mongo.model("Address", modelAddress);
 			// Создаем схему регионов
@@ -341,8 +353,25 @@ const anyks = require("./lib.anyks");
 			const Houses = idObj.clients.mongo.model("Houses", modelHouses);
 			// Создаем схему метро
 			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
+			// Создаем схему метро с городами
+			const Metro_cities = idObj.clients.mongo.model("Metro_cities", modelMetro_cities);
+			// Создаем схему метро с линиями
+			const Metro_lines = idObj.clients.mongo.model("Metro_lines", modelMetro_lines);
+			// Создаем схему метро с станциями
+			const Metro_stations = idObj.clients.mongo.model("Metro_stations", modelMetro_stations);
 			// Сохраняем схемы
-			idObj.schemes = {Address, Regions, Districts, Cities, Streets, Houses, Metro};
+			idObj.schemes = {
+				Address,
+				Regions,
+				Districts,
+				Cities,
+				Streets,
+				Houses,
+				Metro,
+				Metro_cities,
+				Metro_lines,
+				Metro_stations
+			};
 		}
 		/**
 		 * constructor Конструктор класса
@@ -361,7 +390,7 @@ const anyks = require("./lib.anyks");
 			// Устанавливаем версию системы
 			this.version = version;
 			// Запоминаем интервал обновления базы данных метро
-			this.intervalUpdateMetro = intUpdateMetro  * 3600000;
+			// this.intervalUpdateMetro = intUpdateMetro  * 3600000;
 		}
 		/**
 		 * generateKey Функция генерирования ключа
@@ -677,7 +706,7 @@ const anyks = require("./lib.anyks");
 				arr.forEach(obj => {
 					// Формируем нужного вида для нас массив
 					obj.lines.forEach(line => {
-						// Переходим по всем линиям метро
+						// Переходим по всем станциям метро
 						line.stations.forEach(station => {
 							// Формируемновый ключ gps;
 							station.gps = [station.lng, station.lat];
@@ -688,7 +717,7 @@ const anyks = require("./lib.anyks");
 						return line;
 					});
 					// Сохраняем результат
-					return (new idObj.schemes.Metro(obj)).save();
+					(new idObj.schemes.Metro(obj)).save();
 				});
 				// Создаем индексы
 				metro.createIndex({name: 1}, {name: "city"});
@@ -698,10 +727,48 @@ const anyks = require("./lib.anyks");
 				metro.createIndex({"lines.stations.order": 1}, {name: "order"});
 				metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
 				metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
+
+
+				// Формируем новые коллекции
+				arr.forEach(obj => {
+					// Изменяем идентификатор записи
+					obj._id			= obj.id;
+					obj.id			= undefined;
+					obj.linesIds	= [];
+					// Формируем идентификаторы линий
+					obj.lines.forEach(line => {
+						// Формируем линию метро
+						line._id			= line.id;
+						line.id				= undefined;
+						line.cityId			= obj._id;
+						line.stationsIds	= [];
+						// Формируем массив линий для города
+						obj.linesIds.push(line._id);
+						// Переходим по всем станциям метро
+						line.stations.forEach(station => {
+							// Формируем станцию метро
+							station._id		= station.id;
+							station.id		= undefined;
+							station.cityId	= obj._id;
+							station.lineId	= line._id;
+							// Формируем массив станций для линии
+							line.stationsIds.push(station._id);
+							// Сохраняем станцию метро
+							(new idObj.schemes.Metro_stations(station)).save();
+						});
+						// Сохраняем линию метро
+						(new idObj.schemes.Metro_lines(line)).save();
+					});
+					// Сохраняем город метро
+					(new idObj.schemes.Metro_cities(obj)).save();
+				});
+
+				/*
 				// Очищаем таймер обновления метро
 				clearInterval(idObj.timerUpdateMetro);
 				// Устанавливаем таймер на проверку данных
 				idObj.timerUpdateMetro = setInterval(() => idObj.updateMetro(), idObj.intervalUpdateMetro);
+				*/
 			};
 			// Закачиваем данные метро
 			fetch('https://api.hh.ru/metro')
