@@ -78,7 +78,7 @@ const anyks = require("./lib.anyks");
 						let description	= $.fnShowProps(data, "display_name");
 						let zip			= parseInt($.fnShowProps(data, "postcode"), 10);
 						let gps			= [parseFloat(lng), parseFloat(lat)];
-						let id			= idObj.generateKey(
+						let _id			= idObj.generateKey(
 							($.isset(country) ? country.toLowerCase() : "") +
 							($.isset(region) ? region.toLowerCase() : "") +
 							($.isset(city) ? city.toLowerCase() : "") +
@@ -114,7 +114,7 @@ const anyks = require("./lib.anyks");
 						let upperCorner = $.fnShowProps(data, "upperCorner").split(" ");
 						let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
 						let gps			= [parseFloat(lng), parseFloat(lat)];
-						let id			= idObj.generateKey(
+						let _id			= idObj.generateKey(
 							($.isset(country) ? country.toLowerCase() : "") +
 							($.isset(region) ? region.toLowerCase() : "") +
 							($.isset(city) ? city.toLowerCase() : "") +
@@ -171,7 +171,7 @@ const anyks = require("./lib.anyks");
 						);
 						// Формируем объект
 						result = {
-							id, lat, lng, gps,
+							_id, lat, lng, gps,
 							description,
 							address: {zip, city, code, street, region, country, district}
 						};
@@ -1095,11 +1095,6 @@ const anyks = require("./lib.anyks");
 					const updateDB = function * (){
 						// Выполняем обновление базы данных регионов
 						const regions = yield idObj.updateRegions();
-
-						console.log("------", regions);
-
-						return;
-
 						// Выполняем обновление базы районов
 						const districts = (regions ? yield idObj.updateDistricts() : false);
 						// Выполняем обновление базы городов
