@@ -762,7 +762,7 @@ const anyks = require("./lib.anyks");
 					// Сохраняем город метро
 					(new idObj.schemes.Metro_cities(obj)).save();
 				});
-				} cathc(e) {console.log("------", e);}
+				} catch(e) {console.log("------", e);}
 
 				/*
 				// Очищаем таймер обновления метро
