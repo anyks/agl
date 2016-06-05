@@ -950,7 +950,7 @@ const anyks = require("./lib.anyks");
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Выполняем поиск городов
-			idObj.searchCity("М", "7700000000000", null, 100).then(result => {
+			idObj.searchCity("С", "4700000000000", null, 100).then(result => {
 				console.log("++++++++++", result);
 			});
 		}
