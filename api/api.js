@@ -728,7 +728,7 @@ const anyks = require("./lib.anyks");
 				metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
 				metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
 
-
+				try {
 				// Формируем новые коллекции
 				arr.forEach(obj => {
 					// Изменяем идентификатор записи
@@ -762,6 +762,7 @@ const anyks = require("./lib.anyks");
 					// Сохраняем город метро
 					(new idObj.schemes.Metro_cities(obj)).save();
 				});
+				} cathc(e) {console.log("------", e);}
 
 				/*
 				// Очищаем таймер обновления метро
