@@ -739,7 +739,10 @@ const anyks = require("./lib.anyks");
 				const regions = idObj.clients.mongo.connection.db.collection("regions");
 				// Удаляем колекцию регионов
 				regions.drop();
-				// Рекурсивная функция загрузки региона
+				/**
+				 * getRegion Рекурсивная функция загрузки региона
+				 * @param  {Number} i текущий индекс массива
+				 */
 				const getRegion = (i = 0) => {
 					// Если данные не все загружены то загружаем дальше
 					if(i < regionsChar.length){
@@ -754,14 +757,14 @@ const anyks = require("./lib.anyks");
 									+ ", " + val.name + " " + val.type;
 								}) : result[0].name + " " + result[0].type);
 								// Выводим данные в консоль
-								idObj.log(["регион(ы) загружены [", regionsChar[i], "]:", str], "info");
+								idObj.log(["регион(ы) загружен(ы) [", regionsChar[i], "]:", str], "info");
 							}
 							// Продолжаем загрузку дальше
 							getRegion(i + 1);
 						});
 					// Если все данные загружены тогда создаем индексы
 					} else {
-						// Создаем индексы метро
+						// Создаем индексы регионов
 						regions.createIndex({name: 1}, {name: "region"});
 						regions.createIndex({okato: 1}, {name: "okato"});
 						regions.createIndex({type: 1}, {name: "type"});
@@ -785,7 +788,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Массив букв для названий районов
-				const regionsChar = [
+				const districsChar = [
 					"А", "Б", "В", "Г", "Д", "E", "Ж",
 					"З", "И", "К", "Л", "М", "Н", "О",
 					"П", "Р", "С", "Т", "У", "Ф", "Х",
@@ -799,10 +802,61 @@ const anyks = require("./lib.anyks");
 				idObj.schemes.Regions.find({})
 				// Запрашиваем данные районов
 				.exec((err, data) => {
-					console.log("!!!!!!!!!!!!!!!!", err, data);
-
-					// Сообщаем что все удачно выполнено
-					resolve(true);
+					// Если ошибки нет
+					if(!$.isset(err) && $.isArray(data)){
+						/**
+						 * getRegion Рекурсивная функция загрузки региона
+						 * @param  {Number} i текущий индекс массива
+						 */
+						const getRegion = (i = 0) => {
+							// Если регионы загружены не все тогда выполняем загрузку
+							if(i < data.length){
+								/**
+								 * getDistrict Рекурсивная функция загрузки районов
+								 * @param  {Number} j текущий индекс массива
+								 */
+								const getDistrict = (j = 0) => {
+									// Если данные не все загружены то загружаем дальше
+									if(j < districsChar.length){
+										// Выполняем поиск района
+										idObj.searchDistrict(districsChar[j], data[i]._id, 100).then(result => {
+											// Если это массив
+											if($.isArray(result)){
+												// Переходим по всему массиву
+												const str = (result.length > 1 ? result.reduce((sum, val) => {
+													// Формируем строку отчета
+													return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+													+ ", " + val.name + " " + val.type;
+												}) : result[0].name + " " + result[0].type);
+												// Выводим данные в консоль
+												idObj.log(["район(ы) загружен(ы) [", districsChar[j], "]:", str], "info");
+											}
+											// Продолжаем загрузку дальше
+											getDistrict(j + 1);
+										});
+									// Если все данные загружены, переходим к следующему району
+									} else getRegion(i + 1);
+								};
+								// Выполняем запрос данных районов
+								getDistrict();
+							// Сообщаем что все регионы загружены
+							} else {
+								// Создаем индексы районов
+								districts.createIndex({name: 1}, {name: "districts"});
+								districts.createIndex({regionId: 1}, {name: "region"});
+								districts.createIndex({okato: 1}, {name: "okato"});
+								districts.createIndex({type: 1}, {name: "type"});
+								districts.createIndex({typeShort: 1}, {name: "typeShort"});
+								districts.createIndex({lat: 1, lng: 1}, {name: "gps"});
+								districts.createIndex({gps: "2dsphere"}, {name: "locations"});
+								// Сообщаем что все удачно выполнено
+								resolve(true);
+							}
+						};
+						// Извлекаем данные регионов
+						getRegion();
+					// Выводим сообщение в консоль
+					} else idObj.log(["ошибка загрузки данных регионов", err], "error");
 				});
 			}));
 		}
