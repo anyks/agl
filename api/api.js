@@ -796,7 +796,7 @@ const anyks = require("./lib.anyks");
 				// Удаляем колекцию районов
 				districts.drop();
 				// Запрашиваем все данные районов
-				idObj.schemes.Districts.find({})
+				idObj.schemes.Regions.find({})
 				// Запрашиваем данные районов
 				.exec((err, data) => {
 					console.log("!!!!!!!!!!!!!!!!", err, data);
