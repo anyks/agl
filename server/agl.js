@@ -151,7 +151,8 @@
 			// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
 			
 			// agl.searchRegion("И").then(rs => console.log(rs));
-			agl.searchCity("Ш", "3700000000000").then(rs => console.log(rs));
+			// agl.searchCity("Ш", "3700000000000").then(rs => console.log(rs));
+			agl.searchStreet("Ко", "3701900100000").then(rs => console.log(rs));
 		};
 		/**
 		 * *connect Генератор для коннекта баз данных

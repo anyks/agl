@@ -51,6 +51,10 @@
 				districtId: {
 					type:		String,
 					ref:		"Districts"
+				},
+				streetId: {
+					type:		String,
+					ref:		"Streets"
 				}
 			}, {collection: this.collection});
 		}

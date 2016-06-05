@@ -267,6 +267,8 @@ const anyks = require("./lib.anyks");
 			const ModelDistricts = require('../models/districts');
 			// Подключаем модель городов
 			const ModelCities = require('../models/cities');
+			// Подключаем модель улиц
+			const ModelStreets = require('../models/streets');
 			// Подключаем модель метро
 			const ModelMetro = require('../models/metro');
 			// Создаем модель адресов
@@ -277,6 +279,8 @@ const anyks = require("./lib.anyks");
 			const modelDistricts = (new ModelDistricts("districts")).getData();
 			// Создаем модель городов
 			const modelCities = (new ModelCities("cities")).getData();
+			// Создаем модель улиц
+			const modelStreets = (new ModelStreets("streets")).getData();
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
 			// Создаем схему адресов
@@ -287,10 +291,12 @@ const anyks = require("./lib.anyks");
 			const Districts = idObj.clients.mongo.model("Districts", modelDistricts);
 			// Создаем схему городов
 			const Cities = idObj.clients.mongo.model("Cities", modelCities);
+			// Создаем схему улиц
+			const Streets = idObj.clients.mongo.model("Streets", modelStreets);
 			// Создаем схему метро
 			const Metro = idObj.clients.mongo.model("Metro", modelMetro);
 			// Сохраняем схемы
-			idObj.schemes = {Address, Regions, Districts, Cities, Metro};
+			idObj.schemes = {Address, Regions, Districts, Cities, Streets, Metro};
 		}
 		/**
 		 * constructor Конструктор класса
@@ -492,18 +498,59 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchStreet Метод поиска улицы
-		 * @param  {String} str      строка запроса
-		 * @param  {String} parentId идентификатор родителя
-		 * @return {Promise}         промис результата
+		 * @param  {String} str    строка запроса
+		 * @param  {String} cityId идентификатор города
+		 * @return {Promise}       промис результата
 		 */
-		searchStreet(str, parentId){
+		searchStreet(str, cityId){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Подключаем модуль кладра
-				const kladr = require("kladrapi").ApiQuery;
-
+				try {
+					// Подключаем модуль кладра
+					const kladr = require("kladrapi").ApiQuery;
+					// Выполняем поиск в кладре
+					kladr(idObj.keyKladr, 'foontick', {
+						ContentName:	str,
+						ContentType:	'street',
+						ParentType:		'city',
+						ParentId:		cityId,
+						WithParent:		1,
+						Limit:			10
+					}, (err, res) => {
+						// Если возникает ошибка тогда выводим её
+						if($.isset(err) && !$.isset(res)){
+							// Выводим сообщение об ошибке
+							idObj.log(["произошла ошибка поиска в базе Kladr", err], "error");
+							// Выводим результат
+							resolve(false);
+						// Если данные пришли
+						} else if($.isObject(res) && $.isArray(res.result)){
+							// Формируем первоначальную строку адреса
+							let address = "Россия" + ", "
+							+ (res.result[0].parents.length > 1 ? res.result[0].parents.reduce((sum, val) => {
+								// Формируем строку отчета
+								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+								+ ", " + val.name + " " + val.type;
+							}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + ",";
+							// Выполняем поиск GPS координат для текущего адреса
+							getGPSForAddress(res.result, address, idObj, idObj.schemes.Streets)
+							.then(result => idObj.log([
+								"получение gps координат для адреса:",
+								(res.result.length > 1 ? res.result.reduce((sum, val) => {
+									// Формируем строку отчета
+									return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
+									+ ", " + val.name + " " + val.typeShort + ".";
+								}) : res.result[0].name + " " + res.result[0].typeShort + "."),
+								(result ? "Ok" : "Not ok")
+							], "info"));
+							// Выводим результат
+							resolve(res.result);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
 			}));
 		}
 		/**
