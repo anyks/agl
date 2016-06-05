@@ -505,6 +505,15 @@ const anyks = require("./lib.anyks");
 					);
 					const WithParent	= 1;
 					const Limit			= limit;
+
+					console.log("------", {Limit,
+						ParentId,
+						ParentType,
+						WithParent,
+						ContentType,
+						ContentName
+					});
+
 					// Выполняем поиск в кладре
 					kladr(idObj.keyKladr, 'foontick', {
 						Limit,
