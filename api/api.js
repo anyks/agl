@@ -402,6 +402,7 @@ const anyks = require("./lib.anyks");
 					}, (err, res) => {
 						// Выполняем обработку данных
 						processResultKladr(err, res, idObj.schemes.Regions, idObj, resolve);
+					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
 			}));
