@@ -17,7 +17,7 @@
 			// Основная коллекция
 			this.collection = collection;
 		}
-		// Создаем новую схему для метро
+		// Создаем новую схему
 		getData(){
 			// Выводим коллекцию
 			return new mongo.Schema({

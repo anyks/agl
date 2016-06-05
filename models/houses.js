@@ -17,19 +17,9 @@
 			// Основная коллекция
 			this.collection = collection;
 		}
-		// Создаем новую схему для метро
+		// Создаем новую схему
 		getData(){
-			// Индексы
-			// db.regions.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
-			// db.regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
-			// db.regions.createIndex({name: 1}, {name: "name"});
-			// db.regions.createIndex({type: 1}, {name: "type"});
-			// db.regions.createIndex({typeShort: 1}, {name: "typeShort"});
-			// db.regions.createIndex({zip: 1}, {name: "zip"});
-			// db.regions.createIndex({okato: 1}, {name: "okato"});
-			// db.regions.createIndex({contentType: 1}, {name: "contentType"});
-			// db.regions.createIndex({gps: "2dsphere"}, {name: "locations"});
-			// Выводим коллекцию Cian
+			// Выводим коллекцию
 			return new mongo.Schema({
 				_id:			String,
 				name:			String,
