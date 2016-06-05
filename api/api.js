@@ -745,15 +745,12 @@ const anyks = require("./lib.anyks");
 					idObj.searchRegion(regionsChar[i], 100).then(result => {
 						// Если это массив
 						if($.isArray(result)){
-							
-							console.log("---------", result[result.length - 1]);
-
 							// Переходим по всему массиву
-							const str = result.reduce((sum, val) => {
+							const str = (result.length > 1 ? result.reduce((sum, val) => {
 								// Формируем строку отчета
 								return ($.isString(sum) ? sum : sum.name + " " + sum.type)
 								+ ", " + val.name + " " + val.type;
-							});
+							}) : result[0].name + " " + result[0].type);
 							// Выводим данные в консоль
 							idObj.log(["регион(ы) загружены [", regionsChar[i], "]:", str], "info");
 						}
