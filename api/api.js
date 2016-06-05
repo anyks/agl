@@ -334,11 +334,11 @@ const anyks = require("./lib.anyks");
 			// Создаем модель метро
 			const modelMetro = (new ModelMetro("metro")).getData();
 			// Создаем модель метро с городами
-			const modelMetro_cities = (new ModelMetro("metro_cities")).getData();
+			const modelMetro_cities = (new ModelMetro_cities("metro_cities")).getData();
 			// Создаем модель метро с линиями
-			const modelMetro_lines = (new ModelMetro("metro_lines")).getData();
+			const modelMetro_lines = (new ModelMetro_lines("metro_lines")).getData();
 			// Создаем модель метро с станциями
-			const modelMetro_stations = (new ModelMetro("metro_stations")).getData();
+			const modelMetro_stations = (new ModelMetro_stations("metro_stations")).getData();
 			// Создаем схему адресов
 			const Address = idObj.clients.mongo.model("Address", modelAddress);
 			// Создаем схему регионов
