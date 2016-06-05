@@ -756,13 +756,13 @@ const anyks = require("./lib.anyks");
 							// Формируем массив станций для линии
 							line.stationsIds.push(station._id);
 							// Сохраняем станцию метро
-							(new idObj.schemes.Metro_stations(station)).save();
+							(new idObj.schemes.Metro_stations(station)).save((e1, e2) => console.log("++++1", e1, e2));
 						});
 						// Сохраняем линию метро
-						(new idObj.schemes.Metro_lines(line)).save();
+						(new idObj.schemes.Metro_lines(line)).save((e1, e2) => console.log("++++2", e1, e2));
 					});
 					// Сохраняем город метро
-					(new idObj.schemes.Metro_cities(obj)).save();
+					(new idObj.schemes.Metro_cities(obj)).save((e1, e2) => console.log("++++3", e1, e2));
 				});
 				} catch(e) {console.log("------", e);}
 
