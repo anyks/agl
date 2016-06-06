@@ -953,35 +953,52 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					// Подключаем модуль закачки данных
-					const fetch = require('node-fetch');
-					// Создаем штамп времени
-					const timestamp = Math.round((new Date()).valueOf() / 1000);
-					// Адрес запроса
-					const url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$lng&language=ru&timestamp=$tm";
-					/**
-					 * getData Функция обработки полученных данных временной зоны
-					 * @param  {Object} json объект данных временной зоны
-					 */
-					const getData = json => {
-						// Если ответ пришел
-						if(json.status === "OK"){
-							// Удаляем статус
-							json.status = undefined;
+					// Ключ кеша метро
+					const key = "timezone:" + idObj.generateKey(lat + ":" + lng);
+					// Ищем станции в кеше
+					idObj.clients.redis.get(key, (error, result) => {
+						// Если данные это не массив тогда создаем его
+						if($.isset(result)){
 							// Выводим результат
-							resolve(json);
-						// Сообщаем что ничего не найдено
-						} else resolve(false);
-					};
-					// Выполняем запрос данных
-					fetch(url
-						.replace("$lat", lat)
-						.replace("$lng", lng)
-						.replace("$tm", timestamp)
-					// Преобразуем полученный объект
-					).then(res => res.json(), e => idObj.log(["get timezone", e], "error"))
-					// Обрабатываем полученные данные
-					.then(getData, e => idObj.log(["parse timezone", e], "error"));
+							resolve(JSON.parse(result));
+						// Если данные в кеше не найдены тогда продолжаем искать
+						} else {
+							// Подключаем модуль закачки данных
+							const fetch = require('node-fetch');
+							// Создаем штамп времени
+							const timestamp = Math.round((new Date()).valueOf() / 1000);
+							// Адрес запроса
+							const url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$lng&language=ru&timestamp=$tm";
+							/**
+							 * getData Функция обработки полученных данных временной зоны
+							 * @param  {Object} json объект данных временной зоны
+							 */
+							const getData = json => {
+								// Если ответ пришел
+								if(json.status === "OK"){
+									// Удаляем статус
+									json.status = undefined;
+									// Отправляем в Redis на час
+									idObj.clients.redis.multi([
+										["set", key, JSON.stringify(json)],
+										["EXPIRE", key, 3600]
+									]).exec();
+									// Выводим результат
+									resolve(json);
+								// Сообщаем что ничего не найдено
+								} else resolve(false);
+							};
+							// Выполняем запрос данных
+							fetch(url
+								.replace("$lat", lat)
+								.replace("$lng", lng)
+								.replace("$tm", timestamp)
+							// Преобразуем полученный объект
+							).then(res => res.json(), e => idObj.log(["get timezone", e], "error"))
+							// Обрабатываем полученные данные
+							.then(getData, e => idObj.log(["parse timezone", e], "error"));
+						}
+					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с поиском временной зоны", e], "error");}
 			}));
