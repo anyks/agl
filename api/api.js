@@ -342,19 +342,17 @@ const anyks = require("./lib.anyks");
 						|| !$.isset(cacheObject[keyChar][arr[i]._id].timezone)){
 							// Выполняем запрос данных
 							idObj.getAddressFromString(
-								address +
-								" " +
-								arr[i].name +
-								" " +
+								address + " " +
+								arr[i].name + " " +
 								arr[i].type
 							).then(res => {
 								// Если результат найден
 								if($.isset(res)){
 									// Выполняем сохранение данных
-									arr[i]._id	= arr[i].id;
-									arr[i].lat 	= res.lat;
-									arr[i].lng 	= res.lng;
-									arr[i].gps 	= res.gps;
+									arr[i]._id = arr[i].id;
+									arr[i].lat = res.lat;
+									arr[i].lng = res.lng;
+									arr[i].gps = res.gps;
 									// Выполняем поиск временную зону
 									idObj.getTimezone(arr[i].lat, arr[i].lng).then(timezone => {
 										// Если временная зона найдена
