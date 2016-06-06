@@ -219,35 +219,46 @@ const anyks = require("./lib.anyks");
 	const searchAddressInCache = (str, type, parentId = null, parentType = null, limit = 1, idObj) => {
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
-			// Ключ запроса
-			const key = "address:subjects:" + type;
-			// Считываем данные из кеша
-			idObj.clients.redis.get(key, (error, cacheObject) => {
-				// Если данные не найдены, сообщаем что в кеше ничего не найдено
-				if(!$.isset(cacheObject)) resolve(false);
-				// Если данные пришли
-				else {
-					// Создаем ключ названия
-					const keyChar = str[0].toLowerCase();
-					// Выполняем парсинг ответа
-					cacheObject = JSON.parse(cacheObject);
-					// Если такая буква не существует тогда выходим
-					if(!$.isset(cacheObject[keyChar])) resolve(false);
-					// Если данные существуют продолжаем дальше
+			// Если в запросе пришла не одна буква
+			if(str.length > 1){
+				// Ключ запроса
+				const key = "address:subjects:" + type;
+				// Считываем данные из кеша
+				idObj.clients.redis.get(key, (error, cacheObject) => {
+					// Если данные не найдены, сообщаем что в кеше ничего не найдено
+					if(!$.isset(cacheObject)) resolve(false);
+					// Если данные пришли
 					else {
-						// Индекс итераций
-						let i = 0;
-						// Результат ответа
-						let result = [];
-						// Создаем регулярное выражение для поиска
-						let reg = new RegExp("^" + str, "i");
-						// Переходим по всем ключам
-						for(let val in cacheObject[keyChar]){
-							// Если родительский элемент передан
-							if($.isset(parentId) && $.isset(parentType)){
-								// Если родительский элемент найден
-								if((cacheObject[keyChar][val][parentType + "Ids"] === parentId)
-								&& reg.test(cacheObject[keyChar][val].name)){
+						// Создаем ключ названия
+						const keyChar = str[0].toLowerCase();
+						// Выполняем парсинг ответа
+						cacheObject = JSON.parse(cacheObject);
+						// Если такая буква не существует тогда выходим
+						if(!$.isset(cacheObject[keyChar])) resolve(false);
+						// Если данные существуют продолжаем дальше
+						else {
+							// Индекс итераций
+							let i = 0;
+							// Результат ответа
+							let result = [];
+							// Создаем регулярное выражение для поиска
+							let reg = new RegExp("^" + str, "i");
+							// Переходим по всем ключам
+							for(let val in cacheObject[keyChar]){
+								// Если родительский элемент передан
+								if($.isset(parentId) && $.isset(parentType)){
+									// Если родительский элемент найден
+									if((cacheObject[keyChar][val][parentType + "Ids"] === parentId)
+									&& reg.test(cacheObject[keyChar][val].name)){
+										// Запоминаем результат
+										result.push(cacheObject[keyChar][val]);
+										// Увеличиваем значение индекса
+										if(i < (limit - 1)) i++;
+										// Выходим
+										else break;
+									}
+								// Если родительский элемент не существует тогда просто ищем по названию
+								} else if(reg.test(cacheObject[keyChar][val].name)){
 									// Запоминаем результат
 									result.push(cacheObject[keyChar][val]);
 									// Увеличиваем значение индекса
@@ -255,21 +266,14 @@ const anyks = require("./lib.anyks");
 									// Выходим
 									else break;
 								}
-							// Если родительский элемент не существует тогда просто ищем по названию
-							} else if(reg.test(cacheObject[keyChar][val].name)){
-								// Запоминаем результат
-								result.push(cacheObject[keyChar][val]);
-								// Увеличиваем значение индекса
-								if(i < (limit - 1)) i++;
-								// Выходим
-								else break;
 							}
+							// Выводим результат
+							resolve(result.length < 1 ? false : result);
 						}
-						// Выводим результат
-						resolve(result.length < 1 ? false : result);
 					}
-				}
-			});
+				});
+			// Сообщаем что ничего не найдено
+			} else resolve(false);
 		}));
 	};
 	/**
@@ -591,9 +595,6 @@ const anyks = require("./lib.anyks");
 					const Limit			= limit;
 					// Ищем данные адреса сначала в кеше
 					searchAddressInCache(ContentName, ContentType, null, null, Limit, idObj).then(result => {
-						
-						console.log("--------", str, result);
-
 						// Если данные не найдены
 						if(!$.isset(result)){
 							// Подключаем модуль кладра
@@ -732,26 +733,19 @@ const anyks = require("./lib.anyks");
 					const ParentId		= cityId;
 					const WithParent	= 1;
 					const Limit			= limit;
-					// Ищем данные адреса сначала в кеше
-					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
-						// Если данные не найдены
-						if(!$.isset(result)){
-							// Подключаем модуль кладра
-							const kladr = require("kladrapi").ApiQuery;
-							// Выполняем поиск в кладре
-							kladr(idObj.keyKladr, 'foontick', {
-								Limit,
-								ParentId,
-								ParentType,
-								WithParent,
-								ContentName,
-								ContentType
-							}, (err, res) => {
-								// Выполняем обработку данных
-								processResultKladr(err, res, idObj.schemes.Streets, idObj, resolve);
-							});
-						// Отдаем результат из кеша
-						} else resolve(result);
+					// Подключаем модуль кладра
+					const kladr = require("kladrapi").ApiQuery;
+					// Выполняем поиск в кладре
+					kladr(idObj.keyKladr, 'foontick', {
+						Limit,
+						ParentId,
+						ParentType,
+						WithParent,
+						ContentName,
+						ContentType
+					}, (err, res) => {
+						// Выполняем обработку данных
+						processResultKladr(err, res, idObj.schemes.Streets, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -777,26 +771,19 @@ const anyks = require("./lib.anyks");
 					const ParentId		= streetId;
 					const WithParent	= 1;
 					const Limit			= limit;
-					// Ищем данные адреса сначала в кеше
-					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
-						// Если данные не найдены
-						if(!$.isset(result)){
-							// Подключаем модуль кладра
-							const kladr = require("kladrapi").ApiQuery;
-							// Выполняем поиск в кладре
-							kladr(idObj.keyKladr, 'foontick', {
-								Limit,
-								ParentId,
-								ParentType,
-								WithParent,
-								ContentName,
-								ContentType
-							}, (err, res) => {
-								// Выполняем обработку данных
-								processResultKladr(err, res, idObj.schemes.Houses, idObj, resolve);
-							});
-						// Отдаем результат из кеша
-						} else resolve(result);
+					// Подключаем модуль кладра
+					const kladr = require("kladrapi").ApiQuery;
+					// Выполняем поиск в кладре
+					kladr(idObj.keyKladr, 'foontick', {
+						Limit,
+						ParentId,
+						ParentType,
+						WithParent,
+						ContentName,
+						ContentType
+					}, (err, res) => {
+						// Выполняем обработку данных
+						processResultKladr(err, res, idObj.schemes.Houses, idObj, resolve);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
