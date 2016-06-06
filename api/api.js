@@ -260,7 +260,7 @@ const anyks = require("./lib.anyks");
 								|| (arr[i].contentType === 'street')
 								|| (arr[i].contentType === 'building')){
 									// Определяем дистанцию поиска
-									const distance = (arr[i].typeShort === "г" ? 100000 : 3000);
+									const distance = (arr[i].typeShort === "г" ? 150000 : 3000);
 									// Выполняем поиск ближайших станций метро
 									idObj.searchMetroFromGPS(
 										parseFloat(arr[i].lat),
