@@ -38,6 +38,17 @@ const anyks = require("./lib.anyks");
 			throw e;
 		}
 	};
+	// Адрес конфигурационного файла
+	const configFile = "../config/config.json";
+	// Считываем файл конфигурации
+	const config = (fileExists(configFile) ? JSON.parse(fs.readFileSync(configFile, 'utf8')) : false);
+	// Если конфигурационный файл не найден тогда выходим
+	if(!config){
+		// Сообщаем что конфигурационный файл не найден
+		console.error("Конфигурационный файл не найден");
+		// Выходим из приложения
+		process.exit(1);
+	}
 	/**
 	 * exec Функция управления генераторами
 	 * @param  {Generator} gen      генератор
@@ -434,17 +445,6 @@ const anyks = require("./lib.anyks");
 		 * constructor Конструктор класса
 		 */
 		constructor(){
-			// Адрес конфигурационного файла
-			const configFile = "../config/config.json";
-			// Считываем файл конфигурации
-			const config = (fileExists(configFile) ? JSON.parse(fs.readFileSync(configFile, 'utf8')) : false);
-			// Если конфигурационный файл не найден тогда выходим
-			if(!config){
-				// Сообщаем что конфигурационный файл не найден
-				this.log("конфигурационный файл не найден", "error");
-				// Выходим из приложения
-				process.exit(1);
-			}
 			// Устанавливаем объект api anyks
 			this.anyks = $;
 			// Устанавливаем объект клиентов
