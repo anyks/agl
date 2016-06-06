@@ -42,6 +42,11 @@
 					type:	String,
 					ref:	'Districts'
 				},
+				metro: [{
+					type:		String,
+					ref:		'Metro_stations',
+					optional:	true
+				}],
 				timezone: {
 					type: {
 						dstOffset:		Number,

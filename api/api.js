@@ -235,12 +235,16 @@ const anyks = require("./lib.anyks");
 									});
 								}
 								// Если это улица или дом то ищем ближайшие станции метро
-								if((arr[i].contentType === 'street')
+								if((arr[i].contentType === 'city')
+								|| (arr[i].contentType === 'street')
 								|| (arr[i].contentType === 'building')){
+									// Определяем дистанцию поиска
+									const distance = (arr[i].contentType === "city" ? 100000 : 3000);
 									// Выполняем поиск ближайших станций метро
 									idObj.searchMetroFromGPS(
 										parseFloat(arr[i].lat),
-										parseFloat(arr[i].lng)
+										parseFloat(arr[i].lng),
+										distance
 									).then(metro => {
 										// Если метро передано
 										if($.isArray(metro) && metro.length){
