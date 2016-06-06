@@ -1189,6 +1189,8 @@ const anyks = require("./lib.anyks");
 				 * @param  {Array} arr объект данными метро
 				 */
 				const getData = arr => {
+					// Объект с данными метро для кеша
+					const cacheObject = {};
 					// Подключаемся к коллекции метро
 					const metro = idObj.clients.mongo.connection.db.collection("metro");
 					// Подключаемся к коллекции метро городов
@@ -1237,6 +1239,8 @@ const anyks = require("./lib.anyks");
 									// Изменяем идентификатор записи
 									arr[i]._id		= data._id;
 									arr[i].linesIds	= [];
+									// Запоминаем данные в кеше
+									cacheObject[arr[i]._id] = {};
 									// Формируем идентификаторы линий
 									arr[i].lines.forEach(line => {
 										// Формируем линию метро
@@ -1256,6 +1260,21 @@ const anyks = require("./lib.anyks");
 											station.gps = [station.lat, station.lng];
 											// Формируем массив станций для линии
 											line.stationsIds.push(station._id);
+											// Создаем ключ станции
+											const keyChar = station.name[0].toLowerCase();
+											// Создаем объект метро для хранения данных
+											if(!$.isArray(cacheObject[arr[i]._id][keyChar])) cacheObject[arr[i]._id][keyChar] = [];
+											// Добавляем в кеш данные
+											cacheObject[arr[i]._id][keyChar].push({
+												id:		station._id,
+												name:	station.name,
+												lat:	station.lat,
+												lng:	station.lng,
+												order:	station.order,
+												line:	line.name,
+												color:	line.color,
+												city:	arr[i].name
+											});
 											// Сохраняем станцию метро
 											(new idObj.schemes.Metro_stations(station)).save();
 										});
@@ -1294,6 +1313,13 @@ const anyks = require("./lib.anyks");
 							metro_stations.createIndex({order: 1}, {name: "order"});
 							metro_stations.createIndex({lat: 1, lng: 1}, {name: "gps"});
 							metro_stations.createIndex({gps: "2dsphere"}, {name: "locations"});
+							// Ключа кеша метро
+							const key = "metro:stations";
+							// Записываем данные в кеш
+							idObj.clients.redis.set(key, JSON.stringify(cacheObject));
+
+							console.log("++++++++", cacheObject);
+
 							// Сообщаем что все удачно выполнено
 							resolve(true);
 						}
