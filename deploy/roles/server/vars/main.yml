@@ -7,3 +7,12 @@ config_dir: "config"
 git_dir: "/var/www/git"
 work_dir: "/var/www"
 logs_dir: "/var/www/logs"
+rmdirs:
+  - "models"
+  - "server"
+  - "api"
+  - "config"
+cpdirs:
+  - "models"
+  - "server"
+  - "api"

@@ -4,18 +4,14 @@
 
 - name: Remove old data
   action: shell rm -rf {{ work_dir }}/{{ name }}/{{ item }}
-  with_items:
-    - models
-    - server
-    - api
-    - config/config.json
+  with_items: {{ rmdirs }}
 
 - name: Copy new files
   action: shell cp -rf {{ git_dir }}/{{ name }}/{{ item }} {{ work_dir }}/{{ name }}/{{ item }}
-  with_items:
-    - models
-    - server
-    - api
+  with_items: {{ cpdirs }}
+
+- name: Create config dir
+  acton: shell mkdir {{ work_dir }}/{{ name }}/{{ config_dir }}
 
 - name: Set permissions
   action: shell sudo {{ work_dir }}/permissions.sh
