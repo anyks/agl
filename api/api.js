@@ -205,9 +205,6 @@ const anyks = require("./lib.anyks");
 					// Если ошибки нет
 					if(!$.isset(err) && $.isset(data)
 					&& $.isObject(data)){
-						
-						obj.lat = "12";
-
 						// Выполняем обновление
 						schema.update({_id: obj._id}, obj, {
 							upsert:	true,
