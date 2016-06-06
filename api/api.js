@@ -39,7 +39,7 @@ const anyks = require("./lib.anyks");
 		}
 	};
 	// Адрес конфигурационного файла
-	const configFile = process.argv[1].replace(/\/\w+\.\w+$/i, "") + "/config/config.json";
+	const configFile = process.argv[1].replace(/\/\w+\.\w+$/i, "") + "/../config/config.json";
 	// Считываем файл конфигурации
 	const config = (fileExists(configFile) ? JSON.parse(fs.readFileSync(configFile, 'utf8')) : false);
 	// Если конфигурационный файл не найден тогда выходим
