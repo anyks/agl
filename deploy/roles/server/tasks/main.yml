@@ -8,10 +8,7 @@
     - models
     - server
     - api
-#    - config/config.json
-#    - node_modules/brain
-#    - node_modules/anyks
-#    - config/help
+    - config/config.json
 
 - name: Copy new files
   action: shell cp -rf {{ git_dir }}/{{ name }}/{{ item }} {{ work_dir }}/{{ name }}/{{ item }}
@@ -19,12 +16,9 @@
     - models
     - server
     - api
-#    - node_modules/brain
-#    - node_modules/anyks
-#    - config/help
 
 - name: Set permissions
   action: shell sudo {{ work_dir }}/permissions.sh
 
-#- name: Copy config file
-#  template: src="config.j2" dest="{{ work_dir }}/config/config.json"
+- name: Copy config file
+  template: src="config.j2" dest="{{ work_dir }}/{{ name }}/{{ config_dir }}/config.json"

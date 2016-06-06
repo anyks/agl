@@ -12,19 +12,43 @@
 const anyks = require("./lib.anyks");
 // Функция активации сервера
 (function($){
-	// Название системы
-	const name = "agl";
-	// Версия системы
-	const version = "1.0";
-	// Ключ кладра
-	const kladr = "57500faf0a69decc7d8b4568";
-	// Отладочная информация
-	const debug = {
-		// Отображать ошибки
-		"errors":	true,
-		// Отображать сообщения
-		"message":	true
+	// Подключаем модуль файловой системы
+	const fs = require('fs');
+	/**
+	 * fileExists Функция проверки на существование файла
+	 * @param  {String} path адрес файла
+	 * @return {Boolean}     результат проверки на существование файла
+	 */
+	const fileExists = path => {
+		try  {
+			// Выводим сообщение что файл существует
+			return fs.statSync(path).isFile();
+		// Если возникает ошибка то обрабатываем ее
+		} catch(e) {
+			// Обрабатываем ошибку
+			if(e.code === "ENOENT"){
+				// Выводим в консоль сообщение что файл не найден
+				console.error("File does not exist.");
+				// Сообщаем что файл не найден
+				return false;
+			}
+			// Выводим в консоль сообщение об ошибке
+			console.error("Exception fs.statSync (", path, "): ", e);
+			// Генерируем ошибку
+			throw e;
+		}
 	};
+	// Адрес конфигурационного файла
+	const configFile = "../config/config.json";
+	// Считываем файл конфигурации
+	const config = (fileExists(configFile) ? JSON.parse(fs.readFileSync(configFile, 'utf8')) : false);
+	// Если конфигурационный файл не найден тогда выходим
+	if(!config){
+		// Сообщаем что конфигурационный файл не найден
+		console.error("Конфигурационный файл не найден");
+		// Выходим из приложения
+		process.exit(1);
+	}
 	/**
 	 * exec Функция управления генераторами
 	 * @param  {Generator} gen      генератор
@@ -423,16 +447,16 @@ const anyks = require("./lib.anyks");
 		constructor(){
 			// Устанавливаем объект api anyks
 			this.anyks = $;
-			// Устанавливаем название системы
-			this.name = name;
 			// Устанавливаем объект клиентов
 			this.clients = {};
+			// Устанавливаем название системы
+			this.name = config.name;
 			// Устанавливаем тип отладки
-			this.debug = debug;
+			this.debug = config.debug;
 			// Устанавливаем ключ кладра
-			this.keyKladr = kladr;
+			this.keyKladr = config.kladr;
 			// Устанавливаем версию системы
-			this.version = version;
+			this.version = config.version;
 		}
 		/**
 		 * generateKey Функция генерирования ключа

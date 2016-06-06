@@ -1,15 +1,15 @@
 {
 	// Название системы
-	"name": "{{ name }}",
+	"name": "agl",
 	// Версия системы
-	"version": "{{ version }}",
+	"version": "1.0",
 	// Ключ кладра
-	"kladr": "{{ kladr }}",
+	"kladr": "57500faf0a69decc7d8b4568",
 	// Отладочная информация
 	"debug": {
 		// Отображать ошибки
-		"errors": {{ debug.errors }},
+		"errors": true,
 		// Отображать сообщения
-		"message": {{ debug.message }}
+		"message": true
 	}
 }
