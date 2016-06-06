@@ -20,7 +20,7 @@ const anyks = require("./lib.anyks");
 	 * @return {Boolean}     результат проверки на существование файла
 	 */
 	const fileExists = path => {
-		try  {
+		try {
 			// Выводим сообщение что файл существует
 			return fs.statSync(path).isFile();
 		// Если возникает ошибка то обрабатываем ее
