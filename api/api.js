@@ -212,7 +212,7 @@ const anyks = require("./lib.anyks");
 						schema.update({_id: obj._id}, obj, {
 							upsert:	true,
 							multi:	true
-						});
+						}, err => console.log(err));
 					// Просто добавляем новый объект
 					} else (new schema(obj)).save();
 				});
