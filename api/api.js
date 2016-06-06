@@ -277,10 +277,10 @@ const anyks = require("./lib.anyks");
 	 * @param  {Array}   arr       Массив с адресами для получения данных
 	 * @param  {String}  address   префикс для адреса
 	 * @param  {Object}  idObj     идентификатор текущего объекта
-	 * @param  {Object}  schema    схема для сохранения
+	 * @param  {Object}  scheme    схема для сохранения
 	 * @return {Promise}           промис ответа
 	 */
-	const getGPSForAddress = (arr, address, idObj, schema) => {
+	const getGPSForAddress = (arr, address, idObj, scheme) => {
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
 			// Ключ запроса
@@ -299,7 +299,7 @@ const anyks = require("./lib.anyks");
 					// Создаем ключ названия
 					const keyChar = obj.name[0].toLowerCase();
 					// Запрашиваем все данные из базы
-					schema.findOne({_id: obj._id})
+					scheme.findOne({_id: obj._id})
 					// Выполняем запрос
 					.exec((err, data) => {
 						// Если ошибки нет
@@ -310,12 +310,12 @@ const anyks = require("./lib.anyks");
 							// Если временная зона была не найдена
 							if(!$.isset(obj.timezone)) obj.timezone = data.timezone;
 							// Выполняем обновление
-							schema.update({_id: obj._id}, obj, {
+							scheme.update({_id: obj._id}, obj, {
 								upsert:	true,
 								multi:	true
 							}, err => {if($.isset(err)) idObj.log(["update address in db", err], "error");});
 						// Просто добавляем новый объект
-						} else (new schema(obj)).save();
+						} else (new scheme(obj)).save();
 						// Сохраняем данные в кеше
 						cacheObject[keyChar][obj._id] = obj;
 						// Сохраняем данные в кеше
@@ -418,11 +418,11 @@ const anyks = require("./lib.anyks");
 	 * processResultKladr Функция обработки результата полученного с базы данных Кладр
 	 * @param  {Object}   err      объект с ошибкой
 	 * @param  {Object}   res      объект с результатом
-	 * @param  {Object}   schema   объект схемы базы данных
+	 * @param  {Object}   scheme   объект схемы базы данных
 	 * @param  {Object}   idObj    идентификатор текущего объекта
 	 * @param  {Function} callback функция обратного вызова
 	 */
-	const processResultKladr = (err, res, schema, idObj, callback) => {
+	const processResultKladr = (err, res, scheme, idObj, callback) => {
 		// Если возникает ошибка тогда выводим её
 		if($.isset(err) && !$.isset(res)){
 			// Выводим сообщение об ошибке
@@ -441,7 +441,7 @@ const anyks = require("./lib.anyks");
 				+ ", " + val.name + " " + val.type;
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
 			// Выполняем поиск GPS координат для текущего адреса
-			getGPSForAddress(res.result, address, idObj, schema)
+			getGPSForAddress(res.result, address, idObj, scheme)
 			.then(result => idObj.log([
 				"получение gps координат для адреса:",
 				(res.result.length ? (res.result.length > 1 ? res.result.reduce((sum, val) => {
@@ -1188,6 +1188,10 @@ const anyks = require("./lib.anyks");
 				const regions = idObj.clients.mongo.connection.db.collection("regions");
 				// Удаляем колекцию регионов
 				regions.drop();
+				// Ключ запроса
+				const key = "address:subjects:region";
+				// Удаляем данные из кеша
+				idObj.clients.redis.del(key);
 				/**
 				 * getRegion Рекурсивная функция загрузки региона
 				 * @param  {Number} i текущий индекс массива
@@ -1247,6 +1251,10 @@ const anyks = require("./lib.anyks");
 				const districts = idObj.clients.mongo.connection.db.collection("districts");
 				// Удаляем колекцию районов
 				districts.drop();
+				// Ключ запроса
+				const key = "address:subjects:district";
+				// Удаляем данные из кеша
+				idObj.clients.redis.del(key);
 				// Запрашиваем все данные регионов
 				idObj.schemes.Regions.find({})
 				// Запрашиваем данные регионов
@@ -1329,6 +1337,10 @@ const anyks = require("./lib.anyks");
 				const cities = idObj.clients.mongo.connection.db.collection("cities");
 				// Удаляем колекцию городов
 				cities.drop();
+				// Ключ запроса
+				const key = "address:subjects:city";
+				// Удаляем данные из кеша
+				idObj.clients.redis.del(key);
 				// Запрашиваем все данные регионов
 				idObj.schemes.Regions.find({})
 				// Запрашиваем данные регионов
