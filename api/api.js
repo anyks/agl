@@ -1318,7 +1318,7 @@ const anyks = require("./lib.anyks");
 							// Записываем данные в кеш
 							idObj.clients.redis.set(key, JSON.stringify(cacheObject));
 
-							console.log("++++++++", cacheObject);
+							console.log("++++++++", cacheObject["7700000000000"]);
 
 							// Сообщаем что все удачно выполнено
 							resolve(true);
