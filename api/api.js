@@ -207,6 +207,72 @@ const anyks = require("./lib.anyks");
 		});
 	};
 	/**
+	 * searchAddressInCache Функция поиска данных в кеше
+	 * @param  {String} str        строка запроса
+	 * @param  {String} type       тип запроса
+	 * @param  {String} parentId   идентификатор родительский
+	 * @param  {String} parentType тип родителя
+	 * @param  {Number} limit      лимит результатов для выдачи
+	 * @param  {Object} idObj      идентификатор текущего объекта
+	 * @return {Promise}           промис содержащий результат
+	 */
+	const searchAddressInCache = (str, type, parentId = null, parentType = null, limit = 1, idObj) => {
+		// Создаем промис для обработки
+		return (new Promise(resolve => {
+			// Ключ запроса
+			const key = "address:subjects:" + type;
+			// Считываем данные из кеша
+			idObj.clients.redis.get(key, (error, cacheObject) => {
+				// Если данные не найдены, сообщаем что в кеше ничего не найдено
+				if(!$.isset(cacheObject)) resolve(false);
+				// Если данные пришли
+				else {
+					// Создаем ключ названия
+					const keyChar = str[0].toLowerCase();
+					// Выполняем парсинг ответа
+					cacheObject = JSON.parse(cacheObject);
+					// Если такая буква не существует тогда выходим
+					if(!$.isset(cacheObject[keyChar])) resolve(false);
+					// Если данные существуют продолжаем дальше
+					else {
+						// Индекс итераций
+						let i = 0;
+						// Результат ответа
+						let result = [];
+						// Создаем регулярное выражение для поиска
+						let reg = new RegExp("^" + str, "i");
+						// Переходим по всем ключам
+						for(let val in cacheObject[keyChar]){
+							// Если родительский элемент передан
+							if($.isset(parentId) && $.isset(parentType)){
+								// Если родительский элемент найден
+								if((cacheObject[keyChar][val][parentType + "Ids"] === parentId)
+								&& reg.test(cacheObject[keyChar][val].name)){
+									// Запоминаем результат
+									result.push(cacheObject[keyChar][val]);
+									// Увеличиваем значение индекса
+									if(i < (limit - 1)) i++;
+									// Выходим
+									else break;
+								}
+							// Если родительский элемент не существует тогда просто ищем по названию
+							} else if(reg.test(cacheObject[keyChar][val].name)){
+								// Запоминаем результат
+								result.push(cacheObject[keyChar][val]);
+								// Увеличиваем значение индекса
+								if(i < (limit - 1)) i++;
+								// Выходим
+								else break;
+							}
+						}
+						// Выводим результат
+						resolve(result.length < 1 ? false : result);
+					}
+				}
+			});
+		}));
+	};
+	/**
 	 * getGPSForAddress Функция получения gps координат для указанного адреса
 	 * @param  {Array}   arr       Массив с адресами для получения данных
 	 * @param  {String}  address   префикс для адреса
@@ -217,104 +283,135 @@ const anyks = require("./lib.anyks");
 	const getGPSForAddress = (arr, address, idObj, schema) => {
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
-			/**
-			 * updateDB Функция обновления данных в базе
-			 * @param  {Object} obj объект для обновления данных
-			 */
-			const updateDB = obj => {
-				// Запрашиваем все данные из базы
-				schema.findOne({_id: obj._id})
-				// Выполняем запрос
-				.exec((err, data) => {
-					// Если ошибки нет
-					if(!$.isset(err) && $.isset(data)
-					&& $.isObject(data)){
-						// Выполняем обновление
-						schema.update({_id: obj._id}, obj, {
-							upsert:	true,
-							multi:	true
-						}, err => {if($.isset(err)) idObj.log(["update address in db", err], "error");});
-					// Просто добавляем новый объект
-					} else (new schema(obj)).save();
-				});
-			};
-			/**
-			 * getGPS Рекурсивная функция поиска gps координат для города
-			 * @param  {Array} arr массив объектов для обхода
-			 * @param  {Number} i  индекс массива
-			 */
-			const getGPS = (arr, i = 0) => {
-				// Если данные не все получены
-				if(i < arr.length){
-					// Выполняем запрос данных
-					idObj.getAddressFromString(
-						address +
-						" " +
-						arr[i].name +
-						" " +
-						arr[i].type
-					).then(res => {
-						// Если результат найден
-						if($.isset(res)){
-							// Выполняем сохранение данных
-							arr[i]._id	= arr[i].id;
-							arr[i].lat 	= res.lat;
-							arr[i].lng 	= res.lng;
-							arr[i].gps 	= res.gps;
-							// Выполняем поиск временную зону
-							idObj.getTimezone(arr[i].lat, arr[i].lng).then(timezone => {
-								// Если временная зона найдена
-								if(timezone) arr[i].timezone = timezone;
-								// Если объект внешних ключей существует тогда добавляем их
-								if($.isArray(arr[i].parents)){
-									// Переходим по всему массиву данных
-									arr[i].parents.forEach(val => {
-										// Определяем тип контента
-										switch(val.contentType){
-											// Формируем внешние ключи
-											case 'region':		arr[i].regionId		= val.id;	break;
-											case 'district':	arr[i].districtId	= val.id;	break;
-											case 'city':		arr[i].cityId		= val.id;	break;
-											case 'street':		arr[i].streetId		= val.id;	break;
+			// Ключ запроса
+			const key = "address:subjects:" + arr[0].contentType;
+			// Считываем данные из кеша
+			idObj.clients.redis.get(key, (error, cacheObject) => {
+				// Если данные не найдены
+				if(!$.isset(cacheObject)) cacheObject = {};
+				// Выполняем парсинг ответа
+				else cacheObject = JSON.parse(cacheObject);
+				/**
+				 * updateDB Функция обновления данных в базе
+				 * @param  {Object} obj объект для обновления данных
+				 */
+				const updateDB = obj => {
+					// Создаем ключ названия
+					const keyChar = obj.name[0].toLowerCase();
+					// Запрашиваем все данные из базы
+					schema.findOne({_id: obj._id})
+					// Выполняем запрос
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isset(data)
+						&& $.isObject(data)){
+							// Если метро не найдено
+							if(!$.isset(obj.metro)) obj.metro = data.metro;
+							// Если временная зона была не найдена
+							if(!$.isset(obj.timezone)) obj.timezone = data.timezone;
+							// Выполняем обновление
+							schema.update({_id: obj._id}, obj, {
+								upsert:	true,
+								multi:	true
+							}, err => {if($.isset(err)) idObj.log(["update address in db", err], "error");});
+						// Просто добавляем новый объект
+						} else (new schema(obj)).save();
+						// Сохраняем данные в кеше
+						cacheObject[keyChar][obj._id] = obj;
+						// Сохраняем данные в кеше
+						idObj.clients.redis.set(key, JSON.stringify(cacheObject));
+					});
+				};
+				/**
+				 * getGPS Рекурсивная функция поиска gps координат для города
+				 * @param  {Array} arr массив объектов для обхода
+				 * @param  {Number} i  индекс массива
+				 */
+				const getGPS = (arr, i = 0) => {
+					// Если данные не все получены
+					if(i < arr.length){
+						// Создаем ключ названия
+						const keyChar = arr[i].name[0].toLowerCase();
+						// Если идентификатор на такую букву не существует то создаем его
+						if(!$.isset(cacheObject[keyChar])) cacheObject[keyChar] = {};
+						// Если идентификатор объекта не существует то создаем его
+						if(!$.isset(cacheObject[keyChar][arr[i]._id])) cacheObject[keyChar][arr[i]._id] = {};
+						// Если в объекте не найдена временная зона или gps координаты или станции метро
+						if(!$.isArray(cacheObject[keyChar][arr[i]._id].gps)
+						|| !$.isArray(cacheObject[keyChar][arr[i]._id].metro)
+						|| !$.isset(cacheObject[keyChar][arr[i]._id].timezone)){
+							// Выполняем запрос данных
+							idObj.getAddressFromString(
+								address +
+								" " +
+								arr[i].name +
+								" " +
+								arr[i].type
+							).then(res => {
+								// Если результат найден
+								if($.isset(res)){
+									// Выполняем сохранение данных
+									arr[i]._id	= arr[i].id;
+									arr[i].lat 	= res.lat;
+									arr[i].lng 	= res.lng;
+									arr[i].gps 	= res.gps;
+									// Выполняем поиск временную зону
+									idObj.getTimezone(arr[i].lat, arr[i].lng).then(timezone => {
+										// Если временная зона найдена
+										if(timezone) arr[i].timezone = timezone;
+										// Если объект внешних ключей существует тогда добавляем их
+										if($.isArray(arr[i].parents)){
+											// Переходим по всему массиву данных
+											arr[i].parents.forEach(val => {
+												// Определяем тип контента
+												switch(val.contentType){
+													// Формируем внешние ключи
+													case 'region':		arr[i].regionId		= val.id;	break;
+													case 'district':	arr[i].districtId	= val.id;	break;
+													case 'city':		arr[i].cityId		= val.id;	break;
+													case 'street':		arr[i].streetId		= val.id;	break;
+												}
+											});
 										}
+										// Если это улица или дом то ищем ближайшие станции метро
+										if((arr[i].contentType === 'city')
+										|| (arr[i].contentType === 'street')
+										|| (arr[i].contentType === 'building')){
+											// Определяем дистанцию поиска
+											const distance = (arr[i].typeShort === "г" ? 150000 : 3000);
+											// Выполняем поиск ближайших станций метро
+											idObj.searchMetroFromGPS(
+												parseFloat(arr[i].lat),
+												parseFloat(arr[i].lng),
+												distance
+											).then(metro => {
+												// Если метро передано
+												if($.isArray(metro) && metro.length){
+													// Создаем пустой массив с метро
+													arr[i].metro = [];
+													// Переходим по всему массиву данных
+													metro.forEach(val => arr[i].metro.push(val._id));
+												}
+												// Сохраняем данные
+												updateDB(arr[i]);
+											});
+										// Сохраняем данные
+										} else updateDB(arr[i]);
 									});
 								}
-								// Если это улица или дом то ищем ближайшие станции метро
-								if((arr[i].contentType === 'city')
-								|| (arr[i].contentType === 'street')
-								|| (arr[i].contentType === 'building')){
-									// Определяем дистанцию поиска
-									const distance = (arr[i].typeShort === "г" ? 150000 : 3000);
-									// Выполняем поиск ближайших станций метро
-									idObj.searchMetroFromGPS(
-										parseFloat(arr[i].lat),
-										parseFloat(arr[i].lng),
-										distance
-									).then(metro => {
-										// Если метро передано
-										if($.isArray(metro) && metro.length){
-											// Создаем пустой массив с метро
-											arr[i].metro = [];
-											// Переходим по всему массиву данных
-											metro.forEach(val => arr[i].metro.push(val._id));
-										}
-										// Сохраняем данные
-										updateDB(arr[i]);
-									});
-								// Сохраняем данные
-								} else updateDB(arr[i]);
+								// Идем дальше
+								getGPS(arr, i + 1);
 							});
-						}
 						// Идем дальше
-						getGPS(arr, i + 1);
-					});
-				// Сообщаем что все сохранено удачно
-				} else resolve(true);
-				// Выходим
-				return;
-			};
-			// Выполняем запрос на получение gps данных
-			getGPS(arr);
+						} else getGPS(arr, i + 1);
+					// Сообщаем что все сохранено удачно
+					} else resolve(true);
+					// Выходим
+					return;
+				};
+				// Выполняем запрос на получение gps данных
+				getGPS(arr);
+			});
 		}));
 	};
 	/**
@@ -487,22 +584,29 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					// Подключаем модуль кладра
-					const kladr = require("kladrapi").ApiQuery;
 					// Создаем переменные
 					const ContentName	= str;
 					const ContentType	= 'region';
 					const WithParent	= 0;
 					const Limit			= limit;
-					// Выполняем поиск в кладре
-					kladr(idObj.keyKladr, 'foontick', {
-						Limit,
-						WithParent,
-						ContentName,
-						ContentType
-					}, (err, res) => {
-						// Выполняем обработку данных
-						processResultKladr(err, res, idObj.schemes.Regions, idObj, resolve);
+					// Ищем данные адреса сначала в кеше
+					searchAddressInCache(ContentName, ContentType, null, null, Limit, idObj).then(result => {
+						// Если данные не найдены
+						if(!$.isset(result)){
+							// Подключаем модуль кладра
+							const kladr = require("kladrapi").ApiQuery;
+							// Выполняем поиск в кладре
+							kladr(idObj.keyKladr, 'foontick', {
+								Limit,
+								WithParent,
+								ContentName,
+								ContentType
+							}, (err, res) => {
+								// Выполняем обработку данных
+								processResultKladr(err, res, idObj.schemes.Regions, idObj, resolve);
+							});
+						// Отдаем результат из кеша
+						} else resolve(result);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -521,26 +625,33 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					// Подключаем модуль кладра
-					const kladr = require("kladrapi").ApiQuery;
 					// Создаем переменные
 					const ContentName	= str;
 					const ContentType	= 'district';
 					const ParentType	= ($.isset(regionId) ? 'region' : undefined);
-					const ParentId		= regionId;
+					const ParentId		= ($.isset(regionId) ? regionId : undefined);
 					const WithParent	= 1;
 					const Limit			= limit;
-					// Выполняем поиск в кладре
-					kladr(idObj.keyKladr, 'foontick', {
-						Limit,
-						ParentId,
-						ParentType,
-						WithParent,
-						ContentName,
-						ContentType
-					}, (err, res) => {
-						// Выполняем обработку данных
-						processResultKladr(err, res, idObj.schemes.Districts, idObj, resolve);
+					// Ищем данные адреса сначала в кеше
+					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
+						// Если данные не найдены
+						if(!$.isset(result)){
+							// Подключаем модуль кладра
+							const kladr = require("kladrapi").ApiQuery;
+							// Выполняем поиск в кладре
+							kladr(idObj.keyKladr, 'foontick', {
+								Limit,
+								ParentId,
+								ParentType,
+								WithParent,
+								ContentName,
+								ContentType
+							}, (err, res) => {
+								// Выполняем обработку данных
+								processResultKladr(err, res, idObj.schemes.Districts, idObj, resolve);
+							});
+						// Отдаем результат из кеша
+						} else resolve(result);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -560,8 +671,6 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					// Подключаем модуль кладра
-					const kladr = require("kladrapi").ApiQuery;
 					// Создаем переменные
 					const ContentName	= str;
 					const ContentType	= 'city';
@@ -575,17 +684,26 @@ const anyks = require("./lib.anyks");
 					);
 					const WithParent	= 1;
 					const Limit			= limit;
-					// Выполняем поиск в кладре
-					kladr(idObj.keyKladr, 'foontick', {
-						Limit,
-						ParentId,
-						ParentType,
-						WithParent,
-						ContentType,
-						ContentName
-					}, (err, res) => {
-						// Выполняем обработку данных
-						processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
+					// Ищем данные адреса сначала в кеше
+					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
+						// Если данные не найдены
+						if(!$.isset(result)){
+							// Подключаем модуль кладра
+							const kladr = require("kladrapi").ApiQuery;
+							// Выполняем поиск в кладре
+							kladr(idObj.keyKladr, 'foontick', {
+								Limit,
+								ParentId,
+								ParentType,
+								WithParent,
+								ContentType,
+								ContentName
+							}, (err, res) => {
+								// Выполняем обработку данных
+								processResultKladr(err, res, idObj.schemes.Cities, idObj, resolve);
+							});
+						// Отдаем результат из кеша
+						} else resolve(result);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -604,8 +722,6 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					// Подключаем модуль кладра
-					const kladr = require("kladrapi").ApiQuery;
 					// Создаем переменные
 					const ContentName	= str;
 					const ContentType	= 'street';
@@ -613,17 +729,26 @@ const anyks = require("./lib.anyks");
 					const ParentId		= cityId;
 					const WithParent	= 1;
 					const Limit			= limit;
-					// Выполняем поиск в кладре
-					kladr(idObj.keyKladr, 'foontick', {
-						Limit,
-						ParentId,
-						ParentType,
-						WithParent,
-						ContentName,
-						ContentType
-					}, (err, res) => {
-						// Выполняем обработку данных
-						processResultKladr(err, res, idObj.schemes.Streets, idObj, resolve);
+					// Ищем данные адреса сначала в кеше
+					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
+						// Если данные не найдены
+						if(!$.isset(result)){
+							// Подключаем модуль кладра
+							const kladr = require("kladrapi").ApiQuery;
+							// Выполняем поиск в кладре
+							kladr(idObj.keyKladr, 'foontick', {
+								Limit,
+								ParentId,
+								ParentType,
+								WithParent,
+								ContentName,
+								ContentType
+							}, (err, res) => {
+								// Выполняем обработку данных
+								processResultKladr(err, res, idObj.schemes.Streets, idObj, resolve);
+							});
+						// Отдаем результат из кеша
+						} else resolve(result);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -642,8 +767,6 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					// Подключаем модуль кладра
-					const kladr = require("kladrapi").ApiQuery;
 					// Создаем переменные
 					const ContentName	= str;
 					const ContentType	= 'building';
@@ -651,17 +774,26 @@ const anyks = require("./lib.anyks");
 					const ParentId		= streetId;
 					const WithParent	= 1;
 					const Limit			= limit;
-					// Выполняем поиск в кладре
-					kladr(idObj.keyKladr, 'foontick', {
-						Limit,
-						ParentId,
-						ParentType,
-						WithParent,
-						ContentName,
-						ContentType
-					}, (err, res) => {
-						// Выполняем обработку данных
-						processResultKladr(err, res, idObj.schemes.Houses, idObj, resolve);
+					// Ищем данные адреса сначала в кеше
+					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
+						// Если данные не найдены
+						if(!$.isset(result)){
+							// Подключаем модуль кладра
+							const kladr = require("kladrapi").ApiQuery;
+							// Выполняем поиск в кладре
+							kladr(idObj.keyKladr, 'foontick', {
+								Limit,
+								ParentId,
+								ParentType,
+								WithParent,
+								ContentName,
+								ContentType
+							}, (err, res) => {
+								// Выполняем обработку данных
+								processResultKladr(err, res, idObj.schemes.Houses, idObj, resolve);
+							});
+						// Отдаем результат из кеша
+						} else resolve(result);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -678,54 +810,71 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Подключаем модуль закачки данных
-				const fetch = require('node-fetch');
-				// Массив с геокодерами
-				const urlsGeo = [
-					'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
-					'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
-					'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
-				].map(val => val.replace("$lat", lat).replace("$lng", lng));
-				// Получаем объект запроса с геокодера
-				const init = obj => {
-					// Выполняем обработку результата геокодера
-					parseAnswerGeoCoder(obj, idObj).then(result => {
-						// Сохраняем результат в базу данных
-						if(result) (new idObj.schemes.Address(result)).save();
+				// Ключ кеша адреса
+				const key = "address:gps:" + idObj.generateKey(lat + ":" + lng);
+				// Ищем станции в кеше
+				idObj.clients.redis.get(key, (error, result) => {
+					// Если данные это не массив тогда создаем его
+					if($.isset(result)){
 						// Выводим результат
-						resolve(result);
-					});
-				};
-				/**
-				 * *getData Генератор для получения данных с геокодеров
-				 */
-				const getData = function * (){
-					// Выполняем запрос с геокодера Yandex
-					const yandex = yield fetch(urlsGeo[0]).then(
-						res => (res.status === 200 ? res.json() : false),
-						err => false
-					);
-					// Выполняем запрос с геокодера Google
-					const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-						res => (res.status === 200 ? res.json() : false),
-						err => false
-					) : false);
-					// Выполняем запрос с геокодера OpenStreet Maps
-					const osm = (!google ? yield fetch(urlsGeo[2]).then(
-						res => (res.status === 200 ? res.json() : false),
-						err => false
-					) : false);
-					// Создаем объект ответа
-					const obj = (
-						yandex ? {data: yandex, status: "yandex"} :
-						(google ? {data: google, status: "google"} :
-						(osm ? {data: osm, status: "osm"} : false))
-					);
-					// Выполняем инициализацию
-					init(obj);
-				};
-				// Запускаем коннект
-				exec(getData());
+						resolve(JSON.parse(result));
+					// Если данные в кеше не найдены тогда продолжаем искать
+					} else {
+						// Подключаем модуль закачки данных
+						const fetch = require('node-fetch');
+						// Массив с геокодерами
+						const urlsGeo = [
+							'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
+							'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
+							'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
+						].map(val => val.replace("$lat", lat).replace("$lng", lng));
+						// Получаем объект запроса с геокодера
+						const init = obj => {
+							// Выполняем обработку результата геокодера
+							parseAnswerGeoCoder(obj, idObj).then(result => {
+								// Сохраняем результат в базу данных
+								if(result) (new idObj.schemes.Address(result)).save();
+								// Отправляем в Redis на час
+								idObj.clients.redis.multi([
+									["set", key, JSON.stringify(result)],
+									["EXPIRE", key, 3600]
+								]).exec();
+								// Выводим результат
+								resolve(result);
+							});
+						};
+						/**
+						 * *getData Генератор для получения данных с геокодеров
+						 */
+						const getData = function * (){
+							// Выполняем запрос с геокодера Yandex
+							const yandex = yield fetch(urlsGeo[0]).then(
+								res => (res.status === 200 ? res.json() : false),
+								err => false
+							);
+							// Выполняем запрос с геокодера Google
+							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+								res => (res.status === 200 ? res.json() : false),
+								err => false
+							) : false);
+							// Выполняем запрос с геокодера OpenStreet Maps
+							const osm = (!google ? yield fetch(urlsGeo[2]).then(
+								res => (res.status === 200 ? res.json() : false),
+								err => false
+							) : false);
+							// Создаем объект ответа
+							const obj = (
+								yandex ? {data: yandex, status: "yandex"} :
+								(google ? {data: google, status: "google"} :
+								(osm ? {data: osm, status: "osm"} : false))
+							);
+							// Выполняем инициализацию
+							init(obj);
+						};
+						// Запускаем коннект
+						exec(getData());
+					}
+				});
 			}));
 		}
 		/**
@@ -738,54 +887,71 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Подключаем модуль закачки данных
-				const fetch = require('node-fetch');
-				// Массив с геокодерами
-				const urlsGeo = [
-					'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
-					'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
-					'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
-				].map(val => val.replace("$address", encodeURI(address)));
-				// Получаем объект запроса с геокодера
-				const init = obj => {
-					// Выполняем обработку результата геокодера
-					parseAnswerGeoCoder(obj, idObj).then(result => {
-						// Сохраняем результат в базу данных
-						if(result) (new idObj.schemes.Address(result)).save();
+				// Ключ кеша адреса
+				const key = "address:string:" + idObj.generateKey(address.toLowerCase());
+				// Ищем станции в кеше
+				idObj.clients.redis.get(key, (error, result) => {
+					// Если данные это не массив тогда создаем его
+					if($.isset(result)){
 						// Выводим результат
-						resolve(result);
-					});
-				};
-				/**
-				 * *getData Генератор для получения данных с геокодеров
-				 */
-				const getData = function * (){
-					// Выполняем запрос с геокодера Yandex
-					const yandex = yield fetch(urlsGeo[0]).then(
-						res => (res.status === 200 ? res.json() : false),
-						err => false
-					);
-					// Выполняем запрос с геокодера Google
-					const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-						res => (res.status === 200 ? res.json() : false),
-						err => false
-					) : false);
-					// Выполняем запрос с геокодера OpenStreet Maps
-					const osm = (!google ? yield fetch(urlsGeo[2]).then(
-						res => (res.status === 200 ? res.json() : false),
-						err => false
-					) : false);
-					// Создаем объект ответа
-					const obj = (
-						yandex ? {data: yandex, status: "yandex"} :
-						(google ? {data: google, status: "google"} :
-						(osm ? {data: osm, status: "osm"} : false))
-					);
-					// Выполняем инициализацию
-					init(obj);
-				};
-				// Запускаем коннект
-				exec(getData());
+						resolve(JSON.parse(result));
+					// Если данные в кеше не найдены тогда продолжаем искать
+					} else {
+						// Подключаем модуль закачки данных
+						const fetch = require('node-fetch');
+						// Массив с геокодерами
+						const urlsGeo = [
+							'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
+							'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
+							'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
+						].map(val => val.replace("$address", encodeURI(address)));
+						// Получаем объект запроса с геокодера
+						const init = obj => {
+							// Выполняем обработку результата геокодера
+							parseAnswerGeoCoder(obj, idObj).then(result => {
+								// Сохраняем результат в базу данных
+								if(result) (new idObj.schemes.Address(result)).save();
+								// Отправляем в Redis на час
+								idObj.clients.redis.multi([
+									["set", key, JSON.stringify(result)],
+									["EXPIRE", key, 3600]
+								]).exec();
+								// Выводим результат
+								resolve(result);
+							});
+						};
+						/**
+						 * *getData Генератор для получения данных с геокодеров
+						 */
+						const getData = function * (){
+							// Выполняем запрос с геокодера Yandex
+							const yandex = yield fetch(urlsGeo[0]).then(
+								res => (res.status === 200 ? res.json() : false),
+								err => false
+							);
+							// Выполняем запрос с геокодера Google
+							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+								res => (res.status === 200 ? res.json() : false),
+								err => false
+							) : false);
+							// Выполняем запрос с геокодера OpenStreet Maps
+							const osm = (!google ? yield fetch(urlsGeo[2]).then(
+								res => (res.status === 200 ? res.json() : false),
+								err => false
+							) : false);
+							// Создаем объект ответа
+							const obj = (
+								yandex ? {data: yandex, status: "yandex"} :
+								(google ? {data: google, status: "google"} :
+								(osm ? {data: osm, status: "osm"} : false))
+							);
+							// Выполняем инициализацию
+							init(obj);
+						};
+						// Запускаем коннект
+						exec(getData());
+					}
+				});
 			}));
 		}
 		/**
@@ -846,30 +1012,44 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					// Выполняем поиск ближайшего метро
-					idObj.schemes.Metro_stations.find({
-						'gps': {
-							$near: {
-								$geometry: {
-									type: 'Point',
-									// Широта и долгота поиска
-									coordinates: [lat, lng]
-								},
-								$maxDistance: distance
-							}
-						}
-					// Запрашиваем данные метро
-					}).exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isArray(data)){
+					// Ключ кеша метро
+					const key = "metro:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
+					// Ищем станции в кеше
+					idObj.clients.redis.get(key, (error, result) => {
+						// Если данные это не массив тогда создаем его
+						if($.isset(result)){
 							// Выводим результат
-							resolve(data);
-						// Сообщаем что данные не найдены
+							resolve(JSON.parse(result));
+						// Если данные в кеше не найдены тогда продолжаем искать
 						} else {
-							// Выводим в консоль сообщение что данные метро не найдены
-							idObj.log(["станции метро по gps координатам не найдены:", "lat =", lat, "lng =", lng, err, data], "error");
-							// Выводим сообщение что ничего не найдено
-							resolve(false);
+							// Выполняем поиск ближайшего метро
+							idObj.schemes.Metro_stations.find({
+								'gps': {
+									$near: {
+										$geometry: {
+											type: 'Point',
+											// Широта и долгота поиска
+											coordinates: [lat, lng]
+										},
+										$maxDistance: distance
+									}
+								}
+							// Запрашиваем данные метро
+							}).exec((err, data) => {
+								// Результат ответа
+								let result = false;
+								// Если ошибки нет
+								if(!$.isset(err) && $.isArray(data)) result = data;
+								// Выводим в консоль сообщение что данные метро не найдены
+								else idObj.log(["станции метро по gps координатам не найдены:", "lat =", lat, "lng =", lng, err, data], "error");
+								// Отправляем в Redis на час
+								idObj.clients.redis.multi([
+									["set", key, JSON.stringify(result)],
+									["EXPIRE", key, 3600]
+								]).exec();
+								// Выводим результат
+								resolve(result);
+							});
 						}
 					});
 				// Обрабатываем возникшую ошибку
@@ -886,6 +1066,36 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				/**
+				 * updateDB Функция обновления данных в базе
+				 * @param  {Object} obj      объект для обновления данных
+				 * @param  {String} keyCache ключ клеша
+				 * @param  {Object} cache    объект кеша для сохранения
+				 * @param  {Object} scheme   схема базы данных
+				 */
+				const updateDB = (obj, scheme, keyCache, cache, callback) => {
+					// Создаем ключ названия
+					const keyChar = obj.name[0].toLowerCase();
+					// Запрашиваем все данные из базы
+					scheme.findOne({_id: obj._id})
+					// Выполняем запрос
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isset(data)
+						&& $.isObject(data)){
+							// Выполняем обновление
+							scheme.update({_id: obj._id}, obj, {
+								upsert:	true,
+								multi:	true
+							}, callback);
+						// Просто добавляем новый объект
+						} else (new scheme(obj)).save(callback);
+						// Сохраняем данные в кеше
+						cache[keyChar][obj._id] = obj;
+						// Сохраняем данные в кеше
+						idObj.clients.redis.set(keyCache, JSON.stringify(cache));
+					});
+				};
+				/**
 				 * getTimezone Функция запроса временной зоны
 				 * @param  {Object} scheme схема базы данных
 				 * @return {Promise}       промис содержащий результат ответа
@@ -899,29 +1109,38 @@ const anyks = require("./lib.anyks");
 						.exec((err, data) => {
 							// Если ошибки нет
 							if(!$.isset(err) && $.isArray(data) && data.length){
-								/**
-								 * getData Рекурсивная функция перехода по массиву
-								 * @param  {Number} i индекс текущего значения массива
-								 */
-								const getData = (i = 0) => {
-									// Если не все данные пришли тогда продолжаем загружать
-									if(i < data.length){
-										// Получаем данные временной зоны
-										idObj.getTimezone(data[i].lat, data[i].lng).then(timezone => {
-											// Если временная зона пришла
-											if(timezone){
-												// Сохраняем временную зону
-												data[i].timezone = timezone;
-												// Сохраняем временную зону
-												(new scheme(data[i])).save(() => getData(i + 1));
-											// Просто продолжаем дальше
-											} else getData(i + 1);
-										});
-									// Если все загружено тогда сообщаем об этом
-									} else resolve(true);
-								};
-								// Запускаем запрос данных
-								getData();
+								// Ключ запроса
+								const key = "address:subjects:" + data[0].contentType;
+								// Считываем данные из кеша
+								idObj.clients.redis.get(key, (error, cacheObject) => {
+									// Если данные не найдены
+									if(!$.isset(cacheObject)) cacheObject = {};
+									// Выполняем парсинг ответа
+									else cacheObject = JSON.parse(cacheObject);
+									/**
+									 * getData Рекурсивная функция перехода по массиву
+									 * @param  {Number} i индекс текущего значения массива
+									 */
+									const getData = (i = 0) => {
+										// Если не все данные пришли тогда продолжаем загружать
+										if(i < data.length){
+											// Получаем данные временной зоны
+											idObj.getTimezone(data[i].lat, data[i].lng).then(timezone => {
+												// Если временная зона пришла
+												if(timezone){
+													// Сохраняем временную зону
+													data[i].timezone = timezone;
+													// Сохраняем временную зону
+													updateDB(data[i], scheme, key, cacheObject, () => getData(i + 1));
+												// Просто продолжаем дальше
+												} else getData(i + 1);
+											});
+										// Если все загружено тогда сообщаем об этом
+										} else resolve(true);
+									};
+									// Запускаем запрос данных
+									getData();
+								});
 							// Сообщаем что такие данные не найдены
 							} else resolve(false);
 						});
@@ -1317,9 +1536,6 @@ const anyks = require("./lib.anyks");
 							const key = "metro:stations";
 							// Записываем данные в кеш
 							idObj.clients.redis.set(key, JSON.stringify(cacheObject));
-
-							console.log("++++++++", cacheObject["7700000000000"]);
-
 							// Сообщаем что все удачно выполнено
 							resolve(true);
 						}
