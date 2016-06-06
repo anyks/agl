@@ -150,7 +150,7 @@
 			// agl.updateRegions().then();
 			// agl.updateDistricts().then();
 			// agl.updateCities().then();
-			agl.initEmptyDatabases().then();
+			// agl.initEmptyDatabases().then();
 
 			/*
 			agl.getAddressFromGPS(64.436786, 76.499011).then(res => {
@@ -160,9 +160,8 @@
 
 			// agl.getAddressFromGPS(55.5689216, 37.4896679);
 			// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
-			
 			// agl.searchRegion("И").then(rs => console.log(rs));
-			// agl.searchCity("Москва", "7700000000000").then(rs => console.log(rs));
+			agl.searchCity("Москва", "7700000000000").then(rs => console.log(rs));
 			// agl.searchStreet("Румянцево", "7700000000000").then(rs => console.log(rs));
 			// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
 		};
