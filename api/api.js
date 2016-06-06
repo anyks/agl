@@ -219,46 +219,35 @@ const anyks = require("./lib.anyks");
 	const searchAddressInCache = (str, type, parentId = null, parentType = null, limit = 1, idObj) => {
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
-			// Если в запросе пришла не одна буква
-			if(str.length > 1){
-				// Ключ запроса
-				const key = "address:subjects:" + type;
-				// Считываем данные из кеша
-				idObj.clients.redis.get(key, (error, cacheObject) => {
-					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cacheObject)) resolve(false);
-					// Если данные пришли
+			// Ключ запроса
+			const key = "address:subjects:" + type;
+			// Считываем данные из кеша
+			idObj.clients.redis.get(key, (error, cacheObject) => {
+				// Если данные не найдены, сообщаем что в кеше ничего не найдено
+				if(!$.isset(cacheObject)) resolve(false);
+				// Если данные пришли
+				else {
+					// Создаем ключ названия
+					const keyChar = str[0].toLowerCase();
+					// Выполняем парсинг ответа
+					cacheObject = JSON.parse(cacheObject);
+					// Если такая буква не существует тогда выходим
+					if(!$.isset(cacheObject[keyChar])) resolve(false);
+					// Если данные существуют продолжаем дальше
 					else {
-						// Создаем ключ названия
-						const keyChar = str[0].toLowerCase();
-						// Выполняем парсинг ответа
-						cacheObject = JSON.parse(cacheObject);
-						// Если такая буква не существует тогда выходим
-						if(!$.isset(cacheObject[keyChar])) resolve(false);
-						// Если данные существуют продолжаем дальше
-						else {
-							// Индекс итераций
-							let i = 0;
-							// Результат ответа
-							let result = [];
-							// Создаем регулярное выражение для поиска
-							let reg = new RegExp("^" + str, "i");
-							// Переходим по всем ключам
-							for(let val in cacheObject[keyChar]){
-								// Если родительский элемент передан
-								if($.isset(parentId) && $.isset(parentType)){
-									// Если родительский элемент найден
-									if((cacheObject[keyChar][val][parentType + "Ids"] === parentId)
-									&& reg.test(cacheObject[keyChar][val].name)){
-										// Запоминаем результат
-										result.push(cacheObject[keyChar][val]);
-										// Увеличиваем значение индекса
-										if(i < (limit - 1)) i++;
-										// Выходим
-										else break;
-									}
-								// Если родительский элемент не существует тогда просто ищем по названию
-								} else if(reg.test(cacheObject[keyChar][val].name)){
+						// Индекс итераций
+						let i = 0;
+						// Результат ответа
+						let result = [];
+						// Создаем регулярное выражение для поиска
+						let reg = new RegExp("^" + str, "i");
+						// Переходим по всем ключам
+						for(let val in cacheObject[keyChar]){
+							// Если родительский элемент передан
+							if($.isset(parentId) && $.isset(parentType)){
+								// Если родительский элемент найден
+								if((cacheObject[keyChar][val][parentType + "Ids"] === parentId)
+								&& reg.test(cacheObject[keyChar][val].name)){
 									// Запоминаем результат
 									result.push(cacheObject[keyChar][val]);
 									// Увеличиваем значение индекса
@@ -266,14 +255,21 @@ const anyks = require("./lib.anyks");
 									// Выходим
 									else break;
 								}
+							// Если родительский элемент не существует тогда просто ищем по названию
+							} else if(reg.test(cacheObject[keyChar][val].name)){
+								// Запоминаем результат
+								result.push(cacheObject[keyChar][val]);
+								// Увеличиваем значение индекса
+								if(i < (limit - 1)) i++;
+								// Выходим
+								else break;
 							}
-							// Выводим результат
-							resolve(result.length < 1 ? false : result);
 						}
+						// Выводим результат
+						resolve(result.length < 1 ? false : result);
 					}
-				});
-			// Сообщаем что ничего не найдено
-			} else resolve(false);
+				}
+			});
 		}));
 	};
 	/**
@@ -578,11 +574,12 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchRegion Метод поиска региона
-		 * @param  {String} str   строка запроса
-		 * @param  {Number} limit количество результатов к выдаче
-		 * @return {Promise}      промис результата
+		 * @param  {String}  str      строка запроса
+		 * @param  {Number}  limit    количество результатов к выдаче
+		 * @param  {Boolean} noCache  отключить кеш
+		 * @return {Promise}          промис результата
 		 */
-		searchRegion(str, limit = 10){
+		searchRegion(str, limit = 10, noCache = false){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -596,7 +593,7 @@ const anyks = require("./lib.anyks");
 					// Ищем данные адреса сначала в кеше
 					searchAddressInCache(ContentName, ContentType, null, null, Limit, idObj).then(result => {
 						// Если данные не найдены
-						if(!$.isset(result)){
+						if(!$.isset(result) || noCache){
 							// Подключаем модуль кладра
 							const kladr = require("kladrapi").ApiQuery;
 							// Выполняем поиск в кладре
@@ -618,12 +615,13 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchDistrict Метод поиска района
-		 * @param  {String} str      строка запроса
-		 * @param  {String} regionId идентификатор региона
-		 * @param  {Number} limit    количество результатов к выдаче
-		 * @return {Promise}         промис результата
+		 * @param  {String}  str        строка запроса
+		 * @param  {String}  regionId   идентификатор региона
+		 * @param  {Number}  limit      количество результатов к выдаче
+		 * @param  {Boolean} noCache    отключить кеш
+		 * @return {Promise}            промис результата
 		 */
-		searchDistrict(str, regionId, limit = 10){
+		searchDistrict(str, regionId, limit = 10, noCache = false){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -639,7 +637,7 @@ const anyks = require("./lib.anyks");
 					// Ищем данные адреса сначала в кеше
 					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
 						// Если данные не найдены
-						if(!$.isset(result)){
+						if(!$.isset(result) || noCache){
 							// Подключаем модуль кладра
 							const kladr = require("kladrapi").ApiQuery;
 							// Выполняем поиск в кладре
@@ -663,13 +661,14 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchCity Метод поиска города
-		 * @param  {String} str        строка запроса
-		 * @param  {String} regionId   идентификатор региона
-		 * @param  {String} districtId идентификатор района
-		 * @param  {Number} limit      количество результатов к выдаче
-		 * @return {Promise}           промис результата
+		 * @param  {String}  str        строка запроса
+		 * @param  {String}  regionId   идентификатор региона
+		 * @param  {String}  districtId идентификатор района
+		 * @param  {Number}  limit      количество результатов к выдаче
+		 * @param  {Boolean} noCache    отключить кеш
+		 * @return {Promise}            промис результата
 		 */
-		searchCity(str, regionId, districtId = null, limit = 10){
+		searchCity(str, regionId, districtId = null, limit = 10, noCache = false){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -691,7 +690,7 @@ const anyks = require("./lib.anyks");
 					// Ищем данные адреса сначала в кеше
 					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
 						// Если данные не найдены
-						if(!$.isset(result)){
+						if(!$.isset(result) || noCache){
 							// Подключаем модуль кладра
 							const kladr = require("kladrapi").ApiQuery;
 							// Выполняем поиск в кладре
@@ -1190,7 +1189,7 @@ const anyks = require("./lib.anyks");
 					// Если данные не все загружены то загружаем дальше
 					if(i < regionsChar.length){
 						// Выполняем загрузку данных
-						idObj.searchRegion(regionsChar[i], 100).then(result => {
+						idObj.searchRegion(regionsChar[i], 100, true).then(result => {
 							// Если это массив
 							if($.isArray(result) && result.length){
 								// Переходим по всему массиву
@@ -1266,7 +1265,7 @@ const anyks = require("./lib.anyks");
 									// Если данные не все загружены то загружаем дальше
 									if(j < districsChar.length){
 										// Выполняем поиск района
-										idObj.searchDistrict(districsChar[j], data[i]._id, 100).then(result => {
+										idObj.searchDistrict(districsChar[j], data[i]._id, 100, true).then(result => {
 											// Если это массив
 											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
@@ -1352,7 +1351,7 @@ const anyks = require("./lib.anyks");
 									// Если данные не все загружены то загружаем дальше
 									if(j < citiesChar.length){
 										// Выполняем поиск городов
-										idObj.searchCity(citiesChar[j], data[i]._id, null, 100).then(result => {
+										idObj.searchCity(citiesChar[j], data[i]._id, null, 100, true).then(result => {
 											// Если это массив
 											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
