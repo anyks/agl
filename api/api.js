@@ -591,6 +591,9 @@ const anyks = require("./lib.anyks");
 					const Limit			= limit;
 					// Ищем данные адреса сначала в кеше
 					searchAddressInCache(ContentName, ContentType, null, null, Limit, idObj).then(result => {
+						
+						console.log("--------", str, result);
+
 						// Если данные не найдены
 						if(!$.isset(result)){
 							// Подключаем модуль кладра
