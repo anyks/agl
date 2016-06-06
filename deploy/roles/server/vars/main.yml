@@ -12,6 +12,7 @@ rmdirs:
   - server
   - api
   - config
+
 cpdirs:
   - models
   - server
