@@ -11,7 +11,7 @@
   with_items: "{{ cpdirs }}"
 
 - name: Create config dir
-  acton: shell mkdir {{ work_dir }}/{{ name }}/{{ config_dir }}
+  action: shell mkdir {{ work_dir }}/{{ name }}/{{ config_dir }}
 
 - name: Set permissions
   action: shell sudo {{ work_dir }}/permissions.sh

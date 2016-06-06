@@ -8,12 +8,12 @@ git_dir: "/var/www/git"
 work_dir: "/var/www"
 logs_dir: "/var/www/logs"
 rmdirs:
-  - models
-  - server
-  - api
-  - config
+  - "models"
+  - "server"
+  - "api"
+  - "{{ config_dir }}"
 
 cpdirs:
-  - models
-  - server
-  - api
+  - "models"
+  - "server"
+  - "api"
