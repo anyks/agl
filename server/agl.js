@@ -152,7 +152,7 @@
 			// agl.updateCities().then();
 			// agl.initEmptyDatabases().then();
 
-			agl.getAddressFromGPS(64.436786, 76.499011);
+			agl.getAddressFromGPS(64.436786, 76.499011).then();
 
 			// agl.getAddressFromGPS(55.5689216, 37.4896679);
 			// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
