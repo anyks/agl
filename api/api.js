@@ -255,10 +255,10 @@ const anyks = require("./lib.anyks");
 										}
 										// Сохраняем данные
 										// (new schema(arr[i])).save();
-										schema.update({_id: arr[i]._id}, arr[i], {upsert: true});
+										schema.update({_id: arr[i]._id}, arr[i], {upsert: true, multi: true});
 									});
 								// Сохраняем данные
-								} else schema.update({_id: arr[i]._id}, arr[i], {upsert: true});// (new schema(arr[i])).save();
+								} else schema.update({_id: arr[i]._id}, arr[i], {upsert: true, multi: true});// (new schema(arr[i])).save();
 							});
 						}
 						// Идем дальше
