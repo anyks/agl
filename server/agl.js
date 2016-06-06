@@ -150,7 +150,7 @@
 			// agl.updateRegions().then();
 			// agl.updateDistricts().then();
 			// agl.updateCities().then();
-			agl.initEmptyDatabases().then();
+			// agl.initEmptyDatabases().then();
 
 			agl.getAddressFromGPS(64.436786, 76.499011);
 
