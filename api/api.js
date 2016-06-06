@@ -194,6 +194,27 @@ const anyks = require("./lib.anyks");
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
 			/**
+			 * updateDB Функция обновления данных в базе
+			 * @param  {Object} obj объект для обновления данных
+			 */
+			const updateDB = obj => {
+				// Запрашиваем все данные из базы
+				schema.findOne({_id: obj._id})
+				// Выполняем запрос
+				.exec((err, data) => {
+					// Если ошибки нет
+					if(!$.isset(err) && $.isset(data)
+					&& $.isObject(data)){
+						// Выполняем обновление
+						schema.update({_id: obj._id}, obj, {
+							upsert:	true,
+							multi:	true
+						});
+					// Просто добавляем новый объект
+					} else (new schema(obj)).save();
+				});
+			};
+			/**
 			 * getGPS Рекурсивная функция поиска gps координат для города
 			 * @param  {Array} arr массив объектов для обхода
 			 * @param  {Number} i  индекс массива
@@ -254,11 +275,10 @@ const anyks = require("./lib.anyks");
 											metro.forEach(val => arr[i].metro.push(val._id));
 										}
 										// Сохраняем данные
-										// (new schema(arr[i])).save();
-										schema.update({_id: arr[i]._id}, arr[i], {upsert: true, multi: true});
+										updateDB(arr[i]);
 									});
 								// Сохраняем данные
-								} else schema.update({_id: arr[i]._id}, arr[i], {upsert: true, multi: true});// (new schema(arr[i])).save();
+								} else updateDB(arr[i]);
 							});
 						}
 						// Идем дальше
