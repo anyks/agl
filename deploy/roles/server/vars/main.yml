@@ -1,7 +1,7 @@
 name: "agl"
 version: "1.0"
 kladr: "57500faf0a69decc7d8b4568"
-debug: { errors: true, message: true }
+debug: { errors: 1, message: 1 }
 git_repository: "git@github.com:anyks/agl.git"
 config_dir: "config"
 git_dir: "/var/www/git"
