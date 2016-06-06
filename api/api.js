@@ -254,10 +254,11 @@ const anyks = require("./lib.anyks");
 											metro.forEach(val => arr[i].metro.push(val._id));
 										}
 										// Сохраняем данные
-										(new schema(arr[i])).save();
+										// (new schema(arr[i])).save();
+										schema.update({_id: arr[i]._id}, arr[i], {upsert: true});
 									});
 								// Сохраняем данные
-								} else (new schema(arr[i])).save();
+								} else schema.update({_id: arr[i]._id}, arr[i], {upsert: true});// (new schema(arr[i])).save();
 							});
 						}
 						// Идем дальше
