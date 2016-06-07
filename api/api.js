@@ -1845,20 +1845,38 @@ const anyks = require("./lib.anyks");
 			// Определяем тип логов
 			switch(type){
 				// Если это вывод ошибок
-				case "error": if(this.debug.errors) console.error(
-					"Error",
-					(new Date()).toLocaleString(),
-					this.name + ":",
-					($.isArray(message) ? message.join(" ") : message)
-				);
+				case "error":
+					// Если вывод ошибок разрешен
+					if(this.debug.errors){
+						// Выводим экраны
+						console.log("\n*******************************\n");
+						// Выводим сообщение об ошибке
+						console.error(
+							"Error",
+							(new Date()).toLocaleString(),
+							this.name + ":",
+							($.isArray(message) ? message.join(" ") : message)
+						);
+						// Выводим экраны
+						console.log("\n*******************************\n");
+					}
 				break;
 				// Если это информационные сообщения
-				case "info": if(this.debug.message) console.info(
-					"Info",
-					(new Date()).toLocaleString(),
-					this.name + ":",
-					($.isArray(message) ? message.join(" ") : message)
-				);
+				case "info":
+					// Если вывод информационных сообщений разрешен
+					if(this.debug.message){
+						// Выводим экраны
+						console.log("\n*******************************\n");
+						// Выводим информационное сообщение
+						console.info(
+							"Info",
+							(new Date()).toLocaleString(),
+							this.name + ":",
+							($.isArray(message) ? message.join(" ") : message)
+						);
+						// Выводим экраны
+						console.log("\n*******************************\n");
+					}
 				break;
 			}
 		}
