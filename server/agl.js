@@ -175,12 +175,14 @@
 					// Если канал для получения сообщений
 					if(ch === "aglServer"){
 						try {
+							// Перекодируем входящие данные в объект
+							mess = JSON.parse(mess);
 							// Формируем случайный индекс воркера
 							let index = ax.getRandomInt(0, workers.length - 1);
 							// Отсылаем воркеру сообщение
-							workers[index].send({action: "message", data: JSON.parse(mess)});
+							workers[index].send({action: "message", data: mess});
 							// Пришел ответ с агента
-							agl.log(['пришел ответ с агента', mess], "info");
+							agl.log(['пришел ответ с агента', mess.data], "info");
 						// Если возникает ошибка то выводим ее
 						} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
 					}
