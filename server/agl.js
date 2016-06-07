@@ -265,6 +265,21 @@
 						// Выполняем запрос данных с api
 						agl.initEmptyDatabases().then(sendResult);
 					break;
+					// Запрос на обновление временных зон у адресов где она не найдена
+					case "updateTimeZones":
+						// Выполняем запрос данных с api
+						agl.updateTimeZones().then(sendResult);
+					break;
+					// Запрос на получение станции метро по GPS координатам
+					case "searchMetroFromGPS":
+						// Выполняем запрос данных с api
+						agl.searchMetroFromGPS(query.lat, query.lng, query.distance).then(sendResult);
+					break;
+					// Запрос на получение временной зоны по GPS координатам
+					case "getTimezone":
+						// Выполняем запрос данных с api
+						agl.getTimezone(query.lat, query.lng).then(sendResult);
+					break;
 					// Запрос данных адреса по GPS координатам
 					case "getAddressFromGPS":
 						// Выполняем запрос данных с api
