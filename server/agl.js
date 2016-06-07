@@ -187,56 +187,59 @@
 				 * @param  {Object} clients клиенты баз данных
 				 */
 				const init = clients => {
-					/**
-					 * readDataAgents Функция чтения данных пришедших с агентов
-					 * @param  {Object} obj объект входящих данных
-					 */
-					const readDataAgents = obj => {
-						// agl.updateMetro().then();
-						// agl.updateRegions().then();
-						// agl.updateDistricts().then();
-						// agl.updateCities().then();
-						// agl.initEmptyDatabases().then();
+					// Выполняем поключение к Redis для подписки на каналы
+					(new Agl()).redis(config.redis).then(redis => {
+						/**
+						 * readDataAgents Функция чтения данных пришедших с агентов
+						 * @param  {Object} obj объект входящих данных
+						 */
+						const readDataAgents = obj => {
+							// agl.updateMetro().then();
+							// agl.updateRegions().then();
+							// agl.updateDistricts().then();
+							// agl.updateCities().then();
+							// agl.initEmptyDatabases().then();
 
-						/*
-						agl.getAddressFromGPS(64.436786, 76.499011).then(res => {
-							console.log("+++++++", res);
+							/*
+							agl.getAddressFromGPS(64.436786, 76.499011).then(res => {
+								console.log("+++++++", res);
+							});
+							*/
+
+							// agl.getAddressFromGPS(55.5689216, 37.4896679);
+							// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
+							// agl.searchRegion("И").then(rs => console.log(rs));
+							// agl.updateMetroCity().then();
+							// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
+							agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
+
+
+							// agl.getVersionSystem().then(rs => console.log("++++", rs));
+
+							// agl.searchStreet("Румянцево", "7700000000000").then(rs => console.log(rs));
+							// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
+						};
+						// Отлавливаем подписку
+						redis.redis.on("subscribe", (channel, count) => {
+							// Выводим в консоль данные
+							agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
 						});
-						*/
-
-						// agl.getAddressFromGPS(55.5689216, 37.4896679);
-						// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
-						// agl.searchRegion("И").then(rs => console.log(rs));
-						// agl.updateMetroCity().then();
-						// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
-						agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
-
-
-						// agl.getVersionSystem().then(rs => console.log("++++", rs));
-
-						// agl.searchStreet("Румянцево", "7700000000000").then(rs => console.log(rs));
-						// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
-					};
-					// Отлавливаем подписку
-					clients.redis.on("subscribe", (channel, count) => {
+						// Получаем входящие сообщение
+						redis.redis.on("message", (ch, mess) => {
+							// Если канал для получения сообщений
+							if(ch === "sendAction"){
+								try {
+									// Получаем входные данные
+									readDataAgents(JSON.parse(mess));
+								// Если возникает ошибка то выводим ее
+								} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
+							}
+						});
+						// Подписываемся на канал
+						redis.redis.subscribe("sendAction");
 						// Выводим в консоль данные
-						agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
+						agl.log(['сервер', config.name, 'запущен'], "info");
 					});
-					// Получаем входящие сообщение
-					clients.redis.on("message", (ch, mess) => {
-						// Если канал для получения сообщений
-						if(ch === "sendAction"){
-							try {
-								// Получаем входные данные
-								readDataAgents(JSON.parse(mess));
-							// Если возникает ошибка то выводим ее
-							} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
-						}
-					});
-					// Подписываемся на канал
-					clients.redis.subscribe("sendAction");
-					// Выводим в консоль данные
-					agl.log(['сервер', config.name, 'запущен'], "info");
 				};
 				/**
 				 * *connect Генератор для коннекта баз данных
