@@ -48,11 +48,11 @@
 			return (typeof(sym) === "symbol" ? true : false);
 		}
 		/**
-		 * isNumeric Проверка на то число это или нет
+		 * isNumber Проверка на то число это или нет
 		 * @param  {Number}  number число для проверки
 		 * @return {Boolean}        результат проверки
 		 */
-		static isNumeric(number){
+		static isNumber(number){
 			return (typeof(number) === "number" ? true : false);
 		}
 		/**
@@ -439,7 +439,7 @@
 		static formatSize(length, type = ["b", "Kb", "Mb", "Gb", "Tb", "Pb"]){
 			let i = 0; // Индекс массива
 			// Если передается число
-			if(Anyks.isNumeric(length)){
+			if(Anyks.isNumber(length)){
 				while((length / 1000 | 0)
 				&& (i < type.length - 1)){
 					length /= 1024;
@@ -965,13 +965,13 @@
 			return Anyks.isSymbol(sym);
 		}
 		/**
-		 * isNumeric Проверка на то число это или нет
+		 * isNumber Проверка на то число это или нет
 		 * @param  {Number}  number число для проверки
 		 * @return {Boolean}        результат проверки
 		 */
-		isNumeric(number){
+		isNumber(number){
 			// Выполняем обработку
-			return Anyks.isNumeric(number);
+			return Anyks.isNumber(number);
 		}
 		/**
 		 * isBoolean Проверка на булевое значение
