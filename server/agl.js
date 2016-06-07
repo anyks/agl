@@ -239,7 +239,7 @@
 				agl.searchCity("Иваново", '3700000000000').then(rs => {
 					// Отправляем сообщение серверу
 					clients.redis.publish("aglAgent", JSON.stringify({
-						key:	obj.key,
+						key:	data.key,
 						data:	rs
 					}));
 				});
