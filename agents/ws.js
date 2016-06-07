@@ -228,6 +228,8 @@ const Agl = require("../api/api");
 			if(ax.isset(origin)
 			&& ax.isset(config.origin)
 			&& (origin.indexOf(config.origin) > -1)) return true;
+			// Если origin не указан тогда разрешаем соединение для всех подключений
+			else if(!ax.isset(config.origin)) return true;
 			// Если подключение идет к другому домену тогда запрещаем
 			else return false;
 		};
