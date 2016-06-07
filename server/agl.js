@@ -220,12 +220,12 @@
 							// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
 						};
 						// Отлавливаем подписку
-						redis.redis.on("subscribe", (channel, count) => {
+						redis.on("subscribe", (channel, count) => {
 							// Выводим в консоль данные
 							agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
 						});
 						// Получаем входящие сообщение
-						redis.redis.on("message", (ch, mess) => {
+						redis.on("message", (ch, mess) => {
 							// Если канал для получения сообщений
 							if(ch === "aglServer"){
 								try {
@@ -236,7 +236,7 @@
 							}
 						});
 						// Подписываемся на канал
-						redis.redis.subscribe("aglServer");
+						redis.subscribe("aglServer");
 						// Выводим в консоль данные
 						agl.log(['сервер', config.name, 'запущен'], "info");
 					});
