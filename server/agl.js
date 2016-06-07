@@ -237,11 +237,16 @@
 				console.log("----------", data);
 
 				agl.searchCity("Иваново", '3700000000000').then(rs => {
-					// Отправляем сообщение серверу
-					clients.redis.publish("aglAgent", JSON.stringify({
-						key:	data.key,
-						data:	rs
-					}));
+					
+					console.log("++++++++++", rs);
+					try {
+						// Отправляем сообщение серверу
+						clients.redis.publish("aglAgent", JSON.stringify({
+							key:	data.key,
+							data:	rs
+						}));
+					} catch(e) {console.log("**********", e);}
+					
 				});
 
 				// agl.getVersionSystem().then(rs => console.log("++++", rs));
