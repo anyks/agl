@@ -182,7 +182,7 @@
 							// Отсылаем воркеру сообщение
 							workers[index].send({action: "message", data: mess});
 							// Пришел ответ с агента
-							agl.log(['пришел ответ с агента', mess.data], "info");
+							agl.log(['пришел запрос с агента', mess.data], "info");
 						// Если возникает ошибка то выводим ее
 						} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
 					}
