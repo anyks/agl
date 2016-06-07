@@ -1189,7 +1189,12 @@ const anyks = require("./lib.anyks");
 										} else getData(i + 1);
 									});
 								// Если все загружено тогда сообщаем об этом
-								} else resolve(true);
+								} else {
+									// Выводим в консоль сообщение
+									idObj.log("все станции метро в городах установлены!", "info");
+									// Выводим результат
+									resolve(true);
+								}
 							};
 							// Запускаем запрос данных
 							getData();
@@ -1279,7 +1284,12 @@ const anyks = require("./lib.anyks");
 												} else getData(i + 1);
 											});
 										// Если все загружено тогда сообщаем об этом
-										} else resolve(true);
+										} else {
+											// Выводим в консоль сообщение
+											idObj.log("все временные зоны установлены!", "info");
+											// Выводим результат
+											resolve(true);
+										}
 									};
 									// Запускаем запрос данных
 									getData();
@@ -1367,6 +1377,8 @@ const anyks = require("./lib.anyks");
 						regions.createIndex({typeShort: 1}, {name: "typeShort"});
 						regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
 						regions.createIndex({gps: "2dsphere"}, {name: "locations"});
+						// Выводим в консоль сообщение
+						idObj.log("все регионы установлены!", "info");
 						// Сообщаем что все удачно выполнено
 						resolve(true);
 					}
@@ -1450,6 +1462,8 @@ const anyks = require("./lib.anyks");
 								districts.createIndex({typeShort: 1}, {name: "typeShort"});
 								districts.createIndex({lat: 1, lng: 1}, {name: "gps"});
 								districts.createIndex({gps: "2dsphere"}, {name: "locations"});
+								// Выводим в консоль сообщение
+								idObj.log("все районы установлены!", "info");
 								// Сообщаем что все удачно выполнено
 								resolve(true);
 							}
@@ -1537,6 +1551,8 @@ const anyks = require("./lib.anyks");
 								cities.createIndex({typeShort: 1}, {name: "typeShort"});
 								cities.createIndex({lat: 1, lng: 1}, {name: "gps"});
 								cities.createIndex({gps: "2dsphere"}, {name: "locations"});
+								// Выводим в консоль сообщение
+								idObj.log("все города установлены!", "info");
 								// Сообщаем что все удачно выполнено
 								resolve(true);
 							}
@@ -1691,6 +1707,8 @@ const anyks = require("./lib.anyks");
 							const key = "metro:stations";
 							// Записываем данные в кеш
 							idObj.clients.redis.set(key, JSON.stringify(cacheObject));
+							// Выводим в консоль сообщение
+							idObj.log("все метро установлены!", "info");
 							// Сообщаем что все удачно выполнено
 							resolve(true);
 						}
@@ -1771,6 +1789,8 @@ const anyks = require("./lib.anyks");
 							houses.createIndex({typeShort: 1}, {name: "typeShort"});
 							houses.createIndex({lat: 1, lng: 1}, {name: "gps"});
 							houses.createIndex({gps: "2dsphere"}, {name: "locations"});
+							// Выводим в консоль сообщение
+							idObj.log("все работы выполнены!", "info");
 							// Сообщаем что работа завершена
 							resolve(true);
 						} else {
