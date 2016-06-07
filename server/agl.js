@@ -179,6 +179,8 @@
 							let index = ax.getRandomInt(0, workers.length - 1);
 							// Отсылаем воркеру сообщение
 							workers[index].send({action: "message", data: JSON.parse(mess)});
+							// Пришел ответ с агента
+							agl.log(['пришел ответ с агента', mess.data], "info");
 						// Если возникает ошибка то выводим ее
 						} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
 					}
