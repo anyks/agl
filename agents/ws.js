@@ -192,7 +192,7 @@ const Agl = require("../api/api");
 			// Отлавливаем подписку
 			redis.on("subscribe", (channel, count) => {
 				// Выводим в консоль данные
-				agl.log(['подписка на канал сообщений в Redis', channel, count], "info");
+				agl.log(['подписка на канал сообщений в Redis', 'channel =', channel, 'count =', count], "info");
 			});
 			// Получаем входящие сообщение
 			redis.on("message", (channel, message) => {
