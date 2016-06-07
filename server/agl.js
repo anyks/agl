@@ -117,6 +117,8 @@
 			cluster.on('fork', worker =>{
 				// Выводим в консоль что воркер создан
 				agl.log(['воркер создан', worker], "info");
+
+				console.log("++++++", worker);
 			});
 			// Событие подключения к воркера
 			cluster.on('listening', (worker, address) => {
