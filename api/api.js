@@ -1905,7 +1905,7 @@ const anyks = require("./lib.anyks");
 					// Если вывод ошибок разрешен
 					if(this.debug.errors){
 						// Выводим экраны
-						console.log("\n*******************************\n");
+						console.log("\n***************", "START", "***************\n");
 						// Выводим сообщение об ошибке
 						console.error(
 							'\x1B[0;31m\x1B[1mError\x1B[0m\x1B[0;31m',
@@ -1914,7 +1914,7 @@ const anyks = require("./lib.anyks");
 							($.isArray(message) ? message.join(" ") : message)
 						);
 						// Выводим экраны
-						console.log("\n*******************************\n");
+						console.log("\n----------------", "END" ,"----------------\n");
 					}
 				break;
 				// Если это информационные сообщения
@@ -1922,7 +1922,7 @@ const anyks = require("./lib.anyks");
 					// Если вывод информационных сообщений разрешен
 					if(this.debug.message){
 						// Выводим экраны
-						console.log("\n*******************************\n");
+						console.log("\n***************", "START", "***************\n");
 						// Выводим информационное сообщение
 						console.info(
 							'\x1B[38;5;148m\x1B[1mInfo\x1B[0m\x1B[38;5;148m',
@@ -1931,7 +1931,7 @@ const anyks = require("./lib.anyks");
 							($.isArray(message) ? message.join(" ") : message)
 						);
 						// Выводим экраны
-						console.log("\n*******************************\n");
+						console.log("\n----------------", "END" ,"----------------\n");
 					}
 				break;
 			}
