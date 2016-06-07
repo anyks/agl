@@ -1145,6 +1145,9 @@ const anyks = require("./lib.anyks");
 							}, callback);
 						// Просто добавляем новый объект
 						} else (new idObj.schemes.Cities(obj)).save(callback);
+						// Если такого блока данных нет тогда создаем его
+						if(!$.isset(cache[keyChar]))			cache[keyChar] = {};
+						if(!$.isset(cache[keyChar][obj._id]))	cache[keyChar][obj._id] = {};
 						// Сохраняем данные в кеше
 						cache[keyChar][obj._id] = obj;
 						// Сохраняем данные в кеше
