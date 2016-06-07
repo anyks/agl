@@ -340,10 +340,6 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cacheObject[keyChar])) cacheObject[keyChar] = {};
 						// Если идентификатор объекта не существует то создаем его
 						if(!$.isset(cacheObject[keyChar][arr[i]._id])) cacheObject[keyChar][arr[i]._id] = {};
-
-
-						console.log("-------------", keyChar, arr[i]._id);
-
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
 						if(!$.isArray(cacheObject[keyChar][arr[i]._id].gps)
 						|| !$.isArray(cacheObject[keyChar][arr[i]._id].metro)
@@ -458,6 +454,7 @@ const anyks = require("./lib.anyks");
 				}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
 				(result ? "Ok" : "Not ok")
 			], "info"));
+			/*
 			// Приводим ответ к общему виду
 			res.result = res.result.map(obj => {
 				obj._id		= obj.id;
@@ -466,6 +463,7 @@ const anyks = require("./lib.anyks");
 				// Возвращаем результат
 				return obj;
 			});
+			*/
 			// Выводим результат
 			callback(res.result);
 		}
