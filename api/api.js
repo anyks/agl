@@ -454,7 +454,8 @@ const anyks = require("./lib.anyks");
 				}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
 				(result ? "Ok" : "Not ok")
 			], "info"));
-			/*
+			// Выполняем копирование объекта
+			let result = JSON.parse(JSON.stringify(res.result));
 			// Приводим ответ к общему виду
 			res.result = res.result.map(obj => {
 				obj._id		= obj.id;
@@ -463,9 +464,8 @@ const anyks = require("./lib.anyks");
 				// Возвращаем результат
 				return obj;
 			});
-			*/
 			// Выводим результат
-			callback(res.result);
+			callback(result);
 		}
 	};
 	/**
