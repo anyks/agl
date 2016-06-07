@@ -132,7 +132,7 @@
 			// Событие подключение онлайн воркера
 			cluster.on('online', worker => {
 				// Добавляем воркер в список
-				workers.push(worker.id);
+				workers.push(worker);
 				// Отсылаем воркеру сообщение
 				worker.send({action: "config", data: config});
 				// Выводим в консоль что воркер онлайн
@@ -163,8 +163,35 @@
 					code, signal
 				], "info");
 			});
+			// Подключаемся к Redis
+			agl.redis(config.redis).then(redis => {
+				// Отлавливаем подписку
+				redis.on("subscribe", (channel, count) => {
+					// Выводим в консоль данные
+					agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
+				});
+				// Получаем входящие сообщение
+				redis.on("message", (ch, mess) => {
+					// Если канал для получения сообщений
+					if(ch === "aglServer"){
+						try {
+							// Формируем случайный индекс воркера
+							let index = ax.getRandomInt(0, workers.length - 1);
+							// Отсылаем воркеру сообщение
+							workers[index].send({message: "config", data: JSON.parse(mess)});
+						// Если возникает ошибка то выводим ее
+						} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
+					}
+				});
+				// Подписываемся на канал
+				redis.subscribe("aglServer");
+				// Выводим в консоль данные
+				agl.log(['сервер', config.name, 'запущен'], "info");
+			});
 		// Если это Fork
 		} else {
+			// Клиенты баз данных
+			const clients = {};
 			/**
 			 * exec Функция управления генераторами
 			 * @param  {Generator} gen      генератор
@@ -187,76 +214,43 @@
 			 * init Функция инициализации системы
 			 * @param  {Object} clients клиенты баз данных
 			 */
-			const init = clients => {
-				// Выполняем поключение к Redis для подписки на каналы
-				(new Agl()).redis(config.redis).then(redis => {
-					/**
-					 * readDataAgents Функция чтения данных пришедших с агентов
-					 * @param  {Object} obj объект входящих данных
-					 */
-					const readDataAgents = obj => {
-						// agl.updateMetro().then();
-						// agl.updateRegions().then();
-						// agl.updateDistricts().then();
-						// agl.updateCities().then();
-						// agl.initEmptyDatabases().then();
+			const init = data => {
+				// agl.updateMetro().then();
+				// agl.updateRegions().then();
+				// agl.updateDistricts().then();
+				// agl.updateCities().then();
+				// agl.initEmptyDatabases().then();
 
-						/*
-						agl.getAddressFromGPS(64.436786, 76.499011).then(res => {
-							console.log("+++++++", res);
-						});
-						*/
-
-						// agl.getAddressFromGPS(55.5689216, 37.4896679);
-						// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
-						// agl.searchRegion("И").then(rs => console.log(rs));
-						// agl.updateMetroCity().then();
-						// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
-						// agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
-
-
-						agl.searchCity("Иваново", '3700000000000').then(rs => {
-							// Отправляем сообщение серверу
-							clients.redis.publish("aglAgent", JSON.stringify({
-								key:	obj.key,
-								data:	rs
-							}));
-						});
-						
-
-
-						// agl.getVersionSystem().then(rs => console.log("++++", rs));
-
-						// agl.searchStreet("Румянцево", "7700000000000").then(rs => console.log(rs));
-						// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
-					};
-					// Отлавливаем подписку
-					redis.on("subscribe", (channel, count) => {
-						// Выводим в консоль данные
-						agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
-					});
-					// Получаем входящие сообщение
-					redis.on("message", (ch, mess) => {
-						// Если канал для получения сообщений
-						if(ch === "aglServer"){
-							try {
-								// Получаем входные данные
-								readDataAgents(JSON.parse(mess));
-							// Если возникает ошибка то выводим ее
-							} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
-						}
-					});
-					// Подписываемся на канал
-					redis.subscribe("aglServer");
-					// Выводим в консоль данные
-					agl.log(['сервер', config.name, 'запущен'], "info");
+				/*
+				agl.getAddressFromGPS(64.436786, 76.499011).then(res => {
+					console.log("+++++++", res);
 				});
+				*/
+
+				// agl.getAddressFromGPS(55.5689216, 37.4896679);
+				// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
+				// agl.searchRegion("И").then(rs => console.log(rs));
+				// agl.updateMetroCity().then();
+				// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
+				// agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
+
+				console.log("----------", data);
+
+				agl.searchCity("Иваново", '3700000000000').then(rs => {
+					// Отправляем сообщение серверу
+					clients.redis.publish("aglAgent", JSON.stringify({
+						key:	obj.key,
+						data:	rs
+					}));
+				});
+
+				// agl.getVersionSystem().then(rs => console.log("++++", rs));
+
+				// agl.searchStreet("Румянцево", "7700000000000").then(rs => console.log(rs));
+				// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
 			};
 			// Ловим входящие сообщения от мастера
 			process.on('message', msg => {
-				
-				console.log("++++++++++", msg);
-
 				// Определяем входящие сообщения
 				switch(msg.action){
 					// Если это экшен конфига
@@ -270,12 +264,14 @@
 							const redis = yield agl.redis(msg.data.redis);
 							// Выполняем подключение к MongoDB
 							const mongo = yield agl.mongo(msg.data.mongo);
-							// Выполняем инициализацию
-							init({redis: redis, mongo: mongo});
+							// Выполняем инициализацию клиентов
+							clients = {redis: redis, mongo: mongo};
 						};
 						// Запускаем коннект
 						exec(connect());
 					break;
+					// Если это экшен входящих данных
+					case "message": init(msg.data); break;
 				}
 			});
 		}
