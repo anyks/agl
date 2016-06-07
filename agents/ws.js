@@ -169,11 +169,14 @@ const Agl = require("../api/api");
 			switch(message.type){
 				// Если это кодировка utf-8
 				case 'utf8':
-					// Входные данные
-					let data = JSON.parse(message.utf8Data);
+					try {
+						// Входные данные
+						let data = JSON.parse(message.utf8Data);
 
-					console.log("++++++++++", data);
-
+						console.log("++++++++++", data);
+						
+					// Если возникает ошибка то выводим ее
+					} catch(e) {agl.log(['ошибка получения данных веб-сокетов', e], "error");}
 				break;
 				// Если это бинарные данные
 				case 'binary':
