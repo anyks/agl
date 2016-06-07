@@ -110,7 +110,7 @@
 			// Создаем воркеры
 			for(let i = 0; i < cups; i++){
 				// Создаем воркер
-				worker = cluster.fork();
+				let worker = cluster.fork();
 				// Отсылаем воркеру сообщение
 				worker.send({agl: Agl, config: config});
 			}
