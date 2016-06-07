@@ -177,6 +177,9 @@
 						try {
 							// Формируем случайный индекс воркера
 							let index = ax.getRandomInt(0, workers.length - 1);
+
+							console.log("+++++++++", index, workers.length, JSON.parse(mess));
+
 							// Отсылаем воркеру сообщение
 							workers[index].send({message: "config", data: JSON.parse(mess)});
 						// Если возникает ошибка то выводим ее
