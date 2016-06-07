@@ -18,14 +18,18 @@
 	if(parseInt(/^v(\d+)\.\d+\.\d+$/i.exec(process.version)[1], 10) >= 6){
 		// Подключаем модуль кластера
 		const cluster = require('cluster');
+		// Подключаем модули
+		const Agl = require("../api/api");
+		// Создаем объект Agl
+		const agl = new Agl();
+		// Получаем api anyks
+		const ax = agl.anyks;
 		// Если это мастер
 		if(cluster.isMaster){
 			// Подключаем модуль файловой системы
 			const fs = require('fs');
 			// Определяем количество ядер
 			const cups = require('os').cpus().length;
-			// Подключаем модули
-			const Agl = require("../api/api");
 			// Получаем аргументы
 			const argv = require('minimist')(process.argv.slice(2));
 			// Параметры подключения
@@ -33,10 +37,6 @@
 			const rpass	= (argv.p ? argv.p : (argv.rpass	? argv.rpass	: undefined));
 			const mserv	= (argv.m ? argv.m : (argv.mongo	? argv.mongo	: "127.0.0.1:27017"));
 			const rserv	= (argv.r ? argv.r : (argv.redis	? argv.redis	: "127.0.0.1:6379"));
-			// Создаем объект Agl
-			const agl = new Agl();
-			// Получаем api anyks
-			const ax = agl.anyks;
 			/**
 			 * socketExists Функция проверки на существование сокета
 			 * @param  {String} path адрес сокета
@@ -112,7 +112,7 @@
 				// Создаем воркер
 				let worker = cluster.fork();
 				// Отсылаем воркеру сообщение
-				worker.send({agl: Agl, config: config});
+				worker.send(config);
 			}
 			// Событие создания форка
 			cluster.on('fork', worker =>{
@@ -142,11 +142,7 @@
 		// Если это Fork
 		} else {
 			// Ловим входящие сообщения от мастера
-			process.on('message', worker => {
-				// Создаем объект Agl
-				const agl = new worker.agl();
-				// Получаем api anyks
-				const ax = agl.anyks;
+			process.on('message', config => {
 				/**
 				 * exec Функция управления генераторами
 				 * @param  {Generator} gen      генератор
@@ -203,9 +199,9 @@
 				 */
 				const connect = function * (){
 					// Выполняем подключение к Redis
-					const redis = yield agl.redis(worker.config.redis);
+					const redis = yield agl.redis(config.redis);
 					// Выполняем подключение к MongoDB
-					const mongo = yield agl.mongo(worker.config.mongo);
+					const mongo = yield agl.mongo(config.mongo);
 					// Выполняем инициализацию
 					init({redis: redis, mongo: mongo});
 				};
