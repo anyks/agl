@@ -1852,9 +1852,9 @@ const anyks = require("./lib.anyks");
 						console.log("\n*******************************\n");
 						// Выводим сообщение об ошибке
 						console.error(
-							"Error",
+							"\033[0;31m\033[1mError\033[0m\033[0;31m",
 							(new Date()).toLocaleString(),
-							this.name + ":",
+							this.name + ":\033[0m",
 							($.isArray(message) ? message.join(" ") : message)
 						);
 						// Выводим экраны
@@ -1869,9 +1869,9 @@ const anyks = require("./lib.anyks");
 						console.log("\n*******************************\n");
 						// Выводим информационное сообщение
 						console.info(
-							"Info",
+							"\033[38;5;148m\033[1mInfo\033[0m\033[38;5;148m",
 							(new Date()).toLocaleString(),
-							this.name + ":",
+							this.name + ":\033[0m",
 							($.isArray(message) ? message.join(" ") : message)
 						);
 						// Выводим экраны
