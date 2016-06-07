@@ -39,8 +39,10 @@ const Agl = require("../api/api");
 	const agl = new $();
 	// Получаем api anyks
 	const ax = agl.anyks;
+	// Массив онлайн пользователей
+	const onlineUsers = {};
 	// Идентификатор сервера
-	let server;
+	let server, clientRedis;
 	/**
 	 * socketExists Функция проверки на существование сокета
 	 * @param  {String} path адрес сокета
@@ -130,6 +132,8 @@ const Agl = require("../api/api");
 	const init = function(req){
 		// Копируем идентификатор сервера
 		let client = this;
+		// Запоминаем данные в буфер
+		onlineUsers[req.key] = client;
 		/**
 		 * rejectUser Функция отключения пользователя
 		 * @param  {String} error  название ошибки
@@ -153,15 +157,15 @@ const Agl = require("../api/api");
 		client.on('error', error => {
 			// Выводим в консоль данные
 			agl.log(['клиент', error, 'подключился с ошибкой.'], "info");
-			// Вызываем функцию удаления данных пользователя
-			// setOffline(req.key);
+			// Удаляем пользователя из списка
+			delete onlineUsers[req.key];
 		});
 		// Устанавливаем событие на отключение от сервера клиента
 		client.on('close', (reasonCode, description) => {
 			// Выводим в консоль данные
 			agl.log(['клиент отключился', client.remoteAddress, description], "info");
-			// Вызываем функцию удаления данных пользователя
-			// setOffline(req.key);
+			// Удаляем пользователя из списка
+			delete onlineUsers[req.key];
 		});
 		// Устанавливаем событие на входящие данные
 		client.on('message', message => {
@@ -172,9 +176,13 @@ const Agl = require("../api/api");
 					try {
 						// Входные данные
 						let data = JSON.parse(message.utf8Data);
-
-						console.log("++++++++++", data);
-						
+						// Отправляем сообщение серверу
+						clientRedis.publish("sendAction", JSON.stringify({
+							key:	req.key,
+							data:	data
+						}));
+						// Пришли данные от клиента
+						agl.log(['полученны данные с клиента', data], "info");
 					// Если возникает ошибка то выводим ее
 					} catch(e) {agl.log(['ошибка получения данных веб-сокетов', e], "error");}
 				break;
@@ -192,21 +200,26 @@ const Agl = require("../api/api");
 	const connectRedis = () => {
 		// Выполняем подключение к Redis
 		agl.redis(config.redis).then(redis => {
+			// Запоминаем redis клиент
+			clientRedis = redis;
 			// Отлавливаем подписку
 			redis.on("subscribe", (channel, count) => {
 				// Выводим в консоль данные
 				agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
 			});
 			// Получаем входящие сообщение
-			redis.on("message", (channel, message) => {
+			redis.on("message", (ch, mess) => {
 				// Если канал для получения сообщений
-				if(channel === "sendAction"){
+				if(ch === "sendAction"){
 					try {
-						// Получаем входящие данные
-						message = JSON.parse(message);
-						
-						console.log("++++++++++++", message);
-
+						// Получаем входные данные
+						mess = JSON.parse(mess);
+						// Если клиент существует
+						if($.isset(onlineUsers[mess.key])){
+							// Отправляем сообщение
+							onlineUsers[mess.key]
+							.sendUTF(JSON.stringify(mess.data));
+						}
 					// Если возникает ошибка то выводим ее
 					} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
 				}
