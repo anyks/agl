@@ -72,7 +72,7 @@
 				get mongo(){
 					// Объект данных конфига
 					let conf = {};
-					// Распарсим данные редиса
+					// Распарсим данные mongodb
 					const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.mserv);
 					// Формируем объект подключения
 					if(ax.isArray(parse)) conf = {

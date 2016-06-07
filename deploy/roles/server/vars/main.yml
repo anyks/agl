@@ -12,9 +12,11 @@ rmdirs:
   - "models"
   - "server"
   - "api"
+  - "agents"
   - "{{ config_dir }}"
 
 cpdirs:
   - "models"
   - "server"
   - "api"
+  - "agents"
