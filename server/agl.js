@@ -211,7 +211,17 @@
 							// agl.searchRegion("И").then(rs => console.log(rs));
 							// agl.updateMetroCity().then();
 							// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
-							agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
+							// agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
+
+
+							agl.searchCity("Иваново", '3700000000000').then(rs => {
+								// Отправляем сообщение серверу
+								clients.redis.publish("aglAgent", JSON.stringify({
+									key:	obj.key,
+									data:	rs
+								}));
+							});
+							
 
 
 							// agl.getVersionSystem().then(rs => console.log("++++", rs));
