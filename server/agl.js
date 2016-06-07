@@ -162,7 +162,7 @@
 			// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
 			// agl.searchRegion("И").then(rs => console.log(rs));
 			// agl.updateMetroCity().then();
-			agl.searchCity("Владимир", "3300000000000").then(rs => console.log(rs));
+			agl.searchCity("Ярославль", "7600000000000").then(rs => console.log(rs));
 
 			agl.getVersionSystem().then(rs => console.log("++++", rs));
 
