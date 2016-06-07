@@ -193,9 +193,6 @@ const Agl = require("../api/api");
 				break;
 			}
 		});
-		client.on('end', data => {
-			console.log("--------------");
-		});
 	};
 	/**
 	 * connectRedis Функция подключения к Redis
