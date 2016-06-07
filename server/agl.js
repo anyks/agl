@@ -237,16 +237,11 @@
 				console.log("----------", data);
 
 				agl.searchCity("Иваново", '3700000000000').then(rs => {
-					
-					console.log("++++++++++", rs);
-					try {
-						// Отправляем сообщение серверу
-						clients.redis.publish("aglAgent", JSON.stringify({
-							key:	data.key,
-							data:	rs
-						}));
-					} catch(e) {console.log("**********", e);}
-					
+					// Отправляем сообщение серверу
+					clients.redis.publish("aglAgent", JSON.stringify({
+						key:	data.key,
+						data:	rs
+					}));
 				});
 
 				// agl.getVersionSystem().then(rs => console.log("++++", rs));
@@ -269,8 +264,10 @@
 							const redis = yield agl.redis(msg.data.redis);
 							// Выполняем подключение к MongoDB
 							const mongo = yield agl.mongo(msg.data.mongo);
-							// Выполняем инициализацию клиентов
-							clients = {redis: redis, mongo: mongo};
+							// Запоминаем клиент Redis
+							clients.redis = redis;
+							// Запоминаем клиент MongoDB
+							clients.mongo = mongo;
 						};
 						// Запускаем коннект
 						exec(connect());
