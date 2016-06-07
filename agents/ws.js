@@ -218,6 +218,8 @@ const Agl = require("../api/api");
 							onlineUsers[mess.key]
 							.sendUTF(JSON.stringify(mess.data));
 						}
+						// Пришел ответ с сервера
+						agl.log(['пришел ответ с сервера', mess.data], "info");
 					// Если возникает ошибка то выводим ее
 					} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
 				}

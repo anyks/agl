@@ -1612,6 +1612,16 @@
 				return this.replace(/\<\/?\w+\>/ig, "");
 			});
 			/**
+			 * Array.toObjString Функция преобразования объектов массива в строки
+			 */
+			Array.method("toObjString", function(){
+				// Переконвертируем объекты в строки
+				return this.map(function(name){
+					// Выводим результат
+					return (Anyks.isObject(name) ? JSON.stringify(name) : name);
+				});
+			});
+			/**
 			 * Array.toSmiles Выполняем перевод смайлов по указанной функции для массива, пример: arr.toSmiles("textToEmoji");
 			 */
 			Array.method("toSmiles", function(func){
