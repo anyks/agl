@@ -139,6 +139,21 @@
 				return conf;
 			}
 		};
+
+		const cluster = require('cluster');
+		const numCPUs = require('os').cpus().length;
+
+		if (cluster.isMaster) {
+  // Fork workers.
+  for (var i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
+  });
+} else {
+
 		/**
 		 * init Функция инициализации системы
 		 * @param  {Object} clients клиенты баз данных
@@ -165,6 +180,7 @@
 			// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
 			agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
 
+
 			// agl.getVersionSystem().then(rs => console.log("++++", rs));
 
 			// agl.searchStreet("Румянцево", "7700000000000").then(rs => console.log(rs));
@@ -184,6 +200,9 @@
 		};
 		// Запускаем коннект
 		exec(connect());
+
+		}
+
 	// Выводим сообщение об ошибке
 	} else console.error("Your version node.js " + process.version + " and need v6.x.x or later");
 })();
