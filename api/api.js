@@ -245,9 +245,6 @@ const anyks = require("./lib.anyks");
 						for(let val in cacheObject[keyChar]){
 							// Если родительский элемент передан
 							if($.isset(parentId) && $.isset(parentType)){
-								
-								console.log("------", str, parentId, keyChar, val, parentType + "Id", cacheObject[keyChar][val][parentType + "Ids"]);
-
 								// Если родительский элемент найден
 								if(((cacheObject[keyChar][val][parentType + "Id"] === parentId)
 								|| (val === parentId)) && reg.test(cacheObject[keyChar][val].name)){
@@ -457,6 +454,14 @@ const anyks = require("./lib.anyks");
 				}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
 				(result ? "Ok" : "Not ok")
 			], "info"));
+			// Приводим ответ к общему виду
+			res.result = res.result.map(obj => {
+				obj._id		= obj.id;
+				obj.id		= undefined;
+				obj.parents	= undefined;
+				// Возвращаем результат
+				return obj;
+			});
 			// Выводим результат
 			callback(res.result);
 		}
