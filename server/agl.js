@@ -116,30 +116,49 @@
 			// Событие создания форка
 			cluster.on('fork', worker =>{
 				// Выводим в консоль что воркер создан
-				agl.log(['воркер создан', 'id =', worker.id, 'pid =', worker.pid], "info");
-
-				console.log("++++++", worker);
-
+				agl.log([
+					'воркер создан',
+					'id =', worker.id,
+					'pid =', worker.process.ChildProcess.pid
+				], "info");
 			});
 			// Событие подключения к воркера
 			cluster.on('listening', (worker, address) => {
 				// Выводим в консоль что воркер активирован
-				agl.log(['воркер активирован', 'id =', worker.id, 'pid =', worker.pid, address], "info");
+				agl.log([
+					'воркер активирован',
+					'id =', worker.id,
+					'pid =', worker.process.ChildProcess.pid,
+					address
+				], "info");
 			});
 			// Событие подключение онлайн воркера
 			cluster.on('online', worker => {
 				// Выводим в консоль что воркер онлайн
-				agl.log(['воркер онлайн', 'id =', worker.id, 'pid =', worker.pid], "info");
+				agl.log([
+					'воркер онлайн',
+					'id =', worker.id,
+					'pid =', worker.process.ChildProcess.pid
+				], "info");
 			});
 			// Событие воркер отключился
 			cluster.on('disconnect', worker => {
 				// Выводим в консоль что воркер отключился
-				agl.log(['воркер отключился', 'id =', worker.id, 'pid =', worker.pid], "info");
+				agl.log([
+					'воркер отключился',
+					'id =', worker.id,
+					'pid =', worker.process.ChildProcess.pid
+				], "info");
 			});
 			// Если воркер отключился
 			cluster.on('exit', (worker, code, signal) => {
 				// Выводим в консоль что воркер вышел
-				agl.log(['воркер вышел', 'id =', worker.id, 'pid =', worker.pid, code, signal], "info");
+				agl.log([
+					'воркер вышел',
+					'id =', worker.id,
+					'pid =', worker.process.ChildProcess.pid,
+					code, signal
+				], "info");
 			});
 		// Если это Fork
 		} else {
