@@ -216,42 +216,108 @@
 			};
 			/**
 			 * init Функция инициализации системы
-			 * @param  {Object} clients клиенты баз данных
+			 * @param  {Object} obj входящий запрос с сервера
 			 */
-			const init = data => {
-				// agl.updateMetro().then();
-				// agl.updateRegions().then();
-				// agl.updateDistricts().then();
-				// agl.updateCities().then();
-				// agl.initEmptyDatabases().then();
-
-				/*
-				agl.getAddressFromGPS(64.436786, 76.499011).then(res => {
-					console.log("+++++++", res);
-				});
-				*/
-
-				// agl.getAddressFromGPS(55.5689216, 37.4896679);
-				// agl.getAddressFromString('Россия, Москва, Коммунарка, улица Липовый Парк');
-				// agl.searchRegion("И").then(rs => console.log(rs));
-				// agl.updateMetroCity().then();
-				// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
-				// agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
-
-				console.log("----------", data);
-
-				agl.searchCity("Иваново", '3700000000000').then(rs => {
+			const init = obj => {
+				// Создаем объект входных данных
+				let query = obj.data.query;
+				// Функция отправки результата ответа
+				const sendResult = data => {
+					// Присваиваем полученный ответ
+					obj.data.query = data;
 					// Отправляем сообщение серверу
-					clients.redis.publish("aglAgent", JSON.stringify({
-						key:	data.key,
-						data:	rs
-					}));
-				});
-
-				// agl.getVersionSystem().then(rs => console.log("++++", rs));
-
-				// agl.searchStreet("Румянцево", "7700000000000").then(rs => console.log(rs));
-				// agl.searchHouse("12", "37019001000010900").then(rs => console.log(rs));
+					clients.redis.publish("aglAgent", JSON.stringify(obj));
+				};
+				// Обрабатываем входящие экшены
+				switch(obj.data.action){
+					// Получить версию системы
+					case "getVersionSystem":
+						// Выполняем запрос данных с api
+						agl.getVersionSystem().then(sendResult);
+					break;
+					// Обновить базу данных метро
+					case "updateMetro":
+						// Выполняем запрос данных с api
+						agl.updateMetro().then(sendResult);
+					break;
+					// Найти у всех городов станции метро в этом городе
+					case "updateMetroCity":
+						// Выполняем запрос данных с api
+						agl.updateMetroCity().then(sendResult);
+					break;
+					// Обновить базу регионов
+					case "updateRegions":
+						// Выполняем запрос данных с api
+						agl.updateRegions().then(sendResult);
+					break;
+					// Обновить базу районов
+					case "updateDistricts":
+						// Выполняем запрос данных с api
+						agl.updateDistricts().then(sendResult);
+					break;
+					// Обновить базу городов
+					case "updateCities":
+						// Выполняем запрос данных с api
+						agl.updateCities().then(sendResult);
+					break;
+					// Инициализировать базовую базу данных
+					case "initEmptyDatabases":
+						// Выполняем запрос данных с api
+						agl.initEmptyDatabases().then(sendResult);
+					break;
+					// Запрос данных адреса по GPS координатам
+					case "getAddressFromGPS":
+						// Выполняем запрос данных с api
+						agl.getAddressFromGPS(query.lat, query.lng).then(sendResult);
+					break;
+					// Запрос данных адреса по названию
+					case "getAddressFromString":
+						// Выполняем запрос данных с api
+						agl.getAddressFromString(query.address).then(sendResult);
+					break;
+					// Запрос на поиск региона
+					case "searchRegion":
+						// Выполняем запрос данных с api
+						agl.searchRegion(query.region, query.limit).then(sendResult);
+					break;
+					// Запрос на поиск найона
+					case "searchDistrict":
+						// Выполняем запрос данных с api
+						agl.searchDistrict(
+							query.district,
+							query.regionId,
+							query.limit
+						).then(sendResult);
+					break;
+					// Запрос на поиск города
+					case "searchCity":
+						// Выполняем запрос данных с api
+						agl.searchCity(
+							query.city,
+							query.regionId,
+							query.districtId,
+							query.limit
+						).then(sendResult);
+					break;
+					// Запрос на поиск улицы
+					case "searchStreet":
+						// Выполняем запрос данных с api
+						agl.searchStreet(
+							query.street,
+							query.cityId,
+							query.limit
+						).then(sendResult);
+					break;
+					// Запрос на поиск дома
+					case "searchHouse":
+						// Выполняем запрос данных с api
+						agl.searchHouse(
+							query.house,
+							query.streetId,
+							query.limit
+						).then(sendResult);
+					break;
+				}
 			};
 			// Ловим входящие сообщения от мастера
 			process.on('message', msg => {
