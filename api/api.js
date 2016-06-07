@@ -552,6 +552,32 @@ const anyks = require("./lib.anyks");
 			this.keyKladr = config.kladr;
 			// Устанавливаем версию системы
 			this.version = config.version;
+			// Устанавливаем копирайт
+			this.copyright = config.copyright;
+		}
+		/**
+		 * getVersionSystem Метод получения версии и копирайта системы
+		 * @return {Promise} промис результата ответа
+		 */
+		getVersionSystem(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Выводим результат
+					const object = {
+						version:	idObj.version,
+						copyright:	idObj.copyright,
+						text:		"\u00A9 " + idObj.copyright + " ver." + idObj.version
+					};
+					// Выводи данные в консоль
+					idObj.log(["\x1B[0;31m\x1B[1m\u00A9", idObj.copyright, "ver.", idObj.version, "\x1B[0m"], "info");
+					// Выводим результат
+					resolve(object);
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["произошла ошибка с выводом версии системы", e], "error");}
+			}));
 		}
 		/**
 		 * generateKey Функция генерирования ключа
@@ -1852,9 +1878,9 @@ const anyks = require("./lib.anyks");
 						console.log("\n*******************************\n");
 						// Выводим сообщение об ошибке
 						console.error(
-							'\033[0;31m\033[1mError\033[0m\033[0;31m',
+							'\x1B[0;31m\x1B[1mError\x1B[0m\x1B[0;31m',
 							(new Date()).toLocaleString(),
-							this.name, ':\033[0m',
+							this.name, ':\x1B[0m',
 							($.isArray(message) ? message.join(" ") : message)
 						);
 						// Выводим экраны
@@ -1869,9 +1895,9 @@ const anyks = require("./lib.anyks");
 						console.log("\n*******************************\n");
 						// Выводим информационное сообщение
 						console.info(
-							'\033[38;5;148m\033[1mInfo\033[0m\033[38;5;148m',
+							'\x1B[38;5;148m\x1B[1mInfo\x1B[0m\x1B[38;5;148m',
 							(new Date()).toLocaleString(),
-							this.name, ':\033[0m',
+							this.name, ':\x1B[0m',
 							($.isArray(message) ? message.join(" ") : message)
 						);
 						// Выводим экраны
