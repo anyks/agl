@@ -200,10 +200,10 @@ const Agl = require("../api/api");
 	const connectRedis = () => {
 		// Выполняем подключение к Redis
 		agl.redis(config.redis).then(redis => {
-			// Запоминаем redis клиент
-			clientRedis = redis;
 			// Отлавливаем подписку
 			redis.on("subscribe", (channel, count) => {
+				// Запоминаем redis клиент
+				clientRedis = redis;
 				// Выводим в консоль данные
 				agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
 			});
