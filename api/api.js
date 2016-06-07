@@ -243,6 +243,11 @@ const anyks = require("./lib.anyks");
 						let reg = new RegExp("^" + str, "i");
 						// Переходим по всем ключам
 						for(let val in cacheObject[keyChar]){
+							// Если станции метро не найдены то удаляем ключ
+							if($.isset(cacheObject[keyChar][val].metro)
+							&& !cacheObject[keyChar][val].metro.length)
+								// Удаляем ненужные ключи станций метро
+								delete cacheObject[keyChar][val].metro;
 							// Если родительский элемент передан
 							if($.isset(parentId) && $.isset(parentType)){
 								// Если родительский элемент найден
