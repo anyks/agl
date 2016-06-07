@@ -458,9 +458,21 @@ const anyks = require("./lib.anyks");
 			let result = JSON.parse(JSON.stringify(res.result));
 			// Приводим ответ к общему виду
 			result = result.map(obj => {
-				obj._id		= obj.id;
-				obj.id		= undefined;
-				obj.parents	= undefined;
+				obj._id	= obj.id;
+				// Переходим по всему массиву данных
+				obj.parents.forEach(val => {
+					// Определяем тип контента
+					switch(val.contentType){
+						// Формируем внешние ключи
+						case 'region':		obj.regionId	= val.id;	break;
+						case 'district':	obj.districtId	= val.id;	break;
+						case 'city':		obj.cityId		= val.id;	break;
+						case 'street':		obj.streetId	= val.id;	break;
+					}
+				});
+				// Удаляем лишние данные
+				delete obj.id;
+				delete obj.parents;
 				// Возвращаем результат
 				return obj;
 			});
