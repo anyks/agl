@@ -457,7 +457,7 @@ const anyks = require("./lib.anyks");
 			// Выполняем копирование объекта
 			let result = JSON.parse(JSON.stringify(res.result));
 			// Приводим ответ к общему виду
-			res.result = res.result.map(obj => {
+			result = result.map(obj => {
 				obj._id		= obj.id;
 				obj.id		= undefined;
 				obj.parents	= undefined;
