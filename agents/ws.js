@@ -202,8 +202,6 @@ const Agl = require("../api/api");
 		agl.redis(config.redis).then(redis => {
 			// Отлавливаем подписку
 			redis.on("subscribe", (channel, count) => {
-				// Запоминаем redis клиент
-				clientRedis = redis;
 				// Выводим в консоль данные
 				agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
 			});
@@ -228,6 +226,11 @@ const Agl = require("../api/api");
 			redis.subscribe("sendAction");
 			// Выводим в консоль данные
 			agl.log(['агент веб-сокетов запущен'], "info");
+		});
+		// Подключаемся к Redis для канала отправки сообщения
+		(new $()).redis(config.redis).then(redis => {
+			// Запоминаем Redis клиент
+			clientRedis = redis;
 		});
 	};
 	/**
