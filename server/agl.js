@@ -119,7 +119,7 @@
 				agl.log([
 					'воркер создан',
 					'id =', worker.id,
-					'pid =', worker.process.ChildProcess.pid
+					'pid =', worker.process.pid
 				], "info");
 			});
 			// Событие подключения к воркера
@@ -128,7 +128,7 @@
 				agl.log([
 					'воркер активирован',
 					'id =', worker.id,
-					'pid =', worker.process.ChildProcess.pid,
+					'pid =', worker.process.pid,
 					address
 				], "info");
 			});
@@ -138,7 +138,7 @@
 				agl.log([
 					'воркер онлайн',
 					'id =', worker.id,
-					'pid =', worker.process.ChildProcess.pid
+					'pid =', worker.process.pid
 				], "info");
 			});
 			// Событие воркер отключился
@@ -147,7 +147,7 @@
 				agl.log([
 					'воркер отключился',
 					'id =', worker.id,
-					'pid =', worker.process.ChildProcess.pid
+					'pid =', worker.process.pid
 				], "info");
 			});
 			// Если воркер отключился
@@ -156,7 +156,7 @@
 				agl.log([
 					'воркер вышел',
 					'id =', worker.id,
-					'pid =', worker.process.ChildProcess.pid,
+					'pid =', worker.process.pid,
 					code, signal
 				], "info");
 			});
