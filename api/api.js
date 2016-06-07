@@ -330,15 +330,16 @@ const anyks = require("./lib.anyks");
 				const getGPS = (arr, i = 0) => {
 					// Если данные не все получены
 					if(i < arr.length){
+						// Изменяем идентификатор данных
+						arr[i]._id = arr[i].id;
+						// Удаляем основной идентификатор
+						arr[i].id = undefined;
 						// Создаем ключ названия
 						const keyChar = arr[i].name[0].toLowerCase();
 						// Если идентификатор на такую букву не существует то создаем его
 						if(!$.isset(cacheObject[keyChar])) cacheObject[keyChar] = {};
 						// Если идентификатор объекта не существует то создаем его
 						if(!$.isset(cacheObject[keyChar][arr[i]._id])) cacheObject[keyChar][arr[i]._id] = {};
-						
-						console.log("-----------", cacheObject[keyChar]);
-
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
 						if(!$.isArray(cacheObject[keyChar][arr[i]._id].gps)
 						|| !$.isArray(cacheObject[keyChar][arr[i]._id].metro)
@@ -352,7 +353,6 @@ const anyks = require("./lib.anyks");
 								// Если результат найден
 								if($.isset(res)){
 									// Выполняем сохранение данных
-									arr[i]._id = arr[i].id;
 									arr[i].lat = res.lat;
 									arr[i].lng = res.lng;
 									arr[i].gps = res.gps;
@@ -373,6 +373,8 @@ const anyks = require("./lib.anyks");
 													case 'street':		arr[i].streetId		= val.id;	break;
 												}
 											});
+											// Удаляем родительские объекты
+											arr[i].parents = undefined;
 										}
 										// Если это улица или дом то ищем ближайшие станции метро
 										if((arr[i].contentType === 'city')
