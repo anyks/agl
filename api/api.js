@@ -249,8 +249,8 @@ const anyks = require("./lib.anyks");
 								console.log("------", str, parentId, keyChar, val, parentType + "Id", cacheObject[keyChar][val][parentType + "Ids"]);
 
 								// Если родительский элемент найден
-								if((cacheObject[keyChar][val][parentType + "Id"] === parentId)
-								&& reg.test(cacheObject[keyChar][val].name)){
+								if(((cacheObject[keyChar][val][parentType + "Id"] === parentId)
+								|| (val === parentId)) && reg.test(cacheObject[keyChar][val].name)){
 									// Запоминаем результат
 									result.push(cacheObject[keyChar][val]);
 									// Увеличиваем значение индекса
