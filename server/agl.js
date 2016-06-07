@@ -163,7 +163,7 @@
 			// agl.searchRegion("И").then(rs => console.log(rs));
 			// agl.updateMetroCity().then();
 			// agl.searchCity("Южа", "3700000000000").then(rs => console.log(rs));
-			agl.searchCity("Иваново").then(rs => console.log(rs));
+			agl.searchCity("Иваново", '3700000000000').then(rs => console.log(rs));
 
 			// agl.getVersionSystem().then(rs => console.log("++++", rs));
 
