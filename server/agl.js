@@ -227,7 +227,7 @@
 						// Получаем входящие сообщение
 						redis.redis.on("message", (ch, mess) => {
 							// Если канал для получения сообщений
-							if(ch === "sendAction"){
+							if(ch === "aglServer"){
 								try {
 									// Получаем входные данные
 									readDataAgents(JSON.parse(mess));
@@ -236,7 +236,7 @@
 							}
 						});
 						// Подписываемся на канал
-						redis.redis.subscribe("sendAction");
+						redis.redis.subscribe("aglServer");
 						// Выводим в консоль данные
 						agl.log(['сервер', config.name, 'запущен'], "info");
 					});

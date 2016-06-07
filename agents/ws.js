@@ -177,7 +177,7 @@ const Agl = require("../api/api");
 						// Входные данные
 						let data = JSON.parse(message.utf8Data);
 						// Отправляем сообщение серверу
-						clientRedis.publish("sendAction", JSON.stringify({
+						clientRedis.publish("aglServer", JSON.stringify({
 							key:	req.key,
 							data:	data
 						}));
@@ -208,7 +208,7 @@ const Agl = require("../api/api");
 			// Получаем входящие сообщение
 			redis.on("message", (ch, mess) => {
 				// Если канал для получения сообщений
-				if(ch === "sendAction"){
+				if(ch === "aglAgent"){
 					try {
 						// Получаем входные данные
 						mess = JSON.parse(mess);
@@ -223,7 +223,7 @@ const Agl = require("../api/api");
 				}
 			});
 			// Подписываемся на канал
-			redis.subscribe("sendAction");
+			redis.subscribe("aglAgent");
 			// Выводим в консоль данные
 			agl.log(['агент веб-сокетов запущен'], "info");
 		});
