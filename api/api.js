@@ -246,10 +246,10 @@ const anyks = require("./lib.anyks");
 							// Если родительский элемент передан
 							if($.isset(parentId) && $.isset(parentType)){
 								
-								console.log("------", str, parentId, keyChar, val, parentType + "Ids", cacheObject[keyChar][val][parentType + "Ids"]);
+								console.log("------", str, parentId, keyChar, val, parentType + "Id", cacheObject[keyChar][val][parentType + "Ids"]);
 
 								// Если родительский элемент найден
-								if((cacheObject[keyChar][val][parentType + "Ids"] === parentId)
+								if((cacheObject[keyChar][val][parentType + "Id"] === parentId)
 								&& reg.test(cacheObject[keyChar][val].name)){
 									// Запоминаем результат
 									result.push(cacheObject[keyChar][val]);
