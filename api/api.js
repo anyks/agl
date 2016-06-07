@@ -336,6 +336,9 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cacheObject[keyChar])) cacheObject[keyChar] = {};
 						// Если идентификатор объекта не существует то создаем его
 						if(!$.isset(cacheObject[keyChar][arr[i]._id])) cacheObject[keyChar][arr[i]._id] = {};
+						
+						console.log("-----------", cacheObject[keyChar][arr[i]._id]);
+
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
 						if(!$.isArray(cacheObject[keyChar][arr[i]._id].gps)
 						|| !$.isArray(cacheObject[keyChar][arr[i]._id].metro)
@@ -713,9 +716,6 @@ const anyks = require("./lib.anyks");
 					const Limit			= limit;
 					// Ищем данные адреса сначала в кеше
 					searchAddressInCache(ContentName, ContentType, ParentId, ParentType, Limit, idObj).then(result => {
-						
-						console.log("-----------", result);
-
 						// Если данные не найдены
 						if(!$.isset(result) || noCache){
 							// Подключаем модуль кладра
