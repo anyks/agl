@@ -342,7 +342,7 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cacheObject[keyChar][arr[i]._id])) cacheObject[keyChar][arr[i]._id] = {};
 
 
-						console.log("-------------", cacheObject[keyChar][arr[i]._id]);
+						console.log("-------------", keyChar, arr[i]._id);
 
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
 						if(!$.isArray(cacheObject[keyChar][arr[i]._id].gps)
