@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/* Агент веб сокетов AGL */
+/* Агент веб-сокетов AGL */
 /*
 *	автор:				Юрий Николаевич Лобарев
 *	skype:				efrantick
@@ -192,6 +192,9 @@ const Agl = require("../api/api");
 					rejectUser("BINARY_NOT_ALLOW", "Бинарные данные запрещены", {bytes: message.binaryData.length});
 				break;
 			}
+		});
+		client.on('end', data => {
+			console.log("--------------");
 		});
 	};
 	/**
