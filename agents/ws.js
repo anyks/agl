@@ -213,7 +213,7 @@ const Agl = require("../api/api");
 						// Получаем входные данные
 						mess = JSON.parse(mess);
 						// Если клиент существует
-						if($.isset(onlineUsers[mess.key])){
+						if(ax.isset(onlineUsers[mess.key])){
 							// Отправляем сообщение
 							onlineUsers[mess.key]
 							.sendUTF(JSON.stringify(mess.data));
