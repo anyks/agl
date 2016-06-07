@@ -1061,6 +1061,89 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
+		 * @return {Promise} промис с данными результата обновлений станций метро
+		 */
+		updateMetroCity(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * updateDB Функция обновления данных в базе
+				 * @param  {Object} obj      объект для обновления данных
+				 * @param  {String} keyCache ключ клеша
+				 * @param  {Object} cache    объект кеша для сохранения
+				 */
+				const updateDB = (obj, keyCache, cache, callback) => {
+					// Создаем ключ названия
+					const keyChar = obj.name[0].toLowerCase();
+					// Запрашиваем все данные из базы
+					idObj.schemes.Cities.findOne({_id: obj._id})
+					// Выполняем запрос
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isset(data)
+						&& $.isObject(data)){
+							// Выполняем обновление
+							idObj.schemes.Cities.update({_id: obj._id}, obj, {
+								upsert:	true,
+								multi:	true
+							}, callback);
+						// Просто добавляем новый объект
+						} else (new idObj.schemes.Cities(obj)).save(callback);
+						// Сохраняем данные в кеше
+						cache[keyChar][obj._id] = obj;
+						// Сохраняем данные в кеше
+						idObj.clients.redis.set(keyCache, JSON.stringify(cache));
+					});
+				};
+				// Запрашиваем все данные городов
+				idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
+				// Запрашиваем данные регионов
+				.exec((err, data) => {
+					// Если ошибки нет
+					if(!$.isset(err) && $.isArray(data) && data.length){
+						// Ключ запроса
+						const key = "address:subjects:" + data[0].contentType;
+						// Считываем данные из кеша
+						idObj.clients.redis.get(key, (error, cacheObject) => {
+							// Если данные не найдены
+							if(!$.isset(cacheObject)) cacheObject = {};
+							// Выполняем парсинг ответа
+							else cacheObject = JSON.parse(cacheObject);
+							/**
+							 * getData Рекурсивная функция перехода по массиву
+							 * @param  {Number} i индекс текущего значения массива
+							 */
+							const getData = (i = 0) => {
+								// Если не все данные пришли тогда продолжаем загружать
+								if(i < data.length){
+									// Получаем данные метро
+									idObj.searchMetroFromGPS(data[i].lat, data[i].lng, 150000).then(metro => {
+										// Если метро передано
+										if($.isArray(metro) && metro.length){
+											// Создаем пустой массив с метро
+											data[i].metro = [];
+											// Переходим по всему массиву данных
+											metro.forEach(val => data[i].metro.push(val._id));
+											// Сохраняем метро
+											updateDB(data[i], key, cacheObject, () => getData(i + 1));
+										// Просто продолжаем дальше
+										} else getData(i + 1);
+									});
+								// Если все загружено тогда сообщаем об этом
+								} else resolve(true);
+							};
+							// Запускаем запрос данных
+							getData();
+						});
+					// Сообщаем что такие данные не найдены
+					} else resolve(false);
+				});
+			}));
+		}
+		/**
 		 * updateTimeZones Метод обновления временных зон у тех элементов адресов у которых ранее временная зона была не найдена
 		 * @return {Promise} промис содержащий результат обновления временных зон
 		 */
@@ -1072,9 +1155,9 @@ const anyks = require("./lib.anyks");
 				/**
 				 * updateDB Функция обновления данных в базе
 				 * @param  {Object} obj      объект для обновления данных
+				 * @param  {Object} scheme   схема базы данных
 				 * @param  {String} keyCache ключ клеша
 				 * @param  {Object} cache    объект кеша для сохранения
-				 * @param  {Object} scheme   схема базы данных
 				 */
 				const updateDB = (obj, scheme, keyCache, cache, callback) => {
 					// Создаем ключ названия
@@ -1108,7 +1191,7 @@ const anyks = require("./lib.anyks");
 					// Создаем промис для обработки
 					return (new Promise(resolve => {
 						// Запрашиваем все данные городов
-						scheme.find({timezone: null})
+						scheme.find({timezone: {$exists: false}})
 						// Запрашиваем данные регионов
 						.exec((err, data) => {
 							// Если ошибки нет
@@ -1590,6 +1673,8 @@ const anyks = require("./lib.anyks");
 						const metro = (cities ? yield idObj.updateMetro() : false);
 						// Если метро загружено
 						if(metro){
+							// Выполняем загрузку станций метро для городов
+							const metroCity = yield idObj.updateMetroCity();
 							// Подключаемся к коллекции address
 							const address = idObj.clients.mongo.connection.db.collection("address");
 							// Подключаемся к коллекции streets
