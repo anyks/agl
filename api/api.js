@@ -206,6 +206,10 @@ const anyks = require("./lib.anyks");
 			const key = "address:subjects:" + type;
 			// Считываем данные из кеша
 			idObj.clients.redis.get(key, (error, cacheObject) => {
+				
+				console.log("----------", cacheObject);
+				/*
+
 				// Если данные не найдены, сообщаем что в кеше ничего не найдено
 				if(!$.isset(cacheObject)) resolve(false);
 				// Если данные пришли
@@ -257,6 +261,7 @@ const anyks = require("./lib.anyks");
 						resolve(result.length < 1 ? false : result);
 					}
 				}
+				*/
 			});
 		}));
 	};
