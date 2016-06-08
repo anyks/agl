@@ -961,11 +961,11 @@ const anyks = require("./lib.anyks");
 						const getData = function * (){
 							// Выполняем запрос с геокодера Yandex
 							const yandex = yield fetch(urlsGeo[0]).then(
-								res => (res.status === 200 ? res.json() : false),
+								res => (res.status === 200 ? res : false),
 								err => idObj.log(['получения данных с yandex api', err], "error")
 							);
 
-							console.log("--------1", yandex);
+							console.log("--------1", yandex, res);
 
 							// Выполняем запрос с геокодера Google
 							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
