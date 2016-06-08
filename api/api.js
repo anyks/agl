@@ -415,9 +415,6 @@ const anyks = require("./lib.anyks");
 	 * @param  {Function} callback функция обратного вызова
 	 */
 	const processResultKladr = (err, res, scheme, idObj, callback) => {
-		
-		console.log("+++++++++", err, res);
-
 		// Если возникает ошибка тогда выводим её
 		if($.isset(err) && !$.isset(res)){
 			// Выводим сообщение об ошибке
@@ -426,6 +423,9 @@ const anyks = require("./lib.anyks");
 			callback(false);
 		// Если данные пришли
 		} else if($.isObject(res) && $.isArray(res.result)){
+			
+			console.log("+++++++++1", err, res);
+
 			// Формируем первоначальную строку адреса
 			let address = "Россия" + ", "
 			+ ($.isArray(res.result[0].parents)
@@ -435,6 +435,10 @@ const anyks = require("./lib.anyks");
 				return ($.isString(sum) ? sum : sum.name + " " + sum.type)
 				+ ", " + val.name + " " + val.type;
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
+			
+			console.log("+++++++++2", err, res);
+
+			/*
 			// Выполняем поиск GPS координат для текущего адреса
 			getGPSForAddress(res.result, address, idObj, scheme)
 			.then(result => idObj.log([
@@ -471,6 +475,7 @@ const anyks = require("./lib.anyks");
 			});
 			// Выводим результат
 			callback(result);
+			*/
 		}
 	};
 	/**
@@ -961,11 +966,11 @@ const anyks = require("./lib.anyks");
 						const getData = function * (){
 							// Выполняем запрос с геокодера Yandex
 							const yandex = yield fetch(urlsGeo[0]).then(
-								res => (res.status === 200 ? res : false),
+								res => (res.status === 200 ? res.json() : false),
 								err => idObj.log(['получения данных с yandex api', err], "error")
 							);
 
-							console.log("--------1", yandex, res);
+							console.log("--------1", yandex);
 
 							// Выполняем запрос с геокодера Google
 							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
