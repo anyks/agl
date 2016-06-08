@@ -953,7 +953,7 @@ const anyks = require("./lib.anyks");
 							// Выполняем обработку результата геокодера
 							parseAnswerGeoCoder(obj, idObj).then(result => {
 								// Сохраняем результат в базу данных
-								if(result) (new idObj.schemes.Address(result)).save();
+								if(result) (new idObj.schemes.Address(result)).save((e, l) => console.log("---------------", e, l, result));
 								// Отправляем в Redis на час
 								idObj.clients.redis.multi([
 									["set", key, JSON.stringify(result)],
