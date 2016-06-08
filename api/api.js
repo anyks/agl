@@ -49,18 +49,19 @@ const anyks = require("./lib.anyks");
 	}
 	/**
 	 * exec Функция управления генераторами
+	 * @param  {Object}    idObj    идентификатор текущего объекта
 	 * @param  {Generator} gen      генератор
 	 * @param  {Function}  callback функция обратного вызова при завершении работы
 	 * @param  {Variant}   val      полученное значение
 	 */
-	const exec = (gen, callback, val) => {
+	const exec = (idObj, gen, callback, val) => {
 		// Передаем первоначальные данные
 		let next = gen.next(val);
 		// Если генератор завершен не полностью
 		if(!next.done){
 			next.value.then(
-				res => exec(gen, callback, res),
-				err => gen.throw(err)
+				res => exec(idObj, gen, callback, res),
+				err => idObj.log(["ошибка генератора", err], "error")
 			);
 		// Выполняем функцию обратного вызова
 		} else callback(next.value);
@@ -907,7 +908,7 @@ const anyks = require("./lib.anyks");
 							init(obj);
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec(idObj, getData());
 					}
 				});
 			}));
@@ -984,7 +985,7 @@ const anyks = require("./lib.anyks");
 							init(obj);
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec(idObj, getData());
 					}
 				});
 			}));
@@ -1320,7 +1321,7 @@ const anyks = require("./lib.anyks");
 					resolve(true);
 				};
 				// Запускаем коннект
-				exec(getData());
+				exec(idObj, getData());
 			}));
 		}
 		/**
@@ -1829,7 +1830,7 @@ const anyks = require("./lib.anyks");
 						}
 					};
 					// Запускаем коннект
-					exec(updateDB());
+					exec(idObj, updateDB());
 				} catch(e) {
 					// Выводим сообщение в консоль
 					idObj.log(["что-то с инициализацией базы данных", e], "error");
