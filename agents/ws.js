@@ -233,6 +233,30 @@ const Agl = require("../api/api");
 		(new $()).redis(config.redis).then(redis => {
 			// Запоминаем Redis клиент
 			clientRedis = redis;
+			/**
+			 * updateImesZones Функция обновления временных зон
+			 */
+			const updateImesZones = () => {
+				// Проверяем каждые пол часа
+				setTimeout(() => {
+					// Получаем текущий час
+					const hour = parseInt((new Date()).getHours(), 10);
+					// Если время 3 утра тогда отправляем запрос
+					if(hour === 3){
+						// Отправляем сообщение серверу
+						clientRedis.publish("aglServer", JSON.stringify({
+							key:	"updateImesZones",
+							data:	{"action": "updateImesZones"}
+						}));
+					}
+					// Запускаем следующую проверку
+					updateImesZones();
+					// Выводим сообщение в консоль
+					agl.log('выполняем попытку обновить временные зоны', "info");
+				}, 1800000);
+			};
+			// Запускаем проверку обновления временной зоны
+			updateTimeZones();
 		});
 	};
 	/**
