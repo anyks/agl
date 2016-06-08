@@ -998,8 +998,10 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * getRegions Метод получения списка регионов
+		 * @param  {Number}  limit количество результатов к выдаче
+		 * @return {Promise}       промис результата
 		 */
-		getRegions(){
+		getRegions({limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1013,6 +1015,8 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cacheObject)) resolve(false);
 						// Если данные пришли
 						else {
+							// Текущее значение итерации
+							let i = 0;
 							// Массив найденных регионов
 							const regions = [];
 							// Выполняем парсинг ответа
@@ -1022,6 +1026,10 @@ const anyks = require("./lib.anyks");
 								for(let key in cacheObject[val]){
 									// Добавляем в массив регион
 									regions.push(cacheObject[val][key]);
+									// Увеличиваем значение индекса
+									if(i < (limit - 1)) i++;
+									// Выходим
+									else break;
 								}
 							}
 							// Выводим результат
@@ -1030,6 +1038,63 @@ const anyks = require("./lib.anyks");
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с поиском регионов", e], "error");}
+			}));
+		}
+		/**
+		 * getDistricts Метод получения списка районов
+		 * @param  {String}  regionId  идентификатор региона
+		 * @param  {Number}  limit     количество результатов к выдаче
+		 * @return {Promise}           промис результата
+		 */
+		getDistricts({regionId, limit = 10}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Ключ запроса
+					const key = "address:subjects:district";
+					// Считываем данные из кеша
+					idObj.clients.redis.get(key, (error, cacheObject) => {
+						// Если данные не найдены, сообщаем что в кеше ничего не найдено
+						if(!$.isset(cacheObject)) resolve(false);
+						// Если данные пришли
+						else {
+							// Массив найденных районов
+							const districts = [];
+							// Выполняем парсинг ответа
+							cacheObject = JSON.parse(cacheObject);
+							// Переходим по всему массиву районов
+							for(let val in cacheObject){
+								for(let key in cacheObject[val]){
+									// Если родительский элемент передан
+									if($.isset(regionId)){
+										// Если родительский элемент найден
+										if((cacheObject[val][key].regionId === regionId) || (key === regionId)){
+											// Добавляем в массив район
+											districts.push(cacheObject[val][key]);
+											// Увеличиваем значение индекса
+											if(i < (limit - 1)) i++;
+											// Выходим
+											else break;
+										}
+									// Если родительский элемент не существует тогда просто добавляем в список
+									} else {
+										// Добавляем в массив район
+										districts.push(cacheObject[val][key]);
+										// Увеличиваем значение индекса
+										if(i < (limit - 1)) i++;
+										// Выходим
+										else break;
+									}
+								}
+							}
+							// Выводим результат
+							resolve(districts);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с поиском районов", e], "error");}
 			}));
 		}
 		/**
