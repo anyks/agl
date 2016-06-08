@@ -289,7 +289,7 @@
 						"aglAgent",
 						JSON.stringify(obj)
 						.replace(/_id/ig, "id")
-						.replace(/__v\s*:\s*\d+\s*\,\s*/ig, "")
+						.replace(/__v\s*:\s*\d+\s*\,/ig, "")
 					);
 				};
 				// Если данный метод существует
