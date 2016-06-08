@@ -1060,6 +1060,8 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cacheObject)) resolve(false);
 						// Если данные пришли
 						else {
+							// Текущее значение итерации
+							let i = 0;
 							// Массив найденных районов
 							const districts = [];
 							// Выполняем парсинг ответа
