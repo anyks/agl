@@ -100,12 +100,7 @@ const anyks = require("./lib.anyks");
 						let description	= $.fnShowProps(data, "display_name");
 						let zip			= parseInt($.fnShowProps(data, "postcode"), 10);
 						let gps			= [parseFloat(lat), parseFloat(lng)];
-						let _id			= idObj.generateKey(
-							($.isset(country) ? country.toLowerCase() : "") +
-							($.isset(region) ? region.toLowerCase() : "") +
-							($.isset(city) ? city.toLowerCase() : "") +
-							($.isset(street) ? street.toLowerCase() : "")
-						);
+						let _id			= idObj.generateKey(description);
 						// Формируем объект
 						result = {
 							_id, lat, lng, gps,
@@ -136,12 +131,7 @@ const anyks = require("./lib.anyks");
 						let upperCorner = $.fnShowProps(data, "upperCorner").split(" ");
 						let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
 						let gps			= [parseFloat(lat), parseFloat(lng)];
-						let _id			= idObj.generateKey(
-							($.isset(country) ? country.toLowerCase() : "") +
-							($.isset(region) ? region.toLowerCase() : "") +
-							($.isset(city) ? city.toLowerCase() : "") +
-							($.isset(street) ? street.toLowerCase() : "")
-						);
+						let _id			= idObj.generateKey(description);
 						// Формируем объект
 						result = {
 							_id, lat, lng, gps,
@@ -185,12 +175,7 @@ const anyks = require("./lib.anyks");
 							else if(obj.types.indexOf('administrative_area_level_2') > -1) district = obj.long_name;
 						});
 						// Генерируем идентификатор объекта
-						let _id = idObj.generateKey(
-							($.isset(country) ? country.toLowerCase() : "") +
-							($.isset(region) ? region.toLowerCase() : "") +
-							($.isset(city) ? city.toLowerCase() : "") +
-							($.isset(street) ? street.toLowerCase() : "")
-						);
+						let _id = idObj.generateKey(description);
 						// Формируем объект
 						result = {
 							_id, lat, lng, gps,
@@ -953,7 +938,7 @@ const anyks = require("./lib.anyks");
 							// Выполняем обработку результата геокодера
 							parseAnswerGeoCoder(obj, idObj).then(result => {
 								// Сохраняем результат в базу данных
-								if(result) (new idObj.schemes.Address(result)).save((e, l) => console.log("---------------", e, l, result));
+								if(result) (new idObj.schemes.Address(result)).save();
 								// Отправляем в Redis на час
 								idObj.clients.redis.multi([
 									["set", key, JSON.stringify(result)],
