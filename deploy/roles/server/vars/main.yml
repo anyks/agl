@@ -28,7 +28,7 @@ group: "freebsd"
 
 # Devel scripts
 nodejs_bin: "/usr/local/bin/node"
-forever_bin: "/usr/local/bin/forever"
+forever_bin: "/var/www/node_modules/forever/bin/forever"
 stack_size: "2097151"
 min_uptime: "3000"
 sleep_time: "2000"
