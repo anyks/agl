@@ -283,7 +283,7 @@ const Agl = require("../api/api");
 		/**
 		 * updateImesZones Функция обновления временных зон
 		 */
-		const updateImesZones = () => {
+		const updateTimeZones = () => {
 			// Проверяем каждые пол часа
 			setTimeout(() => {
 				// Получаем текущий час
@@ -292,12 +292,12 @@ const Agl = require("../api/api");
 				if(hour === 3){
 					// Отправляем сообщение серверу
 					sendQuery({
-						key:	"updateImesZones",
-						data:	{"action": "updateImesZones"}
+						key:	"updateTimeZones",
+						data:	{"action": "updateTimeZones"}
 					});
 				}
 				// Запускаем следующую проверку
-				updateImesZones();
+				updateTimeZones();
 				// Выводим сообщение в консоль
 				agl.log('выполняем попытку обновить временные зоны', "info");
 			}, 1800000);
