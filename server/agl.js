@@ -280,8 +280,6 @@
 				**** action = searchHouse
 				****** str, streetId, limit
 				 */
-				// Создаем объект входных данных
-				let query = obj.data.query;
 				// Функция отправки результата ответа
 				const sendResult = data => {
 					// Присваиваем полученный ответ
@@ -292,7 +290,7 @@
 				// Если данный метод существует
 				if(ax.isFunction(agl[obj.data.action])){
 					// Выполняем запрос данных из api
-					agl[obj.data.action](query).then(sendResult);
+					agl[obj.data.action](obj.data.query).then(sendResult);
 				}
 			};
 			// Ловим входящие сообщения от мастера
