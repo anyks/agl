@@ -920,7 +920,7 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				idObj.clients.redis.get(key, (error, result) => {
 					// Если данные это не массив тогда создаем его
-					if(!$.isset(result)){
+					if($.isset(result)){
 						// Выводим результат
 						resolve(JSON.parse(result));
 					// Если данные в кеше не найдены тогда продолжаем искать
