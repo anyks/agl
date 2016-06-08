@@ -21,8 +21,8 @@
   become_method: sudo
   template: src="{{ item }}.j2" dest="{{ rc_dir }}/{{ item }}"
   with_items:
-    - "servAgl"
     - "wsAgl"
+    - "servAgl"
 
 - name: Set permissions
   become: yes
