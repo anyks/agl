@@ -2,11 +2,11 @@
 
 /*
 * Example:
-* ./agl.js --redis=127.0.0.1:6379 --mongo=127.0.0.1:27017
+* ./agl.js --redis=127.0.0.1:6379 --mongo=127.0.0.1:27017 --fork=127.0.0.1:4420
 *
 * OR
 *
-* ./agl.js -r 127.0.0.1:6379 -m 127.0.0.1:27017
+* ./agl.js -r 127.0.0.1:6379 -m 127.0.0.1:27017 -f 127.0.0.1:4420
 */
 
 // Устанавливаем строгий режим
@@ -36,7 +36,7 @@
 			const rpass	= (argv.p ? argv.p : (argv.rpass	? argv.rpass	: undefined));
 			const mserv	= (argv.m ? argv.m : (argv.mongo	? argv.mongo	: "127.0.0.1:27017"));
 			const rserv	= (argv.r ? argv.r : (argv.redis	? argv.redis	: "127.0.0.1:6379"));
-			const sfork	= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
+			const fserv	= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
 			// Список воркеров
 			const workers = [];
 			/**
@@ -66,7 +66,7 @@
 			// Конфигурация подключения
 			const config = {
 				rdb,
-				sfork,
+				fserv,
 				mserv,
 				rserv,
 				rpass,
@@ -75,7 +75,7 @@
 					// Объект данных конфига
 					let conf = {};
 					// Распарсим данные
-					const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.sfork);
+					const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.fserv);
 					// Формируем объект подключения
 					if(ax.isArray(parse)) conf = {
 						"host":		parse[1],

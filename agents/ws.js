@@ -14,7 +14,7 @@
 *
 * OR
 *
-* ./ws.js -r 127.0.0.1:6379 -s 127.0.0.1:3320
+* ./ws.js -r 127.0.0.1:6379 -s 127.0.0.1:3320 -f 127.0.0.1:4420
 */
 
 "use strict";
@@ -35,7 +35,7 @@ const Agl = require("../api/api");
 	const rpass		= (argv.p ? argv.p : (argv.rpass	? argv.rpass	: undefined));
 	const rserv		= (argv.r ? argv.r : (argv.redis	? argv.redis	: "127.0.0.1:6379"));
 	const serv		= (argv.s ? argv.s : (argv.server	? argv.server	: "127.0.0.1:3320"));
-	const sfork		= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
+	const fserv		= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
 	// Название канала
 	const channel = "aglWs";
 	// Создаем объект Agl
@@ -74,7 +74,7 @@ const Agl = require("../api/api");
 	const config = {
 		rdb,
 		serv,
-		sfork,
+		fserv,
 		rserv,
 		rpass,
 		origin,
@@ -98,7 +98,7 @@ const Agl = require("../api/api");
 			// Объект данных конфига
 			let conf = {};
 			// Распарсим данные
-			const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.sfork);
+			const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.fserv);
 			// Формируем объект подключения
 			if(ax.isArray(parse)) conf = {
 				"host":		parse[1],
