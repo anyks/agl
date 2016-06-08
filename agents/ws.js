@@ -211,7 +211,7 @@ const Agl = require("../api/api");
 			sendGeneralMessage(client, {"error": error});
 		};
 		// Отсылаем сообщение об удачном подключении
-		sendGeneralMessage(client, {"message": "Добро пожаловать на сервер Agl!"});
+		sendGeneralMessage(client, {"message": "Добро пожаловать на сервер " + agl.name + "!"});
 		// Устанавливаем событие на ошибку подключения от клиента
 		client.on('error', error => {
 			// Выводим в консоль данные
