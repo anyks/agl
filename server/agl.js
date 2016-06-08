@@ -378,6 +378,8 @@
 				};
 				// Если данный метод существует
 				if(ax.isFunction(agl[obj.data.action])){
+					// Если объект не передан то создаем его
+					if(!$.isset(obj.data.query)) obj.data.query = {};
 					// Выполняем запрос данных из api
 					agl[obj.data.action](obj.data.query).then(sendResult);
 				}

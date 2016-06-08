@@ -1049,15 +1049,12 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  limit     количество результатов к выдаче
 		 * @return {Promise}           промис результата
 		 */
-		getDistricts({limit = 10}){
+		getDistricts({regionId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
-					
-					const regionId = "";
-
 					// Ключ запроса
 					const key = "address:subjects:district";
 					// Считываем данные из кеша
