@@ -423,9 +423,6 @@ const anyks = require("./lib.anyks");
 			callback(false);
 		// Если данные пришли
 		} else if($.isObject(res) && $.isArray(res.result) && res.result.length){
-			
-			
-
 			// Формируем первоначальную строку адреса
 			let address = "Россия" + ", "
 			+ ($.isArray(res.result[0].parents)
@@ -435,12 +432,6 @@ const anyks = require("./lib.anyks");
 				return ($.isString(sum) ? sum : sum.name + " " + sum.type)
 				+ ", " + val.name + " " + val.type;
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
-			
-			console.log("+++++++++2", err, res, address);
-
-			
-
-			/*
 			// Выполняем поиск GPS координат для текущего адреса
 			getGPSForAddress(res.result, address, idObj, scheme)
 			.then(result => idObj.log([
@@ -458,30 +449,33 @@ const anyks = require("./lib.anyks");
 			result = result.map(obj => {
 				obj._id		= obj.id;
 				obj.code	= "ru";
-				// Переходим по всему массиву данных
-				obj.parents.forEach(val => {
-					// Определяем тип контента
-					switch(val.contentType){
-						// Формируем внешние ключи
-						case 'region':		obj.regionId	= val.id;	break;
-						case 'district':	obj.districtId	= val.id;	break;
-						case 'city':		obj.cityId		= val.id;	break;
-						case 'street':		obj.streetId	= val.id;	break;
-					}
-				});
+				// Если массив родительских объектов существует
+				if($.isArray(obj.parents)){
+					// Переходим по всему массиву данных
+					obj.parents.forEach(val => {
+						// Определяем тип контента
+						switch(val.contentType){
+							// Формируем внешние ключи
+							case 'region':		obj.regionId	= val.id;	break;
+							case 'district':	obj.districtId	= val.id;	break;
+							case 'city':		obj.cityId		= val.id;	break;
+							case 'street':		obj.streetId	= val.id;	break;
+						}
+					});
+					// Удаляем лишние данные
+					delete obj.parents;
+				}
 				// Удаляем лишние данные
 				delete obj.id;
-				delete obj.parents;
 				// Возвращаем результат
 				return obj;
 			});
 			// Выводим результат
 			callback(result);
-			*/
 		// Если данные не найдены то сообщаем об этом
 		} else {
 			// Выводим сообщение об ошибке
-			idObj.log(["адрес в базе Kladr не найден", res], "error");
+			idObj.log(["адрес в базе Kladr не найден", res.searchContext], "error");
 			// Выводим результат
 			callback(false);
 		}
@@ -898,17 +892,17 @@ const anyks = require("./lib.anyks");
 							// Выполняем запрос с геокодера Yandex
 							const yandex = yield fetch(urlsGeo[0]).then(
 								res => (res.status === 200 ? res.json() : false),
-								err => false
+								err => idObj.log(['получения данных с yandex api', err], "error")
 							);
 							// Выполняем запрос с геокодера Google
 							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 								res => (res.status === 200 ? res.json() : false),
-								err => false
+								err => idObj.log(['получения данных с google api', err], "error")
 							) : false);
 							// Выполняем запрос с геокодера OpenStreet Maps
 							const osm = (!google ? yield fetch(urlsGeo[2]).then(
 								res => (res.status === 200 ? res.json() : false),
-								err => false
+								err => idObj.log(['получения данных с osm api', err], "error")
 							) : false);
 							// Создаем объект ответа
 							const obj = (
@@ -977,25 +971,16 @@ const anyks = require("./lib.anyks");
 								res => (res.status === 200 ? res.json() : false),
 								err => idObj.log(['получения данных с yandex api', err], "error")
 							);
-
-							console.log("--------1", yandex);
-
 							// Выполняем запрос с геокодера Google
 							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 								res => (res.status === 200 ? res.json() : false),
 								err => idObj.log(['получения данных с google api', err], "error")
 							) : false);
-
-							console.log("--------2", google);
-
 							// Выполняем запрос с геокодера OpenStreet Maps
 							const osm = (!google ? yield fetch(urlsGeo[2]).then(
 								res => (res.status === 200 ? res.json() : false),
 								err => idObj.log(['получения данных с osm api', err], "error")
 							) : false);
-
-							console.log("--------3", osm);
-
 							// Создаем объект ответа
 							const obj = (
 								yandex ? {data: yandex, status: "yandex"} :
