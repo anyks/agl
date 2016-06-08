@@ -935,10 +935,16 @@ const anyks = require("./lib.anyks");
 						].map(val => val.replace("$address", encodeURI(address)));
 						// Получаем объект запроса с геокодера
 						const init = obj => {
+							
+							console.log("+++++++++++++1", obj);
+
 							// Выполняем обработку результата геокодера
 							parseAnswerGeoCoder(obj, idObj).then(result => {
+								
+								console.log("+++++++++++++2", result);
+
 								// Сохраняем результат в базу данных
-								if(result) (new idObj.schemes.Address(result)).save((e, l) => console.log(e, l, result));
+								if(result) (new idObj.schemes.Address(result)).save();
 								// Отправляем в Redis на час
 								idObj.clients.redis.multi([
 									["set", key, JSON.stringify(result)],
