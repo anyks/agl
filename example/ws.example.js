@@ -1,4 +1,4 @@
-var socket = new WebSocket("ws://107.170.122.222:3320");
+var socket = new WebSocket("ws://dev.agl.anyks.net");
 
 socket.onopen = function(){
 	console.log("Соединение установлено.");
