@@ -24,6 +24,7 @@
 				name:			String,
 				lat:			String,
 				lng:			String,
+				code:			String,
 				gps:			[Number],
 				type:			String,
 				okato:			String,

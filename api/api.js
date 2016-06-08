@@ -341,9 +341,10 @@ const anyks = require("./lib.anyks");
 								// Если результат найден
 								if($.isset(res)){
 									// Выполняем сохранение данных
-									arr[i].lat = res.lat;
-									arr[i].lng = res.lng;
-									arr[i].gps = res.gps;
+									arr[i].lat	= res.lat;
+									arr[i].lng	= res.lng;
+									arr[i].gps	= res.gps;
+									arr[i].code	= res.address.code;
 									// Выполняем поиск временную зону
 									idObj.getTimezone({lat: arr[i].lat, lng: arr[i].lng}).then(timezone => {
 										// Если временная зона найдена
@@ -446,7 +447,8 @@ const anyks = require("./lib.anyks");
 			let result = JSON.parse(JSON.stringify(res.result));
 			// Приводим ответ к общему виду
 			result = result.map(obj => {
-				obj._id	= obj.id;
+				obj._id		= obj.id;
+				obj.code	= "ru";
 				// Переходим по всему массиву данных
 				obj.parents.forEach(val => {
 					// Определяем тип контента

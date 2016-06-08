@@ -20,10 +20,11 @@
 		getData(){
 			// Выводим коллекцию
 			return new mongo.Schema({
-				_id: String,
-				lat: String,
-				lng: String,
-				gps: [Number],
+				_id:	String,
+				lat:	String,
+				lng:	String,
+				code:	String,
+				gps:	[Number],
 				boundingbox: [{
 					type:		String,
 					optional:	true
