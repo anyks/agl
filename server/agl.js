@@ -287,7 +287,7 @@
 					// Присваиваем полученный ответ
 					obj.data.query = data;
 					// Отправляем сообщение серверу
-					clients.redis.publish("aglAgent", JSON.stringify(obj));
+					clients.redis.publish("aglAgent", JSON.stringify(obj).replace(/_id/i, "id"));
 				};
 				// Если данный метод существует
 				if(ax.isFunction(agl[obj.data.action])){
