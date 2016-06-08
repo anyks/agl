@@ -964,16 +964,25 @@ const anyks = require("./lib.anyks");
 								res => (res.status === 200 ? res.json() : false)//,
 								//err => false
 							);
+
+							console.log("--------1", yandex);
+
 							// Выполняем запрос с геокодера Google
 							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
 								res => (res.status === 200 ? res.json() : false)//,
 								// err => false
 							) : false);
+
+							console.log("--------2", google);
+
 							// Выполняем запрос с геокодера OpenStreet Maps
 							const osm = (!google ? yield fetch(urlsGeo[2]).then(
 								res => (res.status === 200 ? res.json() : false)//,
 								//err => false
 							) : false);
+
+							console.log("--------3", osm);
+
 							// Создаем объект ответа
 							const obj = (
 								yandex ? {data: yandex, status: "yandex"} :
