@@ -140,7 +140,7 @@ const Agl = require("../api/api");
 		var client = net.connect({
 			port: config.fork.port,
 			host: config.fork.host
-		}, () => agl.log(['подключились к форку сервера'], "error"));
+		}, () => agl.log(['подключились к форку сервера'], "info"));
 		try {
 			// Устанавливаем кодировку utf-8
 			client.setEncoding('utf8');
