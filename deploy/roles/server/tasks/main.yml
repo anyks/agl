@@ -20,7 +20,6 @@
   become: yes
   become_method: sudo
   template: src="{{ item }}.j2" dest="{{ rc_dir }}/{{ item }}"
-  action: shell chmod +x "{{ rc_dir }}/{{ item }}"
   with_items:
     - "servAgl"
     - "wsAgl"
