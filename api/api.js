@@ -605,7 +605,7 @@ const anyks = require("./lib.anyks");
 			// Генерируем от текущего времени
 			let mkey = md5((new Date()).valueOf().toString());
 			// Если это строка
-			if($.isString(str)) mkey = md5(str);
+			if($.isString(str)) mkey = md5(JSON.stringify(str));
 			// Формируем новый вид ключа
 			let key = (mkey.substr(0, 8) + mkey.substr(24, 31));
 			// Выводим результат
