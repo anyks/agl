@@ -282,15 +282,12 @@
 				 */
 				// Функция отправки результата ответа
 				const sendResult = data => {
+					// Удаляем ненужный идентификатор
+					delete data["__v"];
 					// Присваиваем полученный ответ
 					obj.data.query = data;
 					// Отправляем сообщение серверу
-					clients.redis.publish(
-						"aglAgent",
-						JSON.stringify(obj)
-						.replace(/_id/ig, "id")
-						.replace(/__v\s*:\s*\d+\s*\,/ig, "")
-					);
+					clients.redis.publish("aglAgent", JSON.stringify(obj).replace(/_id/ig, "id"));
 				};
 				// Если данный метод существует
 				if(ax.isFunction(agl[obj.data.action])){
