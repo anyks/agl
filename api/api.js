@@ -997,6 +997,42 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * getRegions Метод получения списка регионов
+		 */
+		getRegions(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Ключ запроса
+					const key = "address:subjects:region";
+					// Считываем данные из кеша
+					idObj.clients.redis.get(key, (error, cacheObject) => {
+						// Если данные не найдены, сообщаем что в кеше ничего не найдено
+						if(!$.isset(cacheObject)) resolve(false);
+						// Если данные пришли
+						else {
+							// Массив найденных регионов
+							const regions = [];
+							// Выполняем парсинг ответа
+							cacheObject = JSON.parse(cacheObject);
+							// Переходим по всему массиву регионов
+							for(let val in cacheObject){
+								for(let key in cacheObject[val]){
+									// Добавляем в массив регион
+									regions.push(cacheObject[val][key]);
+								}
+							}
+							// Выводим результат
+							resolve(regions);
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["что-то с поиском регионов", e], "error");}
+			}));
+		}
+		/**
 		 * getTimezone Метод получения данных временной зоны по GPS координатам
 		 * @param  {Number} lat широта
 		 * @param  {Number} lng долгота
