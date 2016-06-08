@@ -422,11 +422,11 @@ const anyks = require("./lib.anyks");
 			// Выводим результат
 			callback(false);
 		// Если данные пришли
-		} else if($.isObject(res) && $.isArray(res.result)){
+		} else if($.isObject(res)
+		&& $.isArray(res.result)
+		&& res.result.length){
 			
-			try {
-
-			console.log("+++++++++1", err, res);
+			
 
 			// Формируем первоначальную строку адреса
 			let address = "Россия" + ", "
@@ -440,7 +440,7 @@ const anyks = require("./lib.anyks");
 			
 			console.log("+++++++++2", err, res);
 
-			} catch(e) {console.log("------------", e);}
+			
 
 			/*
 			// Выполняем поиск GPS координат для текущего адреса
