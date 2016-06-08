@@ -571,6 +571,8 @@ const anyks = require("./lib.anyks");
 			this.version = config.version;
 			// Устанавливаем копирайт
 			this.copyright = config.copyright;
+			// Устанавливаем пароль системы
+			this.password = this.generateKey(config.password);
 		}
 		/**
 		 * getVersionSystem Метод получения версии и копирайта системы
@@ -607,7 +609,7 @@ const anyks = require("./lib.anyks");
 			// Генерируем от текущего времени
 			let mkey = md5((new Date()).valueOf().toString());
 			// Если это строка
-			if($.isString(str)) mkey = md5(JSON.stringify(str));
+			if($.isString(str)) mkey = md5(str);
 			// Формируем новый вид ключа
 			let key = (mkey.substr(0, 8) + mkey.substr(24, 31));
 			// Выводим результат

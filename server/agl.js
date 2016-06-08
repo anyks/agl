@@ -36,6 +36,7 @@
 			const rpass	= (argv.p ? argv.p : (argv.rpass	? argv.rpass	: undefined));
 			const mserv	= (argv.m ? argv.m : (argv.mongo	? argv.mongo	: "127.0.0.1:27017"));
 			const rserv	= (argv.r ? argv.r : (argv.redis	? argv.redis	: "127.0.0.1:6379"));
+			const sfork	= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
 			// Список воркеров
 			const workers = [];
 			/**
@@ -65,11 +66,24 @@
 			// Конфигурация подключения
 			const config = {
 				rdb,
+				sfork,
 				mserv,
 				rserv,
 				rpass,
-				// Название модуля
-				name: "agl",
+				// Извлекаем параметры подключения к fork серверу
+				get fork(){
+					// Объект данных конфига
+					let conf = {};
+					// Распарсим данные
+					const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.sfork);
+					// Формируем объект подключения
+					if(ax.isArray(parse)) conf = {
+						"host":		parse[1],
+						"port":		parseInt(parse[2], 10)
+					};
+					// Выводим результат
+					return conf;
+				},
 				// Извлекаем параметры подключения для mongo
 				get mongo(){
 					// Объект данных конфига
@@ -80,7 +94,7 @@
 					if(ax.isArray(parse)) conf = {
 						"host":		parse[1],
 						"port":		parseInt(parse[2], 10),
-						"db":		this.name
+						"db":		agl.name
 					};
 					// Выводим результат
 					return conf;
@@ -163,35 +177,105 @@
 					code, signal
 				], "info");
 			});
-			// Подключаемся к Redis
-			agl.redis(config.redis).then(redis => {
-				// Отлавливаем подписку
-				redis.on("subscribe", (channel, count) => {
-					// Выводим в консоль данные
-					agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
-				});
-				// Получаем входящие сообщение
-				redis.on("message", (ch, mess) => {
-					// Если канал для получения сообщений
-					if(ch === "aglServer"){
+			// Функция инициализации работы сервера
+			const init = res => {
+				// Результат получения данных
+				let mess = "";
+				// Устанавливаем кодировку
+				res.setEncoding('utf8');
+				// Получение буфера данных
+				res.on('data', chunk => {
+					// Собираем данные из чанкояв
+					mess += chunk;
+					// Если все данные пришли тогда отсылаем результат
+					if(!ax.isset(res.bufferSize)){
 						try {
-							// Перекодируем входящие данные в объект
+							// Останавливаем прием данных
+							res.pause();
+							// Перекодируем данные
 							mess = JSON.parse(mess);
-							// Формируем случайный индекс воркера
-							let index = ax.getRandomInt(0, workers.length - 1);
-							// Отсылаем воркеру сообщение
-							workers[index].send({action: "message", data: mess});
-							// Пришел ответ с агента
-							agl.log(['пришел запрос с агента', mess.data], "info");
-						// Если возникает ошибка то выводим ее
-						} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
+							// Если пароли совпадают
+							if(agl.password === mess.password){
+								// Формируем случайный индекс воркера
+								let index = ax.getRandomInt(0, workers.length - 1);
+								// Отсылаем воркеру сообщение
+								workers[index].send({action: "message", data: mess});
+								// Пришел ответ с агента
+								agl.log(['пришел запрос с агента', mess.data], "info");
+							// Если пароли сервера не совпадают то сообщаем об этом
+							} else agl.log(['пароли сервера не совпадают', mess.data], "error");
+							// Уничтожаем сокет
+							res.destroy();
+							// Завершаем работу сервера
+							res.end();
+						// Закрываем соденинение
+						} catch(e) {
+							// Выводим в консоль данные
+							agl.log(['произошла ошибка обработки данных', e, mess], "error");
+							// Уничтожаем сокет
+							res.destroy();
+							// Завершаем работу сервера
+							res.end();
+						}
 					}
 				});
-				// Подписываемся на канал
-				redis.subscribe("aglServer");
+				// События завершения передачи
+				res.on('end', () => {
+					// Выводим в консоль данные
+					agl.log(['клиент отключился от форка сервера', agl.name], "info");
+				});
+				// Если происходит ошибка выводим результат
+				res.on('error', e => {
+					// Выводим в консоль данные
+					agl.log(['произошла ошибка форка сервера', agl.name, e, mess], "error");
+				});
+				// Если происходит физическое отключение сокета
+				res.on('close', () => {
+					// Выводим в консоль данные
+					agl.log(['клиент закрыл соединение с форком сервера', agl.name], "info");
+				});
 				// Выводим в консоль данные
-				agl.log(['сервер', config.name, 'запущен'], "info");
-			});
+				agl.log(['клиент подключился к форку сервера', agl.name], "info");
+				// Подключаем сервер
+				res.pipe(res);
+			};
+			/**
+			 * createServer Функция создания сервера
+			 */
+			const createServer = () => {
+				// Сервер сокетов
+				let server;
+				/**
+				 * connectToServer Функция обработки результата подключения к серверу
+				 */
+				let connectToServer = () => {
+					// Выводим в консоль данные
+					agl.log(['форк сервера', agl.name, 'запущен'], "info");
+					// Если подключится не удалось
+					server.on('error', e => {
+						if(e.code === 'EADDRINUSE'){
+							// Выводим в консоль данные
+							agl.log(['адрес форка сервера', agl.name, 'занят, перезапуск...'], "error");
+							// Через секунду пытаемся подключится вновь
+							setTimeout(createServer, 1000);
+						// Выводим в консоль данные
+						} else agl.log(['произошла ошибка в форке сервера', agl.name, e], "error");
+					});
+					// Если сервер отключился
+					server.on('close', err => {
+						// Выводим в консоль данные
+						agl.log(['форк сервер', agl.name, 'отключился', err], "error");
+					});
+				};
+				// Если сервер существует
+				if(ax.isset(server)) server.close();
+				// Создаем сервер
+				else server = require('net').createServer(init, {allowHalfOpen: true});
+				// Вешаем сервер на порт
+				server.listen(config.fork.port, config.fork.host, connectToServer);
+			};
+			// Создаем форк сервера
+			createServer();
 		// Если это Fork
 		} else {
 			// Клиенты баз данных
@@ -286,7 +370,7 @@
 					obj.data.query = data;
 					// Отправляем сообщение серверу
 					clients.redis.publish(
-						"aglAgent", JSON.stringify(obj)
+						"agl", JSON.stringify(obj)
 						.replace(/_id/ig, "id")
 						.replace(/\"__v\"\s*:\s*\d+\s*,/ig, "")
 					);

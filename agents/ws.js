@@ -10,7 +10,7 @@
 
 /*
 * Example:
-* ./ws.js --redis=127.0.0.1:6379 --server=127.0.0.1:3320
+* ./ws.js --redis=127.0.0.1:6379 --server=127.0.0.1:3320 --fork=127.0.0.1:4420
 *
 * OR
 *
@@ -35,6 +35,7 @@ const Agl = require("../api/api");
 	const rpass		= (argv.p ? argv.p : (argv.rpass	? argv.rpass	: undefined));
 	const rserv		= (argv.r ? argv.r : (argv.redis	? argv.redis	: "127.0.0.1:6379"));
 	const serv		= (argv.s ? argv.s : (argv.server	? argv.server	: "127.0.0.1:3320"));
+	const sfork		= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
 	// Создаем объект Agl
 	const agl = new $();
 	// Получаем api anyks
@@ -42,7 +43,7 @@ const Agl = require("../api/api");
 	// Массив онлайн пользователей
 	const onlineUsers = {};
 	// Идентификатор сервера
-	let server, clientRedis;
+	let server;
 	/**
 	 * socketExists Функция проверки на существование сокета
 	 * @param  {String} path адрес сокета
@@ -71,6 +72,7 @@ const Agl = require("../api/api");
 	const config = {
 		rdb,
 		serv,
+		sfork,
 		rserv,
 		rpass,
 		origin,
@@ -80,6 +82,20 @@ const Agl = require("../api/api");
 			let conf = {};
 			// Распарсим данные
 			const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.serv);
+			// Формируем объект подключения
+			if(ax.isArray(parse)) conf = {
+				"host":		parse[1],
+				"port":		parseInt(parse[2], 10)
+			};
+			// Выводим результат
+			return conf;
+		},
+		// Извлекаем параметры подключения к fork серверу
+		get fork(){
+			// Объект данных конфига
+			let conf = {};
+			// Распарсим данные
+			const parse = /^(\d+\.\d+\.\d+\.\d+)\:(\d+)$/i.exec(this.sfork);
 			// Формируем объект подключения
 			if(ax.isArray(parse)) conf = {
 				"host":		parse[1],
@@ -109,6 +125,44 @@ const Agl = require("../api/api");
 			};
 			// Выводим результат
 			return conf;
+		}
+	};
+	/**
+	 * sendQuery Функция отправки запроса на сервер
+	 * @param  {Object} query объект запроса к форку сервера
+	 */
+	const sendQuery = query => {
+		// Устанавливаем пароль доступа для обмена данными
+		query.password = agl.password;
+		// Преобразуем запрос в строку
+		query = JSON.stringify(query);
+		// Выполняем коннект с серверу сокетов
+		var client = net.connect({
+			port: config.fork.port,
+			host: config.fork.host
+		}, () => agl.log(['подключились к форку сервера'], "error"));
+		try {
+			// Устанавливаем кодировку utf-8
+			client.setEncoding('utf8');
+			// Выполняем запрос на получение данных
+			client.write(query, 'utf8');
+			// Если возникает ошибка соединения
+			client.on('error', err => {
+				// Выводим в консоль данные
+				agl.log(['ошибка форка сервера', err], "error");
+				// Если сервер не найден тогда пробуем еще раз
+				if(ax.isset(err)
+				&& ax.isset(err.code)
+				&& (err.code === "ENOTFOUND")
+				|| (err.code === "ETIMEDOUT")) sendQuery(query);
+				// Уничтожаем сокет
+				client.destroy();
+			});
+		} catch(e) {
+			// Выводим в консоль данные
+			agl.log(['не определенная ошибка форка сервера', e], "error");
+			// Уничтожаем сокет
+			if(ax.isset(client)) client.destroy();
 		}
 	};
 	/**
@@ -177,10 +231,7 @@ const Agl = require("../api/api");
 						// Входные данные
 						let data = JSON.parse(message.utf8Data);
 						// Отправляем сообщение серверу
-						clientRedis.publish("aglServer", JSON.stringify({
-							key:	req.key,
-							data:	data
-						}));
+						sendQuery({key: req.key, data});
 						// Пришли данные от клиента
 						agl.log(['полученны данные с клиента', data], "info");
 					// Если возникает ошибка то выводим ее
@@ -208,7 +259,7 @@ const Agl = require("../api/api");
 			// Получаем входящие сообщение
 			redis.on("message", (ch, mess) => {
 				// Если канал для получения сообщений
-				if(ch === "aglAgent"){
+				if(ch === "agl"){
 					try {
 						// Получаем входные данные
 						mess = JSON.parse(mess);
@@ -225,39 +276,34 @@ const Agl = require("../api/api");
 				}
 			});
 			// Подписываемся на канал
-			redis.subscribe("aglAgent");
+			redis.subscribe("agl");
 			// Выводим в консоль данные
 			agl.log(['агент веб-сокетов запущен'], "info");
 		});
-		// Подключаемся к Redis для канала отправки сообщения
-		(new $()).redis(config.redis).then(redis => {
-			// Запоминаем Redis клиент
-			clientRedis = redis;
-			/**
-			 * updateImesZones Функция обновления временных зон
-			 */
-			const updateImesZones = () => {
-				// Проверяем каждые пол часа
-				setTimeout(() => {
-					// Получаем текущий час
-					const hour = parseInt((new Date()).getHours(), 10);
-					// Если время 3 утра тогда отправляем запрос
-					if(hour === 3){
-						// Отправляем сообщение серверу
-						clientRedis.publish("aglServer", JSON.stringify({
-							key:	"updateImesZones",
-							data:	{"action": "updateImesZones"}
-						}));
-					}
-					// Запускаем следующую проверку
-					updateImesZones();
-					// Выводим сообщение в консоль
-					agl.log('выполняем попытку обновить временные зоны', "info");
-				}, 1800000);
-			};
-			// Запускаем проверку обновления временной зоны
-			updateTimeZones();
-		});
+		/**
+		 * updateImesZones Функция обновления временных зон
+		 */
+		const updateImesZones = () => {
+			// Проверяем каждые пол часа
+			setTimeout(() => {
+				// Получаем текущий час
+				const hour = parseInt((new Date()).getHours(), 10);
+				// Если время 3 утра тогда отправляем запрос
+				if(hour === 3){
+					// Отправляем сообщение серверу
+					sendQuery({
+						key:	"updateImesZones",
+						data:	{"action": "updateImesZones"}
+					});
+				}
+				// Запускаем следующую проверку
+				updateImesZones();
+				// Выводим сообщение в консоль
+				agl.log('выполняем попытку обновить временные зоны', "info");
+			}, 1800000);
+		};
+		// Запускаем проверку обновления временной зоны
+		updateTimeZones();
 	};
 	/**
 	 * createServer Функция создания сервера
