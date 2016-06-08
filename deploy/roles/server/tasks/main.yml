@@ -30,7 +30,7 @@
 - name: Chmod bash scripts
   become: yes
   become_method: sudo
-  action: shell +x {{ work_dir }}/*.sh
+  action: shell +x "{{ work_dir }}/permissions.sh"
 
 - name: Set permissions
   become: yes
