@@ -961,24 +961,24 @@ const anyks = require("./lib.anyks");
 						const getData = function * (){
 							// Выполняем запрос с геокодера Yandex
 							const yandex = yield fetch(urlsGeo[0]).then(
-								res => (res.status === 200 ? res.json() : false)//,
-								//err => false
+								res => (res.status === 200 ? res.json() : false),
+								err => idObj.log(['получения данных с yandex api', err], "error")
 							);
 
 							console.log("--------1", yandex);
 
 							// Выполняем запрос с геокодера Google
 							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-								res => (res.status === 200 ? res.json() : false)//,
-								// err => false
+								res => (res.status === 200 ? res.json() : false),
+								err => idObj.log(['получения данных с google api', err], "error")
 							) : false);
 
 							console.log("--------2", google);
 
 							// Выполняем запрос с геокодера OpenStreet Maps
 							const osm = (!google ? yield fetch(urlsGeo[2]).then(
-								res => (res.status === 200 ? res.json() : false)//,
-								//err => false
+								res => (res.status === 200 ? res.json() : false),
+								err => idObj.log(['получения данных с osm api', err], "error")
 							) : false);
 
 							console.log("--------3", osm);
