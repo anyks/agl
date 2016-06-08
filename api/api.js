@@ -1049,7 +1049,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  limit     количество результатов к выдаче
 		 * @return {Promise}           промис результата
 		 */
-		getDistricts({regionId = "null", limit = 10}){
+		getDistricts({regionId = "none", limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
