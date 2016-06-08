@@ -422,9 +422,7 @@ const anyks = require("./lib.anyks");
 			// Выводим результат
 			callback(false);
 		// Если данные пришли
-		} else if($.isObject(res)
-		&& $.isArray(res.result)
-		&& res.result.length){
+		} else if($.isObject(res) && $.isArray(res.result) && res.result.length){
 			
 			
 
@@ -438,7 +436,7 @@ const anyks = require("./lib.anyks");
 				+ ", " + val.name + " " + val.type;
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
 			
-			console.log("+++++++++2", err, res);
+			console.log("+++++++++2", err, res, address);
 
 			
 
