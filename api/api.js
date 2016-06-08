@@ -920,7 +920,7 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				idObj.clients.redis.get(key, (error, result) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(result)){
+					if(!$.isset(result)){
 						// Выводим результат
 						resolve(JSON.parse(result));
 					// Если данные в кеше не найдены тогда продолжаем искать
@@ -935,14 +935,8 @@ const anyks = require("./lib.anyks");
 						].map(val => val.replace("$address", encodeURI(address)));
 						// Получаем объект запроса с геокодера
 						const init = obj => {
-							
-							console.log("+++++++++++++1", obj);
-
 							// Выполняем обработку результата геокодера
 							parseAnswerGeoCoder(obj, idObj).then(result => {
-								
-								console.log("+++++++++++++2", result);
-
 								// Сохраняем результат в базу данных
 								if(result) (new idObj.schemes.Address(result)).save();
 								// Отправляем в Redis на час
