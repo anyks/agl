@@ -1748,6 +1748,16 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				try {
+					// Подключаемся к коллекции address
+					const address = idObj.clients.mongo.connection.db.collection("address");
+					// Подключаемся к коллекции streets
+					const streets = idObj.clients.mongo.connection.db.collection("streets");
+					// Подключаемся к коллекции streets
+					const houses = idObj.clients.mongo.connection.db.collection("houses");
+					// Удаляем все колекции
+					address.drop();
+					streets.drop();
+					houses.drop();
 					/**
 					 * *updateDB Генератор для получения обновления данных
 					 */
@@ -1764,16 +1774,6 @@ const anyks = require("./lib.anyks");
 						if(metro){
 							// Выполняем загрузку станций метро для городов
 							const metroCity = yield idObj.updateMetroCity();
-							// Подключаемся к коллекции address
-							const address = idObj.clients.mongo.connection.db.collection("address");
-							// Подключаемся к коллекции streets
-							const streets = idObj.clients.mongo.connection.db.collection("streets");
-							// Подключаемся к коллекции streets
-							const houses = idObj.clients.mongo.connection.db.collection("houses");
-							// Удаляем все колекции
-							address.drop();
-							streets.drop();
-							houses.drop();
 							// Создаем индексы для базы адресов
 							// address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
 							address.createIndex({lat: 1, lng: 1}, {name: "gps"});
