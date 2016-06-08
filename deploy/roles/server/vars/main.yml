@@ -5,6 +5,7 @@ kladr: "57500faf0a69decc7d8b4568"
 debug: { errors: 1, message: 1 }
 git_repository: "git@github.com:anyks/agl.git"
 config_dir: "config"
+rc_dir: "/usr/local/etc/rc.d"
 git_dir: "/var/www/git"
 work_dir: "/var/www"
 logs_dir: "/var/www/logs"
@@ -21,10 +22,13 @@ cpdirs:
   - "api"
   - "agents"
 
+# Users
+user: "www"
+group: "freebsd"
+
 # Devel scripts
 nodejs_bin: "/usr/local/bin/node"
 forever_bin: "/usr/local/bin/forever"
-rc_dir: "/usr/local/etc/rc.d"
 stack_size: "2097151"
 min_uptime: "3000"
 sleep_time: "2000"

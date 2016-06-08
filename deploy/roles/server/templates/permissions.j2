@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo "Устанавливаем владельца для каталогов"
+
+chown -R {{ user }}:{{ group }} {{ work_dir }}
+
+echo "Устанавливаем права доступа для каталогов"
+
+# chmod -R 0774 {{ work_dir }}
+
+cd {{ work_dir }} && find ./ -type d -print0 | xargs -0 chmod 0774
+cd {{ work_dir }} && find ./ -type f -print0 | xargs -0 chmod 0664
+cd {{ work_dir }} && find ./ -name '*.sh' -print0 | xargs -0 chmod +x
+cd {{ work_dir }} && find ./ -name '*.js' -print0 | xargs -0 chmod +x
+cd {{ rc_dir }} && find ./ -name '*' -print0 | xargs -0 chmod +x

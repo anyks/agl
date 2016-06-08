@@ -22,7 +22,15 @@
   template: src="{{ item }}.j2" dest="{{ rc_dir }}/{{ item }}"
   with_items:
     - "wsAgl"
-    - "servAgl"
+    - "srvAgl"
+
+- name: Copy config file
+  template: src="permissions.j2" dest="{{ work_dir }}/permissions.sh"
+
+- name: Chmod bash scripts
+  become: yes
+  become_method: sudo
+  action: shell +x {{ work_dir }}/*.sh
 
 - name: Set permissions
   become: yes
