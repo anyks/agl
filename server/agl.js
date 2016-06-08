@@ -219,6 +219,67 @@
 			 * @param  {Object} obj входящий запрос с сервера
 			 */
 			const init = obj => {
+				/*
+				** Получить версию системы **
+				**** action = getVersionSystem
+				*
+				** Обновить базу данных метро **
+				**** action = updateMetro
+				*
+				** Найти у всех городов станции метро в этом городе **
+				**** action = updateMetroCity
+				*
+				** Обновить базу регионов **
+				**** action = updateRegions
+				*
+				** Обновить базу районов **
+				**** action = updateDistricts
+				*
+				** Обновить базу городов **
+				**** action = updateCities
+				*
+				** Инициализировать базовую базу данных **
+				**** action = initEmptyDatabases
+				*
+				** Запрос на обновление временных зон у адресов где она не найдена **
+				**** action = updateTimeZones
+				*
+				** Запрос на получение станции метро по GPS координатам **
+				**** action = searchMetroFromGPS
+				****** lat, lng, distance
+				*
+				** Запрос на получение временной зоны по GPS координатам **
+				**** action = getTimezone
+				****** lat, lng
+				*
+				** Запрос данных адреса по GPS координатам **
+				**** action = getAddressFromGPS
+				****** lat, lng
+				*
+				** Запрос данных адреса по названию **
+				**** action = getAddressFromString
+				****** address
+				*
+				** Запрос на поиск региона **
+				**** action = searchRegion
+				****** str, limit
+				*
+				** Запрос на поиск найона **
+				**** action = searchDistrict
+				****** str, regionId, limit
+				*
+				** Запрос на поиск города **
+				**** action = searchCity
+				****** str, regionId, districtId, limit
+				*
+				** Запрос на поиск улицы **
+				**** action = searchStreet
+				****** str, cityId, limit
+				*
+				** Запрос на поиск дома **
+				**** action = searchHouse
+				****** str, streetId, limit
+				 */
 				// Создаем объект входных данных
 				let query = obj.data.query;
 				// Функция отправки результата ответа
@@ -228,110 +289,10 @@
 					// Отправляем сообщение серверу
 					clients.redis.publish("aglAgent", JSON.stringify(obj));
 				};
-				// Обрабатываем входящие экшены
-				switch(obj.data.action){
-					// Получить версию системы
-					case "getVersionSystem":
-						// Выполняем запрос данных с api
-						agl.getVersionSystem().then(sendResult);
-					break;
-					// Обновить базу данных метро
-					case "updateMetro":
-						// Выполняем запрос данных с api
-						agl.updateMetro().then(sendResult);
-					break;
-					// Найти у всех городов станции метро в этом городе
-					case "updateMetroCity":
-						// Выполняем запрос данных с api
-						agl.updateMetroCity().then(sendResult);
-					break;
-					// Обновить базу регионов
-					case "updateRegions":
-						// Выполняем запрос данных с api
-						agl.updateRegions().then(sendResult);
-					break;
-					// Обновить базу районов
-					case "updateDistricts":
-						// Выполняем запрос данных с api
-						agl.updateDistricts().then(sendResult);
-					break;
-					// Обновить базу городов
-					case "updateCities":
-						// Выполняем запрос данных с api
-						agl.updateCities().then(sendResult);
-					break;
-					// Инициализировать базовую базу данных
-					case "initEmptyDatabases":
-						// Выполняем запрос данных с api
-						agl.initEmptyDatabases().then(sendResult);
-					break;
-					// Запрос на обновление временных зон у адресов где она не найдена
-					case "updateTimeZones":
-						// Выполняем запрос данных с api
-						agl.updateTimeZones().then(sendResult);
-					break;
-					// Запрос на получение станции метро по GPS координатам
-					case "searchMetroFromGPS":
-						// Выполняем запрос данных с api
-						agl.searchMetroFromGPS(query.lat, query.lng, query.distance).then(sendResult);
-					break;
-					// Запрос на получение временной зоны по GPS координатам
-					case "getTimezone":
-						// Выполняем запрос данных с api
-						agl.getTimezone(query.lat, query.lng).then(sendResult);
-					break;
-					// Запрос данных адреса по GPS координатам
-					case "getAddressFromGPS":
-						// Выполняем запрос данных с api
-						agl.getAddressFromGPS(query.lat, query.lng).then(sendResult);
-					break;
-					// Запрос данных адреса по названию
-					case "getAddressFromString":
-						// Выполняем запрос данных с api
-						agl.getAddressFromString(query.address).then(sendResult);
-					break;
-					// Запрос на поиск региона
-					case "searchRegion":
-						// Выполняем запрос данных с api
-						agl.searchRegion(query.region, query.limit).then(sendResult);
-					break;
-					// Запрос на поиск найона
-					case "searchDistrict":
-						// Выполняем запрос данных с api
-						agl.searchDistrict(
-							query.district,
-							query.regionId,
-							query.limit
-						).then(sendResult);
-					break;
-					// Запрос на поиск города
-					case "searchCity":
-						// Выполняем запрос данных с api
-						agl.searchCity(
-							query.city,
-							query.regionId,
-							query.districtId,
-							query.limit
-						).then(sendResult);
-					break;
-					// Запрос на поиск улицы
-					case "searchStreet":
-						// Выполняем запрос данных с api
-						agl.searchStreet(
-							query.street,
-							query.cityId,
-							query.limit
-						).then(sendResult);
-					break;
-					// Запрос на поиск дома
-					case "searchHouse":
-						// Выполняем запрос данных с api
-						agl.searchHouse(
-							query.house,
-							query.streetId,
-							query.limit
-						).then(sendResult);
-					break;
+				// Если данный метод существует
+				if(ax.isFunction(agl[obj.data.action])){
+					// Выполняем запрос данных из api
+					agl[obj.data.action](query).then(sendResult);
 				}
 			};
 			// Ловим входящие сообщения от мастера

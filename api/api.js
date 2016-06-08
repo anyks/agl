@@ -348,11 +348,11 @@ const anyks = require("./lib.anyks");
 						|| !$.isArray(cacheObject[keyChar][arr[i]._id].metro)
 						|| !$.isset(cacheObject[keyChar][arr[i]._id].timezone)){
 							// Выполняем запрос данных
-							idObj.getAddressFromString(
-								address + " " +
+							idObj.getAddressFromString({
+								"address": address + " " +
 								arr[i].name + " " +
 								arr[i].type
-							).then(res => {
+							}).then(res => {
 								// Если результат найден
 								if($.isset(res)){
 									// Выполняем сохранение данных
@@ -360,7 +360,7 @@ const anyks = require("./lib.anyks");
 									arr[i].lng = res.lng;
 									arr[i].gps = res.gps;
 									// Выполняем поиск временную зону
-									idObj.getTimezone(arr[i].lat, arr[i].lng).then(timezone => {
+									idObj.getTimezone({lat: arr[i].lat, lng: arr[i].lng}).then(timezone => {
 										// Если временная зона найдена
 										if(timezone) arr[i].timezone = timezone;
 										// Если объект внешних ключей существует тогда добавляем их
@@ -383,14 +383,14 @@ const anyks = require("./lib.anyks");
 										if((arr[i].contentType === 'city')
 										|| (arr[i].contentType === 'street')
 										|| (arr[i].contentType === 'building')){
-											// Определяем дистанцию поиска
-											const distance = (arr[i].typeShort === "г" ? 150000 : 3000);
+											// Параметры запроса
+											const query = {
+												lat:		parseFloat(arr[i].lat),
+												lng:		parseFloat(arr[i].lng),
+												distance:	(arr[i].typeShort === "г" ? 150000 : 3000)
+											};
 											// Выполняем поиск ближайших станций метро
-											idObj.searchMetroFromGPS(
-												parseFloat(arr[i].lat),
-												parseFloat(arr[i].lng),
-												distance
-											).then(metro => {
+											idObj.searchMetroFromGPS(query).then(metro => {
 												// Если метро передано
 												if($.isArray(metro) && metro.length){
 													// Создаем пустой массив с метро
@@ -633,7 +633,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} noCache  отключить кеш
 		 * @return {Promise}          промис результата
 		 */
-		searchRegion(str, limit = 10, noCache = false){
+		searchRegion({str, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -675,7 +675,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} noCache    отключить кеш
 		 * @return {Promise}            промис результата
 		 */
-		searchDistrict(str, regionId, limit = 10, noCache = false){
+		searchDistrict({str, regionId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -722,7 +722,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} noCache    отключить кеш
 		 * @return {Promise}            промис результата
 		 */
-		searchCity(str, regionId, districtId = null, limit = 10, noCache = false){
+		searchCity({str, regionId, districtId = null, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -773,7 +773,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} limit  количество результатов к выдаче
 		 * @return {Promise}       промис результата
 		 */
-		searchStreet(str, cityId, limit = 10){
+		searchStreet({str, cityId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -811,7 +811,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} limit    количество результатов к выдаче
 		 * @return {Promise}         промис результата
 		 */
-		searchHouse(str, streetId, limit = 10){
+		searchHouse({str, streetId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -848,7 +848,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Float}   lng    долгота
 		 * @return {Promise}        промис содержащий объект с адресом
 		 */
-		getAddressFromGPS(lat, lng){
+		getAddressFromGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -921,11 +921,11 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * getAddressFromGPS Метод получения данных адреса по строке
+		 * getAddressFromString Метод получения данных адреса по строке
 		 * @param  {String}   address строка запроса
 		 * @return {Promise}          промис содержащий объект с адресом
 		 */
-		getAddressFromString(address){
+		getAddressFromString({address}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1003,7 +1003,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} lng долгота
 		 * @return {Promise}    промис содержащий данные временной зоны
 		 */
-		getTimezone(lat, lng){
+		getTimezone({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1066,7 +1066,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} distance дистанция поиска в метрах
 		 * @return {Promise}         промис содержащий найденные станции метро
 		 */
-		searchMetroFromGPS(lat, lng, distance = 3000){
+		searchMetroFromGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1178,8 +1178,14 @@ const anyks = require("./lib.anyks");
 							const getData = (i = 0) => {
 								// Если не все данные пришли тогда продолжаем загружать
 								if(i < data.length){
+									// Параметры запроса
+									const query = {
+										lat:		data[i].lat,
+										lng:		data[i].lng,
+										distance:	150000
+									};
 									// Получаем данные метро
-									idObj.searchMetroFromGPS(data[i].lat, data[i].lng, 150000).then(metro => {
+									idObj.searchMetroFromGPS(query).then(metro => {
 										// Если метро передано
 										if($.isArray(metro) && metro.length){
 											// Создаем пустой массив с метро
@@ -1276,7 +1282,7 @@ const anyks = require("./lib.anyks");
 										// Если не все данные пришли тогда продолжаем загружать
 										if(i < data.length){
 											// Получаем данные временной зоны
-											idObj.getTimezone(data[i].lat, data[i].lng).then(timezone => {
+											idObj.getTimezone({lat: data[i].lat, lng: data[i].lng}).then(timezone => {
 												// Если временная зона пришла
 												if(timezone){
 													// Сохраняем временную зону
@@ -1355,8 +1361,14 @@ const anyks = require("./lib.anyks");
 				const getRegion = (i = 0) => {
 					// Если данные не все загружены то загружаем дальше
 					if(i < regionsChar.length){
+						// Формируем параметры запроса
+						const query = {
+							str:		regionsChar[i],
+							limit:		100,
+							noCache:	true
+						};
 						// Выполняем загрузку данных
-						idObj.searchRegion(regionsChar[i], 100, true).then(result => {
+						idObj.searchRegion(query).then(result => {
 							// Если это массив
 							if($.isArray(result) && result.length){
 								// Переходим по всему массиву
@@ -1433,8 +1445,15 @@ const anyks = require("./lib.anyks");
 								const getDistrict = (j = 0) => {
 									// Если данные не все загружены то загружаем дальше
 									if(j < districsChar.length){
+										// Параметры запроса
+										const query = {
+											str:		districsChar[j],
+											limit:		100,
+											noCache:	true,
+											regionId:	data[i]._id
+										};
 										// Выполняем поиск района
-										idObj.searchDistrict(districsChar[j], data[i]._id, 100, true).then(result => {
+										idObj.searchDistrict(query).then(result => {
 											// Если это массив
 											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
@@ -1521,8 +1540,16 @@ const anyks = require("./lib.anyks");
 								const getCity = (j = 0) => {
 									// Если данные не все загружены то загружаем дальше
 									if(j < citiesChar.length){
+										// Параметры запроса
+										const query = {
+											str:		citiesChar[j],
+											limit:		100,
+											noCache:	true,
+											regionId:	data[i]._id,
+											districtId:	null
+										};
 										// Выполняем поиск городов
-										idObj.searchCity(citiesChar[j], data[i]._id, null, 100, true).then(result => {
+										idObj.searchCity(query).then(result => {
 											// Если это массив
 											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
