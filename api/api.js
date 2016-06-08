@@ -478,6 +478,12 @@ const anyks = require("./lib.anyks");
 			// Выводим результат
 			callback(result);
 			*/
+		// Если данные не найдены то сообщаем об этом
+		} else {
+			// Выводим сообщение об ошибке
+			idObj.log(["адрес в базе Kladr не найден", res], "error");
+			// Выводим результат
+			callback(false);
 		}
 	};
 	/**
