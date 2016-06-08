@@ -13,11 +13,6 @@
 - name: Create config dir
   file: path={{ work_dir }}/{{ name }}/{{ config_dir }} state=directory mode=0755
 
-- name: Set permissions
-  become: yes
-  become_method: sudo
-  action: shell {{ work_dir }}/permissions.sh
-
 - name: Copy config file
   template: src="config.j2" dest="{{ work_dir }}/{{ name }}/{{ config_dir }}/config.json"
 
@@ -29,3 +24,8 @@
   with_items:
     - "servAgl"
     - "wsAgl"
+
+- name: Set permissions
+  become: yes
+  become_method: sudo
+  action: shell {{ work_dir }}/permissions.sh
