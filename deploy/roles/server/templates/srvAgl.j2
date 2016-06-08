@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# PROVIDE: AglServer
+# REQUIRE: NETWORKING SERVERS DAEMON
+# BEFORE:  LOGIN
+# KEYWORD: shutdown
+
+# forever list - проверка процессов
+
+. /etc/rc.subr
+
+name="AglServer"
+forever="{{ nodejs_bin }} --stack-size={{ stack_size }} {{ forever_bin }}"
+workdir="{{ work_dir }}/{{ name }}"
+iddir="server"
+script="agl.js"
+
+rcvar=`set_rcvar`
+
+start_cmd="start"
+stop_cmd="stop"
+restart_cmd="restart"
+
+load_rc_config $name
+eval "${rcvar}=\${${rcvar}:-'NO'}"
+
+start(){
+	USER=root
+	PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/root/bin
+	PWD=/root
+	HOME=/root
+	NODE_ENV=production
+	${forever} start --minUptime {{ min_uptime }}ms --spinSleepTime {{ sleep_time }}ms -a -l /var/log/forever.agl.${iddir}.log -o /dev/null -e {{ logs_dir }}/agl.${iddir}.fork.log --sourceDir ${workdir} ${iddir}/${script} --redis={{ redis_host }} --rpass={{ redis_pass }}
+}
+
+stop(){
+	${forever} stop ${workdir}/${iddir}/${script}
+}
+
+restart(){
+	${forever} restart ${workdir}/${iddir}/${script}
+}
+
+run_rc_command "$1"

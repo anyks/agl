@@ -20,3 +20,12 @@
 
 - name: Copy config file
   template: src="config.j2" dest="{{ work_dir }}/{{ name }}/{{ config_dir }}/config.json"
+
+- name: Copy devels
+  become: yes
+  become_method: sudo
+  template: src="{{ item }}.j2" dest="{{ rc_dir }}/{{ item }}"
+  action: shell chmod +x "{{ rc_dir }}/{{ item }}"
+  with_items:
+    - "servAgl"
+    - "wsAgl"

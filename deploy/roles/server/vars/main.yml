@@ -20,3 +20,14 @@ cpdirs:
   - "server"
   - "api"
   - "agents"
+
+# Devel scripts
+nodejs_bin: "/usr/local/bin/node"
+forever_bin: "/usr/local/bin/forever"
+rc_dir: "/usr/local/etc/rc.d"
+stack_size: "2097151"
+min_uptime: "3000"
+sleep_time: "2000"
+server_host: "107.170.122.222:3320"
+redis_host: "/tmp/redis.sock"
+redis_pass: "37493745979443"
