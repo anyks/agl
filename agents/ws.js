@@ -146,6 +146,8 @@ const Agl = require("../api/api");
 			client.setEncoding('utf8');
 			// Выполняем запрос на получение данных
 			client.write(query, 'utf8');
+			// Завершаем работу сервера
+			client.end();
 			// Если возникает ошибка соединения
 			client.on('error', err => {
 				// Выводим в консоль данные
