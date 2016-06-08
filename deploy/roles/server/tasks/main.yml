@@ -30,7 +30,7 @@
 - name: Chmod bash scripts
   become: yes
   become_method: sudo
-  action: shell chmod +x "{{ work_dir }}/permissions.sh"
+  file: path={{ work_dir }}/permissions.sh state=touch mode="u+rwx"
 
 - name: Set permissions
   become: yes
