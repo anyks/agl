@@ -158,6 +158,8 @@ const Agl = require("../api/api");
 				// Уничтожаем сокет
 				client.destroy();
 			});
+			// Уничтожаем сокет
+			client.destroy();
 		} catch(e) {
 			// Выводим в консоль данные
 			agl.log(['не определенная ошибка форка сервера', e], "error");
