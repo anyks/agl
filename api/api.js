@@ -1015,25 +1015,28 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cacheObject)) resolve(false);
 						// Если данные пришли
 						else {
-							// Текущее значение итерации
-							let i = 0;
-							// Массив найденных регионов
-							const regions = [];
-							// Выполняем парсинг ответа
-							cacheObject = JSON.parse(cacheObject);
-							// Переходим по всему массиву регионов
-							for(let val in cacheObject){
-								for(let key in cacheObject[val]){
-									// Добавляем в массив регион
-									regions.push(cacheObject[val][key]);
-									// Увеличиваем значение индекса
-									if(i < (limit - 1)) i++;
-									// Выходим
-									else break;
+							// Функция поиска данных в кеше
+							const searchCache = () => {
+								// Текущее значение итерации
+								let i = 0;
+								// Массив найденных регионов
+								const regions = [];
+								// Выполняем парсинг ответа
+								cacheObject = JSON.parse(cacheObject);
+								// Переходим по всему массиву регионов
+								for(let val in cacheObject){
+									for(let key in cacheObject[val]){
+										// Добавляем в массив регион
+										regions.push(cacheObject[val][key]);
+										// Увеличиваем значение индекса
+										if(i < (limit - 1)) i++;
+										// Выходим
+										else return regions;
+									}
 								}
-							}
+							};
 							// Выводим результат
-							resolve(regions);
+							resolve(searchCache());
 						}
 					});
 				// Обрабатываем возникшую ошибку
@@ -1046,7 +1049,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  limit     количество результатов к выдаче
 		 * @return {Promise}           промис результата
 		 */
-		getDistricts({regionId = null, limit = 10}){
+		getDistricts({regionId = "", limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1060,39 +1063,42 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cacheObject)) resolve(false);
 						// Если данные пришли
 						else {
-							// Текущее значение итерации
-							let i = 0;
-							// Массив найденных районов
-							const districts = [];
-							// Выполняем парсинг ответа
-							cacheObject = JSON.parse(cacheObject);
-							// Переходим по всему массиву районов
-							for(let val in cacheObject){
-								for(let key in cacheObject[val]){
-									// Если родительский элемент передан
-									if($.isset(regionId)){
-										// Если родительский элемент найден
-										if((cacheObject[val][key].regionId === regionId) || (key === regionId)){
+							// Функция поиска данных в кеше
+							const searchCache = () => {
+								// Текущее значение итерации
+								let i = 0;
+								// Массив найденных районов
+								const districts = [];
+								// Выполняем парсинг ответа
+								cacheObject = JSON.parse(cacheObject);
+								// Переходим по всему массиву районов
+								for(let val in cacheObject){
+									for(let key in cacheObject[val]){
+										// Если родительский элемент передан
+										if($.isset(regionId)){
+											// Если родительский элемент найден
+											if((cacheObject[val][key].regionId === regionId) || (key === regionId)){
+												// Добавляем в массив район
+												districts.push(cacheObject[val][key]);
+												// Увеличиваем значение индекса
+												if(i < (limit - 1)) i++;
+												// Выходим
+												else return districts;
+											}
+										// Если родительский элемент не существует тогда просто добавляем в список
+										} else {
 											// Добавляем в массив район
 											districts.push(cacheObject[val][key]);
 											// Увеличиваем значение индекса
 											if(i < (limit - 1)) i++;
 											// Выходим
-											else break;
+											else return districts;
 										}
-									// Если родительский элемент не существует тогда просто добавляем в список
-									} else {
-										// Добавляем в массив район
-										districts.push(cacheObject[val][key]);
-										// Увеличиваем значение индекса
-										if(i < (limit - 1)) i++;
-										// Выходим
-										else break;
 									}
 								}
-							}
+							};
 							// Выводим результат
-							resolve(districts);
+							resolve(searchCache());
 						}
 					});
 				// Обрабатываем возникшую ошибку
