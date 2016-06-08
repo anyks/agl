@@ -415,6 +415,9 @@ const anyks = require("./lib.anyks");
 	 * @param  {Function} callback функция обратного вызова
 	 */
 	const processResultKladr = (err, res, scheme, idObj, callback) => {
+		
+		console.log("+++++++++", err, res);
+
 		// Если возникает ошибка тогда выводим её
 		if($.isset(err) && !$.isset(res)){
 			// Выводим сообщение об ошибке
