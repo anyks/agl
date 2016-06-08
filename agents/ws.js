@@ -36,6 +36,8 @@ const Agl = require("../api/api");
 	const rserv		= (argv.r ? argv.r : (argv.redis	? argv.redis	: "127.0.0.1:6379"));
 	const serv		= (argv.s ? argv.s : (argv.server	? argv.server	: "127.0.0.1:3320"));
 	const sfork		= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
+	// Название канала
+	const channel = "aglWs";
 	// Создаем объект Agl
 	const agl = new $();
 	// Получаем api anyks
@@ -76,6 +78,7 @@ const Agl = require("../api/api");
 		rserv,
 		rpass,
 		origin,
+		channel,
 		// Извлекаем параметры подключения
 		get server(){
 			// Объект данных конфига
@@ -233,7 +236,7 @@ const Agl = require("../api/api");
 						// Входные данные
 						let data = JSON.parse(message.utf8Data);
 						// Отправляем сообщение серверу
-						sendQuery({key: req.key, data});
+						sendQuery({key: req.key, data, config.channel});
 						// Пришли данные от клиента
 						agl.log(['полученны данные с клиента', data], "info");
 					// Если возникает ошибка то выводим ее
@@ -261,7 +264,7 @@ const Agl = require("../api/api");
 			// Получаем входящие сообщение
 			redis.on("message", (ch, mess) => {
 				// Если канал для получения сообщений
-				if(ch === "agl"){
+				if(ch === config.channel){
 					try {
 						// Получаем входные данные
 						mess = JSON.parse(mess);
@@ -278,7 +281,7 @@ const Agl = require("../api/api");
 				}
 			});
 			// Подписываемся на канал
-			redis.subscribe("agl");
+			redis.subscribe(config.channel);
 			// Выводим в консоль данные
 			agl.log(['агент веб-сокетов запущен'], "info");
 		});

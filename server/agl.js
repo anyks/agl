@@ -371,7 +371,7 @@
 					obj.data.query = data;
 					// Отправляем сообщение серверу
 					clients.redis.publish(
-						"agl", JSON.stringify(obj)
+						obj.channel, JSON.stringify(obj)
 						.replace(/_id/ig, "id")
 						.replace(/\"__v\"\s*:\s*\d+\s*,/ig, "")
 					);
