@@ -49,19 +49,18 @@ const anyks = require("./lib.anyks");
 	}
 	/**
 	 * exec Функция управления генераторами
-	 * @param  {Object}    idObj    идентификатор текущего объекта
 	 * @param  {Generator} gen      генератор
 	 * @param  {Function}  callback функция обратного вызова при завершении работы
 	 * @param  {Variant}   val      полученное значение
 	 */
-	const exec = (idObj, gen, callback, val) => {
+	const exec = (gen, callback, val) => {
 		// Передаем первоначальные данные
 		let next = gen.next(val);
 		// Если генератор завершен не полностью
 		if(!next.done){
 			next.value.then(
-				res => exec(idObj, gen, callback, res),
-				err => idObj.log(["ошибка генератора", err], "error")
+				res => exec(gen, callback, res),
+				err => gen.throw(err)
 			);
 		// Выполняем функцию обратного вызова
 		} else callback(next.value);
@@ -908,7 +907,7 @@ const anyks = require("./lib.anyks");
 							init(obj);
 						};
 						// Запускаем коннект
-						exec(idObj, getData());
+						exec(getData());
 					}
 				});
 			}));
@@ -962,18 +961,18 @@ const anyks = require("./lib.anyks");
 						const getData = function * (){
 							// Выполняем запрос с геокодера Yandex
 							const yandex = yield fetch(urlsGeo[0]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => false
+								res => (res.status === 200 ? res.json() : false)//,
+								//err => false
 							);
 							// Выполняем запрос с геокодера Google
 							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => false
+								res => (res.status === 200 ? res.json() : false)//,
+								// err => false
 							) : false);
 							// Выполняем запрос с геокодера OpenStreet Maps
 							const osm = (!google ? yield fetch(urlsGeo[2]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => false
+								res => (res.status === 200 ? res.json() : false)//,
+								//err => false
 							) : false);
 							// Создаем объект ответа
 							const obj = (
@@ -985,7 +984,7 @@ const anyks = require("./lib.anyks");
 							init(obj);
 						};
 						// Запускаем коннект
-						exec(idObj, getData());
+						exec(getData());
 					}
 				});
 			}));
@@ -1321,7 +1320,7 @@ const anyks = require("./lib.anyks");
 					resolve(true);
 				};
 				// Запускаем коннект
-				exec(idObj, getData());
+				exec(getData());
 			}));
 		}
 		/**
@@ -1830,7 +1829,7 @@ const anyks = require("./lib.anyks");
 						}
 					};
 					// Запускаем коннект
-					exec(idObj, updateDB());
+					exec(updateDB());
 				} catch(e) {
 					// Выводим сообщение в консоль
 					idObj.log(["что-то с инициализацией базы данных", e], "error");
