@@ -236,7 +236,7 @@ const Agl = require("../api/api");
 						// Входные данные
 						let data = JSON.parse(message.utf8Data);
 						// Отправляем сообщение серверу
-						sendQuery({key: req.key, data, config.channel});
+						sendQuery({key: req.key, data, channel});
 						// Пришли данные от клиента
 						agl.log(['полученны данные с клиента', data], "info");
 					// Если возникает ошибка то выводим ее
