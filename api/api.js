@@ -271,21 +271,40 @@ const anyks = require("./lib.anyks");
 	const getGPSForAddress = (arr, address, idObj, scheme) => {
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
-			// Ключ запроса
-			const key = "address:subjects:" + arr[0].contentType;
-			// Считываем данные из кеша
-			idObj.clients.redis.get(key, (error, cacheObject) => {
-				// Если данные не найдены
-				if(!$.isset(cacheObject)) cacheObject = {};
-				// Выполняем парсинг ответа
-				else cacheObject = JSON.parse(cacheObject);
-				/**
-				 * updateDB Функция обновления данных в базе
-				 * @param  {Object} obj объект для обновления данных
-				 */
-				const updateDB = obj => {
-					// Создаем ключ названия
-					const keyChar = obj.name[0].toLowerCase();
+			/**
+			 * getCache Функция извлечения данных кеша
+			 * @param  {Object} obj объект данных для запроса из кеша
+			 * @return {Promise}    промис содержащий объект из кеша
+			 */
+			const getCache = obj => {
+				// Создаем промис для обработки
+				return (new Promise(resolve => {
+					// Ключ запроса
+					const key = "address:subjects:" + obj.contentType;
+					// Считываем данные из кеша
+					idObj.clients.redis.get(key, (error, cache) => {
+						// Создаем ключ названия
+						const keyChar = obj.name[0].toLowerCase();
+						// Если данные не найдены
+						if(!$.isset(cache)) cache = {};
+						// Выполняем парсинг ответа
+						else cache = JSON.parse(cache);
+						// Если идентификатор на такую букву не существует то создаем его
+						if(!$.isset(cache[keyChar])) cache[keyChar] = {};
+						// Если идентификатор объекта не существует то создаем его
+						if(!$.isset(cache[keyChar][obj._id])) cache[keyChar][obj._id] = {};
+						// Выводим результат
+						resolve({obj: cache[keyChar][obj._id], src: cache, key: key});
+					});
+				}));
+			};
+			/**
+			 * updateDB Функция обновления данных в базе
+			 * @param  {Object} obj   объект для обновления данных
+			 */
+			const updateDB = obj => {
+				// Получаем данные из кеша
+				getCache(obj).then(cache => {
 					// Запрашиваем все данные из базы
 					scheme.findOne({_id: obj._id})
 					// Выполняем запрос
@@ -305,37 +324,35 @@ const anyks = require("./lib.anyks");
 						// Просто добавляем новый объект
 						} else (new scheme(obj)).save();
 						// Сохраняем данные в кеше
-						cacheObject[keyChar][obj._id] = obj;
+						cache.obj = obj;
 						// Сохраняем данные в кеше
-						idObj.clients.redis.set(key, JSON.stringify(cacheObject));
+						idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
 					});
-				};
-				/**
-				 * getGPS Рекурсивная функция поиска gps координат для города
-				 * @param  {Array} arr массив объектов для обхода
-				 * @param  {Number} i  индекс массива
-				 */
-				const getGPS = (arr, i = 0) => {
-					// Если данные не все получены
-					if(i < arr.length){
+				});
+			};
+			/**
+			 * getGPS Рекурсивная функция поиска gps координат для города
+			 * @param  {Array} arr массив объектов для обхода
+			 * @param  {Number} i  индекс массива
+			 */
+			const getGPS = (arr, i = 0) => {
+				// Если данные не все получены
+				if(i < arr.length){
+					// Получаем данные из кеша
+					getCache(arr[i]).then(cache => {
 						// Изменяем идентификатор данных
 						arr[i]._id = arr[i].id;
 						// Удаляем основной идентификатор
 						arr[i].id = undefined;
-						// Создаем ключ названия
-						const keyChar = arr[i].name[0].toLowerCase();
-						// Если идентификатор на такую букву не существует то создаем его
-						if(!$.isset(cacheObject[keyChar])) cacheObject[keyChar] = {};
-						// Если идентификатор объекта не существует то создаем его
-						if(!$.isset(cacheObject[keyChar][arr[i]._id])) cacheObject[keyChar][arr[i]._id] = {};
+						
 
-						console.log("+++++++++++++++++++++++++", keyChar, arr[i]._id, cacheObject);
+						console.log("+++++++++++++++++++++++++", arr[i]._id, cache.obj);
 
 
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
-						if(!$.isArray(cacheObject[keyChar][arr[i]._id].gps)
-						|| !$.isArray(cacheObject[keyChar][arr[i]._id].metro)
-						|| !$.isset(cacheObject[keyChar][arr[i]._id].timezone)){
+						if(!$.isArray(cache.obj.gps)
+						|| !$.isArray(cache.obj.metro)
+						|| !$.isset(cache.obj.timezone)){
 							// Выполняем запрос данных
 							idObj.getAddressFromString({
 								"address": address + " " +
@@ -400,14 +417,14 @@ const anyks = require("./lib.anyks");
 							});
 						// Идем дальше
 						} else getGPS(arr, i + 1);
-					// Сообщаем что все сохранено удачно
-					} else resolve(true);
-					// Выходим
-					return;
-				};
-				// Выполняем запрос на получение gps данных
-				getGPS(arr);
-			});
+					});
+				// Сообщаем что все сохранено удачно
+				} else resolve(true);
+				// Выходим
+				return;
+			};
+			// Выполняем запрос на получение gps данных
+			getGPS(arr);
 		}));
 	};
 	/**
