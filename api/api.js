@@ -205,7 +205,7 @@ const anyks = require("./lib.anyks");
 			// Ключ запроса
 			const key = "address:subjects:" + type;
 			// Считываем данные из кеша
-			Agl.getRedis(idObj, "get", key).then((error, cache) => {
+			Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 				// Если данные не найдены, сообщаем что в кеше ничего не найдено
 				if(!$.isset(cache)) resolve(false);
 				// Если данные пришли
@@ -282,7 +282,7 @@ const anyks = require("./lib.anyks");
 					// Ключ запроса
 					const key = "address:subjects:" + obj.contentType;
 					// Считываем данные из кеша
-					Agl.getRedis(idObj, "get", key).then((error, cache) => {
+					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 						// Создаем ключ названия
 						const char = obj.name[0].toLowerCase();
 						// Если данные не найдены
@@ -574,13 +574,13 @@ const anyks = require("./lib.anyks");
 						// Устанавливаем время жизни
 						if($.isset(expire)) idObj.clients.redis.multi([["EXPIRE", key, expire]]).exec();
 						// Считываем данные
-						idObj.clients.redis[command](key, resolve);
+						idObj.clients.redis[command](key, (err, data) => resolve({err, cache}));
 					// Сообщаем что такая комманда не найдена
-					} else resolve(false);
+					} else resolve({err: "not found", cache: false});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {
 					// Сообщаем что ничего не найдено
-					resolve(false);
+					resolve({err: "not found", cache: false});
 					// Выводим в консоль данные
 					idObj.log(["чтение данных из redis", e], "error");
 				}
@@ -627,11 +627,12 @@ const anyks = require("./lib.anyks");
 					// Формируем блок параметров
 					} else setParams(command, key, value);
 					// Записываем данные в редисе
-					idObj.clients.redis.multi(params).exec(resolve);
+					idObj.clients.redis.multi(params)
+					.exec((err, cache) => resolve({err, cache}));
 				// Обрабатываем возникшую ошибку
 				} catch(e) {
 					// Сообщаем что ничего не найдено
-					resolve(false);
+					resolve({err: "not found", cache: false});
 					// Выводим в консоль данные
 					idObj.log(["запись данных в redis", e], "error");
 				}
@@ -687,14 +688,14 @@ const anyks = require("./lib.anyks");
 							// Собираем массив для удаления ключей
 							result.forEach(val => removes.push(["del", val]));
 							// Удаляем данные
-							idObj.clients.redis.multi(removes).exec(resolve);
+							idObj.clients.redis.multi(removes).exec((err, data) => resolve({err, cache}));
 						// Выводим что ничего не удалено
-						} else resolve(false);
+						} else resolve({err: "not found", cache: false});
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {
 					// Сообщаем что ничего не найдено
-					resolve(false);
+					resolve({err: "not found", cache: false});
 					// Выводим в консоль данные
 					idObj.log(["удаление данных из redis", e], "error");
 				}
@@ -992,13 +993,11 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша адреса
 				const key = "address:gps:" + idObj.generateKey(lat + ":" + lng);
 				// Ищем станции в кеше
-				Agl.getRedis(idObj, "get", key, 3600).then((error, result) => {
+				Agl.getRedis(idObj, "get", key, 3600).then(({err, result}) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(result)){
-						// Выводим результат
-						resolve(JSON.parse(result));
+					if($.isset(result)) resolve(JSON.parse(result));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					} else {
+					else {
 						// Подключаем модуль закачки данных
 						const fetch = require('node-fetch');
 						// Массив с геокодерами
@@ -1079,13 +1078,11 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша адреса
 				const key = "address:string:" + idObj.generateKey(address.toLowerCase());
 				// Ищем станции в кеше
-				Agl.getRedis(idObj, "get", key, 3600).then((error, result) => {
+				Agl.getRedis(idObj, "get", key, 3600).then(({err, result}) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(result)){
-						// Выводим результат
-						resolve(JSON.parse(result));
+					if($.isset(result)) resolve(JSON.parse(result));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					} else {
+					else {
 						// Подключаем модуль закачки данных
 						const fetch = require('node-fetch');
 						// Массив с геокодерами
@@ -1195,9 +1192,9 @@ const anyks = require("./lib.anyks");
 					// Ключ запроса
 					const key = "address:subjects:region";
 					// Считываем данные из кеша
-					Agl.getRedis(idObj, "get", key).then((error, cache) => {
+					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 						
-						console.log("--------", cache);
+						console.log("---------------", err, cache);
 
 						// Если данные не найдены, сообщаем что в кеше ничего не найдено
 						if(!$.isset(cache)) resolve(false);
@@ -1248,7 +1245,7 @@ const anyks = require("./lib.anyks");
 					// Ключ запроса
 					const key = "address:subjects:district";
 					// Считываем данные из кеша
-					Agl.getRedis(idObj, "get", key).then((error, cache) => {
+					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 						// Если данные не найдены, сообщаем что в кеше ничего не найдено
 						if(!$.isset(cache)) resolve(false);
 						// Если данные пришли
@@ -1313,7 +1310,7 @@ const anyks = require("./lib.anyks");
 					// Ключ запроса
 					const key = "address:subjects:city";
 					// Считываем данные из кеша
-					Agl.getRedis(idObj, "get", key).then((error, cache) => {
+					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 						// Если данные не найдены, сообщаем что в кеше ничего не найдено
 						if(!$.isset(cache)) resolve(false);
 						// Если данные пришли
@@ -1380,13 +1377,11 @@ const anyks = require("./lib.anyks");
 					// Ключ кеша метро
 					const key = "timezone:" + idObj.generateKey(lat + ":" + lng);
 					// Ищем станции в кеше
-					Agl.getRedis(idObj, "get", key, 3600).then((error, result) => {
+					Agl.getRedis(idObj, "get", key, 3600).then(({err, result}) => {
 						// Если данные это не массив тогда создаем его
-						if($.isset(result)){
-							// Выводим результат
-							resolve(JSON.parse(result));
+						if($.isset(result)) resolve(JSON.parse(result));
 						// Если данные в кеше не найдены тогда продолжаем искать
-						} else {
+						else {
 							// Подключаем модуль закачки данных
 							const fetch = require('node-fetch');
 							// Создаем штамп времени
@@ -1440,13 +1435,11 @@ const anyks = require("./lib.anyks");
 					// Ключ кеша метро
 					const key = "metro:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 					// Ищем станции в кеше
-					Agl.getRedis(idObj, "get", key, 3600).then((error, result) => {
+					Agl.getRedis(idObj, "get", key, 3600).then(({err, result}) => {
 						// Если данные это не массив тогда создаем его
-						if($.isset(result)){
-							// Выводим результат
-							resolve(JSON.parse(result));
+						if($.isset(result)) resolve(JSON.parse(result));
 						// Если данные в кеше не найдены тогда продолжаем искать
-						} else {
+						else {
 							// Выполняем поиск ближайшего метро
 							idObj.schemes.Metro_stations.find({
 								'gps': {
@@ -1500,7 +1493,7 @@ const anyks = require("./lib.anyks");
 						// Ключ запроса
 						const key = "address:subjects:" + obj.contentType;
 						// Считываем данные из кеша
-						Agl.getRedis(idObj, "get", key).then((error, cache) => {
+						Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 							// Если данные не найдены
 							if(!$.isset(cache)) cache = {};
 							// Выполняем парсинг ответа
@@ -1602,7 +1595,7 @@ const anyks = require("./lib.anyks");
 						// Ключ запроса
 						const key = "address:subjects:" + obj.contentType;
 						// Считываем данные из кеша
-						Agl.getRedis(idObj, "get", key).then((error, cache) => {
+						Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 							// Если данные не найдены
 							if(!$.isset(cache)) cache = {};
 							// Выполняем парсинг ответа
