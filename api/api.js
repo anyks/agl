@@ -1196,6 +1196,9 @@ const anyks = require("./lib.anyks");
 					const key = "address:subjects:region";
 					// Считываем данные из кеша
 					Agl.getRedis(idObj, "get", key).then((error, cache) => {
+						
+						console.log("--------", cache);
+
 						// Если данные не найдены, сообщаем что в кеше ничего не найдено
 						if(!$.isset(cache)) resolve(false);
 						// Если данные пришли
