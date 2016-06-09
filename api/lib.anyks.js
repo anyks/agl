@@ -1618,7 +1618,7 @@
 				// Переконвертируем объекты в строки
 				return this.map(function(name){
 					// Выводим результат
-					return (Anyks.isObject(name) ? JSON.stringify(name) : name);
+					return (Anyks.isObject(name) ? decodeURI(JSON.stringify(name)) : name);
 				});
 			});
 			/**

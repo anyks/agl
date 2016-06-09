@@ -2167,7 +2167,7 @@ const anyks = require("./lib.anyks");
 							'\x1B[0;31m\x1B[1mError\x1B[0m\x1B[0;31m',
 							(new Date()).toLocaleString(),
 							this.name, ':\x1B[0m',
-							($.isArray(message) ? decodeURI(message.anyks_toObjString()).join(" ") : message)
+							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
 						);
 						// Выводим экраны
 						console.log("\n----------------", "END" ,"----------------\n");
@@ -2184,7 +2184,7 @@ const anyks = require("./lib.anyks");
 							'\x1B[38;5;148m\x1B[1mInfo\x1B[0m\x1B[38;5;148m',
 							(new Date()).toLocaleString(),
 							this.name, ':\x1B[0m',
-							($.isArray(message) ? decodeURI(message.anyks_toObjString()).join(" ") : message)
+							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
 						);
 						// Выводим экраны
 						console.log("\n----------------", "END" ,"----------------\n");
