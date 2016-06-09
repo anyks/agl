@@ -302,7 +302,7 @@ const anyks = require("./lib.anyks");
 			 * updateDB Функция обновления данных в базе
 			 * @param  {Object} obj   объект для обновления данных
 			 */
-			const updateDB = obj => {
+			const updateDB = (obj, callback) => {
 				// Получаем данные из кеша
 				getCache(obj).then(cache => {
 					// Запрашиваем все данные из базы
@@ -327,9 +327,9 @@ const anyks = require("./lib.anyks");
 							scheme.update({_id: obj._id}, obj, {
 								upsert:	true,
 								multi:	true
-							}, err => {if($.isset(err)) idObj.log(["update address in db", err], "error");});
+							}, callback);
 						// Просто добавляем новый объект
-						} else (new scheme(obj)).save();
+						} else (new scheme(obj)).save(callback);
 					});
 				});
 			};
@@ -410,20 +410,22 @@ const anyks = require("./lib.anyks");
 													metro.forEach(val => arr[i].metro.push(val._id));
 												}
 												// Сохраняем данные
-												updateDB(arr[i]);
+												updateDB(arr[i], () => getGPS(arr, i + 1));
 											});
 										// Сохраняем данные
-										} else updateDB(arr[i]);
+										} else updateDB(arr[i], () => getGPS(arr, i + 1));
 									});
 								}
 								// Идем дальше
-								getGPS(arr, i + 1);
+								// getGPS(arr, i + 1);
 							});
 						// Идем дальше
 						} else getGPS(arr, i + 1);
 					});
 				// Сообщаем что все сохранено удачно
-				} else resolve(true);
+				} else {
+					resolve(true);
+				}
 				// Выходим
 				return;
 			};
