@@ -294,7 +294,7 @@ const anyks = require("./lib.anyks");
 						// Если идентификатор объекта не существует то создаем его
 						if(!$.isset(cache[keyChar][obj._id])) cache[keyChar][obj._id] = {};
 						// Выводим результат
-						resolve({obj: cache[keyChar][obj._id], src: cache, char: keyChar, key: key});
+						resolve({id: obj._id, char: keyChar, key: key, src: cache});
 					});
 				}));
 			};
@@ -302,7 +302,7 @@ const anyks = require("./lib.anyks");
 			 * updateDB Функция обновления данных в базе
 			 * @param  {Object} obj   объект для обновления данных
 			 */
-			const updateDB = (obj, callback) => {
+			const updateDB = obj => {
 				// Запрашиваем все данные из базы
 				scheme.findOne({_id: obj._id})
 				// Выполняем запрос
@@ -317,15 +317,12 @@ const anyks = require("./lib.anyks");
 							// Если временная зона была не найдена
 							if(!$.isset(obj.timezone)) obj.timezone = data.timezone;
 							// Выполняем обновление
-							scheme.update({_id: obj._id}, obj, {
-								upsert:	true,
-								multi:	true
-							}, callback);
+							scheme.update({_id: obj._id}, obj, {upsert: true, multi: true});
 						// Просто добавляем новый объект
-						} else (new scheme(obj)).save(callback);
+						} else (new scheme(obj)).save();
 
 						// Сохраняем данные в кеше
-						cache.src[cache.char][obj._id] = Object.assign({}, obj);
+						cache.src[cache.char][cache.id] = Object.assign({}, obj);
 
 						// Сохраняем данные в кеше
 						idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
@@ -348,16 +345,10 @@ const anyks = require("./lib.anyks");
 					arr[i].id = undefined;
 					// Получаем данные из кеша
 					getCache(arr[i]).then(cache => {
-						
-						
-
-						// console.log("+++++++++++++++++++++++++", arr[i]._id, cache.src);
-
-
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
-						if(!$.isArray(cache.obj.gps)
-						|| !$.isArray(cache.obj.metro)
-						|| !$.isset(cache.obj.timezone)){
+						if(!$.isArray(cache.src[cache.char][cache.id].gps)
+						|| !$.isArray(cache.src[cache.char][cache.id].metro)
+						|| !$.isset(cache.src[cache.char][cache.id].timezone)){
 							// Выполняем запрос данных
 							idObj.getAddressFromString({
 								"address": address + " " +
@@ -411,22 +402,20 @@ const anyks = require("./lib.anyks");
 													metro.forEach(val => arr[i].metro.push(val._id));
 												}
 												// Сохраняем данные
-												updateDB(arr[i], () => getGPS(arr, i + 1));
+												updateDB(arr[i]);
 											});
 										// Сохраняем данные
-										} else updateDB(arr[i], () => getGPS(arr, i + 1));
+										} else updateDB(arr[i]);
 									});
 								}
 								// Идем дальше
-								// getGPS(arr, i + 1);
+								getGPS(arr, i + 1);
 							});
 						// Идем дальше
 						} else getGPS(arr, i + 1);
 					});
 				// Сообщаем что все сохранено удачно
-				} else {
-					resolve(true);
-				}
+				} else resolve(true);
 				// Выходим
 				return;
 			};
