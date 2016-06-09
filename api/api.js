@@ -450,8 +450,7 @@ const anyks = require("./lib.anyks");
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
 			// Выполняем поиск GPS координат для текущего адреса
 			getGPSForAddress(res.result, address, idObj, scheme)
-			.then(result => {
-				idObj.log([
+			.then(result => idObj.log([
 				"получение gps координат для адреса:",
 				(res.result.length ? (res.result.length > 1 ? res.result.reduce((sum, val) => {
 					// Формируем строку отчета
@@ -459,10 +458,9 @@ const anyks = require("./lib.anyks");
 					+ ", " + val.name + " " + val.typeShort + ".";
 				}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
 				(result ? "Ok" : "Not ok")
-			], "info");
-
-				// Выполняем копирование объекта
-			result = JSON.parse(JSON.stringify(res.result));
+			], "info"));
+			// Выполняем копирование объекта
+			let result = JSON.parse(JSON.stringify(res.result));
 			// Приводим ответ к общему виду
 			result = result.map(obj => {
 				obj._id		= obj.id;
@@ -490,9 +488,6 @@ const anyks = require("./lib.anyks");
 			});
 			// Выводим результат
 			callback(result);
-
-			});
-			
 		// Если данные не найдены то сообщаем об этом
 		} else {
 			// Выводим сообщение об ошибке
