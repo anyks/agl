@@ -317,9 +317,9 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные в кеше
 							cache.src[cache.char][cache.id] = Object.assign({}, obj);
 
-							if(!$.isset(idObj.i)) idObj.i  = 0;
+							if(!$.isset(idObj.i)) idObj.i = 0;
 
-							i++;
+							idObj.i++;
 
 
 
