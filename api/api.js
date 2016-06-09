@@ -939,26 +939,36 @@ const anyks = require("./lib.anyks");
 							'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
 							'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 						].map(val => val.replace("$address", encodeURI(address)));
-						// Разбиваем адрес на составляющие
-						const addrArr = address.split(", ");
-						// Если размер массива больше 3, удаляем район из списка
-						if(addrArr.length > 3){
-							// Если район найден, удаляем его
-							if(/район/i.test(addrArr[2])) addrArr.splice(2, 1);
-							// Получаем последний элемент
-							const lastWord = addrArr[addrArr.length - 1].split(" ");
-							// Регулярное выражение для поиска
-							const wreg = /(?:деревня|город|село|поселок|посёлок|поселение)/i;
-							// Если найдено одно из сопоставлений тогда убираем его
-							if(wreg.test(lastWord[1]))		addrArr[addrArr.length - 1] = lastWord[0];
-							else if(wreg.test(lastWord[0]))	addrArr[addrArr.length - 1] = lastWord[1];
+						/**
+						 * getAddressOSM Функция преобразования адреса для геокодера OSM
+						 * @return {String} новый вид адреса
+						 */
+						const getAddressOSM = address => {
+							// Разбиваем адрес на составляющие
+							const addrArr = address.split(", ");
+							// Переходим по всему массиву адреса
+							addrArr.forEach((val, i) => {
+								// Если район найден, удаляем его
+								if(/район/i.test(val)) addrArr.splice(i, 1);
+							});
+							// Переходим по всему массиву адреса
+							addrArr.forEach((val, i) => {
+								// Разделяем адрес на составляющие
+								const words = val.split(" ");
+								// Переходим по всему массиву
+								words.forEach((val, i) => {
+									// Регулярное выражение для поиска
+									if(/(?:деревня|город|село|поселок|посёлок|поселение|улица|площадь|проспект|авеню|дом|строение|корпус)/i
+									.test(val)) words.splice(i, 1);
+								});
+								// Собираем обратно массив
+								addrArr[i] = words.join(" ");
+							});
 							// Создаем строку обратно
-							const addressOsm = addrArr.join(", ");
-							// Заменяем адрес OSM
-							urlsGeo[2].replace(encodeURI(address), encodeURI(addressOsm));
-
-							console.log("---------------", addressOsm);
-						}
+							return encodeURI(addrArr.join(", "));
+						};
+						// Заменяем адрес OSM
+						urlsGeo[2].replace(encodeURI(address), getAddressOSM(address));
 						// Получаем объект запроса с геокодера
 						const init = obj => {
 							// Выполняем обработку результата геокодера
