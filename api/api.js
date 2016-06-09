@@ -414,7 +414,7 @@ const anyks = require("./lib.anyks");
 						} else getGPS(arr, i + 1);
 					});
 				// Сообщаем что все сохранено удачно
-				} else resolve(true);
+				} else resolve(arr);
 				// Выходим
 				return;
 			};
@@ -450,44 +450,20 @@ const anyks = require("./lib.anyks");
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
 			// Выполняем поиск GPS координат для текущего адреса
 			getGPSForAddress(res.result, address, idObj, scheme)
-			.then(result => idObj.log([
-				"получение gps координат для адреса:",
-				(res.result.length ? (res.result.length > 1 ? res.result.reduce((sum, val) => {
-					// Формируем строку отчета
-					return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
-					+ ", " + val.name + " " + val.typeShort + ".";
-				}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
-				(result ? "Ok" : "Not ok")
-			], "info"));
-			// Выполняем копирование объекта
-			let result = JSON.parse(JSON.stringify(res.result));
-			// Приводим ответ к общему виду
-			result = result.map(obj => {
-				obj._id		= obj.id;
-				obj.code	= "ru";
-				// Если массив родительских объектов существует
-				if($.isArray(obj.parents)){
-					// Переходим по всему массиву данных
-					obj.parents.forEach(val => {
-						// Определяем тип контента
-						switch(val.contentType){
-							// Формируем внешние ключи
-							case 'region':		obj.regionId	= val.id;	break;
-							case 'district':	obj.districtId	= val.id;	break;
-							case 'city':		obj.cityId		= val.id;	break;
-							case 'street':		obj.streetId	= val.id;	break;
-						}
-					});
-					// Удаляем лишние данные
-					delete obj.parents;
-				}
-				// Удаляем лишние данные
-				delete obj.id;
-				// Возвращаем результат
-				return obj;
+			.then(result => {
+				// Выводим сообщение в консоль
+				idObj.log([
+					"получение gps координат для адреса:",
+					(res.result.length ? (res.result.length > 1 ? res.result.reduce((sum, val) => {
+						// Формируем строку отчета
+						return ($.isString(sum) ? sum : sum.name + " " + sum.typeShort + ".")
+						+ ", " + val.name + " " + val.typeShort + ".";
+					}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
+					(result.length ? "Ok" : "Not ok")
+				], "info");
+				// Выводим результат
+				callback(result);
 			});
-			// Выводим результат
-			callback(result);
 		// Если данные не найдены то сообщаем об этом
 		} else {
 			// Выводим сообщение об ошибке
