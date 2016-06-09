@@ -1011,6 +1011,8 @@ const anyks = require("./lib.anyks");
 						const init = obj => {
 							// Выполняем обработку результата геокодера
 							parseAnswerGeoCoder(obj, idObj).then(result => {
+								// Выводим сообщение об удачном приведении типов
+								idObj.log(["приведение типов выполнено", result], "info");
 								// Сохраняем результат в базу данных
 								if(result) (new idObj.schemes.Address(result)).save();
 								// Отправляем в Redis на час
@@ -1023,6 +1025,8 @@ const anyks = require("./lib.anyks");
 						 * *getData Генератор для получения данных с геокодеров
 						 */
 						const getData = function * (){
+							// Выводим сообщение что выполняем запрос с геокодера
+							idObj.log(["выполняем запрос с геокодера,", "lat =", lat + ",", "lng =", lng], "info");
 							// Выполняем запрос с геокодера Yandex
 							const yandex = yield fetch(urlsGeo[0]).then(
 								res => (res.status === 200 ? res.json() : false),
@@ -1044,6 +1048,13 @@ const anyks = require("./lib.anyks");
 								(google ? {data: google, status: "google"} :
 								(osm ? {data: osm, status: "osm"} : false))
 							);
+							// Выводим сообщение отработки геокодеров
+							idObj.log([
+								"обработка геокодеров:",
+								"yandex =", (yandex ? "Ok" : "Not") + ",",
+								"google =", (google ? "Ok" : "Not") + ",",
+								"osm =", (osm ? "Ok" : "Not")
+							], "info");
 							// Выполняем инициализацию
 							init(obj);
 						};
@@ -1115,6 +1126,8 @@ const anyks = require("./lib.anyks");
 						const init = obj => {
 							// Выполняем обработку результата геокодера
 							parseAnswerGeoCoder(obj, idObj).then(result => {
+								// Выводим сообщение об удачном приведении типов
+								idObj.log(["приведение типов выполнено", result], "info");
 								// Сохраняем результат в базу данных
 								if(result) (new idObj.schemes.Address(result)).save();
 								// Отправляем в Redis на час
@@ -1127,6 +1140,8 @@ const anyks = require("./lib.anyks");
 						 * *getData Генератор для получения данных с геокодеров
 						 */
 						const getData = function * (){
+							// Выводим сообщение что выполняем запрос с геокодера
+							idObj.log(["выполняем запрос с геокодера,", "address =", address], "info");
 							// Выполняем запрос с геокодера Yandex
 							const yandex = yield fetch(urlsGeo[0]).then(
 								res => (res.status === 200 ? res.json() : false),
@@ -1148,6 +1163,13 @@ const anyks = require("./lib.anyks");
 								(google ? {data: google, status: "google"} :
 								(osm ? {data: osm, status: "osm"} : false))
 							);
+							// Выводим сообщение отработки геокодеров
+							idObj.log([
+								"обработка геокодеров:",
+								"yandex =", (yandex ? "Ok" : "Not") + ",",
+								"google =", (google ? "Ok" : "Not") + ",",
+								"osm =", (osm ? "Ok" : "Not")
+							], "info");
 							// Выполняем инициализацию
 							init(obj);
 						};
