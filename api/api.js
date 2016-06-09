@@ -346,7 +346,7 @@ const anyks = require("./lib.anyks");
 						arr[i].id = undefined;
 						
 
-						console.log("+++++++++++++++++++++++++", arr[i]._id, cache.obj);
+						console.log("+++++++++++++++++++++++++", arr[i]._id, cache.src);
 
 
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
