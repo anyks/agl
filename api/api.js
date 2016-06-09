@@ -307,28 +307,31 @@ const anyks = require("./lib.anyks");
 				scheme.findOne({_id: obj._id})
 				// Выполняем запрос
 				.exec((err, data) => {
-					// Получаем данные из кеша
-					getCache(obj).then(cache => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isset(data)
-						&& $.isObject(data)){
-							// Если метро не найдено
-							if(!$.isset(obj.metro)) obj.metro = data.metro;
-							// Если временная зона была не найдена
-							if(!$.isset(obj.timezone)) obj.timezone = data.timezone;
-							// Выполняем обновление
-							scheme.update({_id: obj._id}, obj, {upsert: true, multi: true});
-						// Просто добавляем новый объект
-						} else (new scheme(obj)).save();
+					/**
+					 * saveCache Функция сохранения данных в кеше
+					 */
+					const saveCache = () => {
+						// Получаем данные из кеша
+						getCache(obj).then(cache => {
+							// Сохраняем данные в кеше
+							cache.src[cache.char][cache.id] = Object.assign({}, obj);
+							// Сохраняем данные в кеше
+							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
 
-						// Сохраняем данные в кеше
-						cache.src[cache.char][cache.id] = Object.assign({}, obj);
-
-						// Сохраняем данные в кеше
-						idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
-
-						console.log("--------", cache.src);
-					});
+							console.log("--------", cache.src);
+						});
+					};
+					// Если ошибки нет
+					if(!$.isset(err) && $.isset(data)
+					&& $.isObject(data)){
+						// Если метро не найдено
+						if(!$.isset(obj.metro)) obj.metro = data.metro;
+						// Если временная зона была не найдена
+						if(!$.isset(obj.timezone)) obj.timezone = data.timezone;
+						// Выполняем обновление
+						scheme.update({_id: obj._id}, obj, {upsert: true, multi: true}, saveCache);
+					// Просто добавляем новый объект
+					} else (new scheme(obj)).save(saveCache);
 				});
 			};
 			/**
