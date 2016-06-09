@@ -1051,6 +1051,8 @@ const anyks = require("./lib.anyks");
 										else return regions;
 									}
 								}
+								// Выводим все регионы
+								return regions;
 							};
 							// Выводим результат
 							resolve(searchCache());
@@ -1113,6 +1115,8 @@ const anyks = require("./lib.anyks");
 										}
 									}
 								}
+								// Выводим все районы
+								return districts;
 							};
 							// Выводим результат
 							resolve(searchCache());
@@ -1179,6 +1183,8 @@ const anyks = require("./lib.anyks");
 										}
 									}
 								}
+								// Выводим все города
+								return cities;
 							};
 							// Выводим результат
 							resolve(searchCache());
