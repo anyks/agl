@@ -364,6 +364,15 @@
 				** Запрос на поиск дома **
 				**** action = searchHouse
 				****** str, streetId, limit
+				** Метод получения списка регионов **
+				***** action = getRegions
+				******* limit
+				** Метод получения списка районов **
+				**** action = getDistricts
+				****** regionId, limit
+				** Метод получения списка городов **
+				**** action = getCities
+				****** regionId, districtId, limit
 				 */
 				// Функция отправки результата ответа
 				const sendResult = data => {
