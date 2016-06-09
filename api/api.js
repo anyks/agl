@@ -607,7 +607,7 @@ const anyks = require("./lib.anyks");
 					 * @param  {String} key     ключ запроса
 					 * @param  {String} value   значение запроса
 					 */
-					const setParams(command, key, value) => {
+					const setParams = (command, key, value) => {
 						// Преобразуем время жизни
 						expire = parseInt(Math.ceil(parseFloat(expire)), 10);
 						// Формируем массив запроса
