@@ -317,7 +317,12 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные в кеше
 							cache.src[cache.char][cache.id] = Object.assign({}, obj);
 							// Сохраняем данные в кеше
-							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
+							// idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
+
+							((key, src)=>{
+								idObj.clients.redis.set(key, src, callback);
+							})(cache.key, JSON.stringify(cache.src));
+
 						});
 					};
 					// Если ошибки нет
