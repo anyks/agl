@@ -300,9 +300,10 @@ const anyks = require("./lib.anyks");
 			};
 			/**
 			 * updateDB Функция обновления данных в базе
-			 * @param  {Object} obj   объект для обновления данных
+			 * @param  {Object} obj      объект для обновления данных
+			 * @param  {Object} callback функция обратного вызова
 			 */
-			const updateDB = obj => {
+			const updateDB = (obj, callback) => {
 				// Запрашиваем все данные из базы
 				scheme.findOne({_id: obj._id})
 				// Выполняем запрос
@@ -316,14 +317,11 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные в кеше
 							cache.src[cache.char][cache.id] = Object.assign({}, obj);
 							// Сохраняем данные в кеше
-							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
-
-							console.log("--------", cache.src);
+							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
 						});
 					};
 					// Если ошибки нет
-					if(!$.isset(err) && $.isset(data)
-					&& $.isObject(data)){
+					if(!$.isset(err) && $.isset(data) && $.isObject(data)){
 						// Если метро не найдено
 						if(!$.isset(obj.metro)) obj.metro = data.metro;
 						// Если временная зона была не найдена
@@ -405,14 +403,12 @@ const anyks = require("./lib.anyks");
 													metro.forEach(val => arr[i].metro.push(val._id));
 												}
 												// Сохраняем данные
-												updateDB(arr[i]);
+												updateDB(arr[i], () => getGPS(arr, i + 1));
 											});
 										// Сохраняем данные
-										} else updateDB(arr[i]);
+										} else updateDB(arr[i], () => getGPS(arr, i + 1));
 									});
 								}
-								// Идем дальше
-								getGPS(arr, i + 1);
 							});
 						// Идем дальше
 						} else getGPS(arr, i + 1);
