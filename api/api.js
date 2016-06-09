@@ -574,7 +574,7 @@ const anyks = require("./lib.anyks");
 						// Устанавливаем время жизни
 						if($.isset(expire)) idObj.clients.redis.multi([["EXPIRE", key, expire]]).exec();
 						// Считываем данные
-						idObj.clients.redis[command](key, (err, data) => resolve({err, cache}));
+						idObj.clients.redis[command](key, (err, cache) => resolve({err, cache}));
 					// Сообщаем что такая комманда не найдена
 					} else resolve({err: "not found", cache: false});
 				// Обрабатываем возникшую ошибку
@@ -688,7 +688,7 @@ const anyks = require("./lib.anyks");
 							// Собираем массив для удаления ключей
 							result.forEach(val => removes.push(["del", val]));
 							// Удаляем данные
-							idObj.clients.redis.multi(removes).exec((err, data) => resolve({err, cache}));
+							idObj.clients.redis.multi(removes).exec((err, cache) => resolve({err, cache}));
 						// Выводим что ничего не удалено
 						} else resolve({err: "not found", cache: false});
 					});
