@@ -939,6 +939,21 @@ const anyks = require("./lib.anyks");
 							'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
 							'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 						].map(val => val.replace("$address", encodeURI(address)));
+						// Разбиваем адрес на составляющие
+						const addrArr = address.split(", ");
+						// Если размер массива больше 3, удаляем район из списка
+						if(addrArr.length > 3){
+							// Если район найден, удаляем его
+							if(addrArr[2].toLowerCase().indexOf("район") > -1) addrArr.splice(2, 1);
+							// Преобразуем последний элемент
+							addrArr[addrArr.length - 1] = addrArr[addrArr.length - 1].split(" ")[0];
+							// Создаем строку обратно
+							const addressOsm = addrArr.join(", ");
+							// Заменяем адрес OSM
+							urlsGeo[2].replace(encodeURI(address), encodeURI(addressOsm));
+
+							console.log("---------------", addressOsm);
+						}
 						// Получаем объект запроса с геокодера
 						const init = obj => {
 							// Выполняем обработку результата геокодера
