@@ -309,6 +309,13 @@ const anyks = require("./lib.anyks");
 					scheme.findOne({_id: obj._id})
 					// Выполняем запрос
 					.exec((err, data) => {
+						// Сохраняем данные в кеше
+						cache.obj = obj;
+						// Сохраняем данные в кеше
+						idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
+
+						console.log("--------", cache.obj, cache.src);
+
 						// Если ошибки нет
 						if(!$.isset(err) && $.isset(data)
 						&& $.isObject(data)){
@@ -323,10 +330,6 @@ const anyks = require("./lib.anyks");
 							}, err => {if($.isset(err)) idObj.log(["update address in db", err], "error");});
 						// Просто добавляем новый объект
 						} else (new scheme(obj)).save();
-						// Сохраняем данные в кеше
-						cache.obj = obj;
-						// Сохраняем данные в кеше
-						idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
 					});
 				});
 			};
