@@ -1038,7 +1038,7 @@ const anyks = require("./lib.anyks");
 								err => idObj.log(['получения данных с google api', err], "error")
 							) : false);
 							// Выполняем запрос с геокодера OpenStreet Maps
-							const osm = (!google ? yield fetch(urlsGeo[2]).then(
+							const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
 								res => (res.status === 200 ? res.json() : false),
 								err => idObj.log(['получения данных с osm api', err], "error")
 							) : false);
@@ -1153,7 +1153,7 @@ const anyks = require("./lib.anyks");
 								err => idObj.log(['получения данных с google api', err], "error")
 							) : false);
 							// Выполняем запрос с геокодера OpenStreet Maps
-							const osm = (!google ? yield fetch(urlsGeo[2]).then(
+							const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
 								res => (res.status === 200 ? res.json() : false),
 								err => idObj.log(['получения данных с osm api', err], "error")
 							) : false);
