@@ -294,7 +294,7 @@ const anyks = require("./lib.anyks");
 						// Если идентификатор объекта не существует то создаем его
 						if(!$.isset(cache[keyChar][obj._id])) cache[keyChar][obj._id] = {};
 						// Выводим результат
-						resolve({obj: cache[keyChar][obj._id], src: cache, key: key});
+						resolve({obj: cache[keyChar][obj._id], src: cache, char: keyChar, key: key});
 					});
 				}));
 			};
@@ -309,13 +309,6 @@ const anyks = require("./lib.anyks");
 				.exec((err, data) => {
 					// Получаем данные из кеша
 					getCache(obj).then(cache => {
-						// Сохраняем данные в кеше
-						cache.obj = obj;
-						// Сохраняем данные в кеше
-						idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
-
-						console.log("--------", cache.obj, cache.src);
-
 						// Если ошибки нет
 						if(!$.isset(err) && $.isset(data)
 						&& $.isObject(data)){
@@ -330,6 +323,14 @@ const anyks = require("./lib.anyks");
 							}, callback);
 						// Просто добавляем новый объект
 						} else (new scheme(obj)).save(callback);
+
+						// Сохраняем данные в кеше
+						cache.src[cache.char][obj._id] = Object.assign({}, obj);
+
+						// Сохраняем данные в кеше
+						idObj.clients.redis.set(cache.key, JSON.stringify(cache.src));
+
+						console.log("--------", cache.src);
 					});
 				});
 			};
@@ -350,7 +351,7 @@ const anyks = require("./lib.anyks");
 						
 						
 
-						console.log("+++++++++++++++++++++++++", arr[i]._id, cache.src);
+						// console.log("+++++++++++++++++++++++++", arr[i]._id, cache.src);
 
 
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
