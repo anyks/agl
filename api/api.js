@@ -326,7 +326,7 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные в кеше
 							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
 
-							console.log("+++++++++++++++++++", i);
+							console.log("+++++++++++++++++++", idObj.i);
 						});
 					};
 					// Если ошибки нет
