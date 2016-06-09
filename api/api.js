@@ -303,12 +303,12 @@ const anyks = require("./lib.anyks");
 			 * @param  {Object} obj   объект для обновления данных
 			 */
 			const updateDB = (obj, callback) => {
-				// Получаем данные из кеша
-				getCache(obj).then(cache => {
-					// Запрашиваем все данные из базы
-					scheme.findOne({_id: obj._id})
-					// Выполняем запрос
-					.exec((err, data) => {
+				// Запрашиваем все данные из базы
+				scheme.findOne({_id: obj._id})
+				// Выполняем запрос
+				.exec((err, data) => {
+					// Получаем данные из кеша
+					getCache(obj).then(cache => {
 						// Сохраняем данные в кеше
 						cache.obj = obj;
 						// Сохраняем данные в кеше
