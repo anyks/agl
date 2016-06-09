@@ -312,18 +312,22 @@ const anyks = require("./lib.anyks");
 					 * saveCache Функция сохранения данных в кеше
 					 */
 					const saveCache = () => {
-						
-						setTimeout(() => {
-
 						// Получаем данные из кеша
 						getCache(obj).then(cache => {
 							// Сохраняем данные в кеше
 							cache.src[cache.char][cache.id] = Object.assign({}, obj);
+
+							if(!$.isset(idObj.i)) idObj.i  = 0;
+
+							i++;
+
+
+
 							// Сохраняем данные в кеше
 							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
-						});
 
-						}, 1000);
+							console.log("+++++++++++++++++++", i);
+						});
 					};
 					// Если ошибки нет
 					if(!$.isset(err) && $.isset(data) && $.isObject(data)){
