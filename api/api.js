@@ -323,7 +323,7 @@ const anyks = require("./lib.anyks");
 							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
 						});
 
-						}, 100);
+						}, 1000);
 					};
 					// Если ошибки нет
 					if(!$.isset(err) && $.isset(data) && $.isObject(data)){
