@@ -944,9 +944,14 @@ const anyks = require("./lib.anyks");
 						// Если размер массива больше 3, удаляем район из списка
 						if(addrArr.length > 3){
 							// Если район найден, удаляем его
-							if(addrArr[2].toLowerCase().indexOf("район") > -1) addrArr.splice(2, 1);
-							// Преобразуем последний элемент
-							addrArr[addrArr.length - 1] = addrArr[addrArr.length - 1].split(" ")[0];
+							if(/район/i.test(addrArr[2])) addrArr.splice(2, 1);
+							// Получаем последний элемент
+							const lastWord = addrArr[addrArr.length - 1].split(" ");
+							// Если найдено одно из сопоставлений тогда убираем его
+							if(/(?:деревня|город|село|поселок|посёлок|поселение)/i.test(lastWord[1])){
+								// Преобразуем последний элемент
+								addrArr[addrArr.length - 1] = lastWord[0];
+							}
 							// Создаем строку обратно
 							const addressOsm = addrArr.join(", ");
 							// Заменяем адрес OSM
