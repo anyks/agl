@@ -315,13 +315,15 @@ const anyks = require("./lib.anyks");
 						// Получаем данные из кеша
 						getCache(obj).then(cache => {
 							// Сохраняем данные в кеше
-							cache.src[cache.char][cache.id] = Object.assign({}, obj);
+							// cache.src[cache.char][cache.id] = Object.assign({}, obj);
 							// Сохраняем данные в кеше
 							// idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
 
-							((key, src)=>{
-								idObj.clients.redis.set(key, src, callback);
-							})(cache.key, JSON.stringify(cache.src));
+							(function(c, o){
+								c.src[c.char][c.id] = Object.assign({}, o);
+								// Сохраняем данные в кеше
+								idObj.clients.redis.set(c.key, JSON.stringify(c.src), callback);
+							})(cache, obj);
 
 						});
 					};
@@ -2165,7 +2167,7 @@ const anyks = require("./lib.anyks");
 							'\x1B[0;31m\x1B[1mError\x1B[0m\x1B[0;31m',
 							(new Date()).toLocaleString(),
 							this.name, ':\x1B[0m',
-							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
+							($.isArray(message) ? decodeURI(message.anyks_toObjString()).join(" ") : message)
 						);
 						// Выводим экраны
 						console.log("\n----------------", "END" ,"----------------\n");
@@ -2182,7 +2184,7 @@ const anyks = require("./lib.anyks");
 							'\x1B[38;5;148m\x1B[1mInfo\x1B[0m\x1B[38;5;148m',
 							(new Date()).toLocaleString(),
 							this.name, ':\x1B[0m',
-							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
+							($.isArray(message) ? decodeURI(message.anyks_toObjString()).join(" ") : message)
 						);
 						// Выводим экраны
 						console.log("\n----------------", "END" ,"----------------\n");
