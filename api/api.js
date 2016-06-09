@@ -338,12 +338,13 @@ const anyks = require("./lib.anyks");
 			const getGPS = (arr, i = 0) => {
 				// Если данные не все получены
 				if(i < arr.length){
+					// Изменяем идентификатор данных
+					arr[i]._id = arr[i].id;
+					// Удаляем основной идентификатор
+					arr[i].id = undefined;
 					// Получаем данные из кеша
 					getCache(arr[i]).then(cache => {
-						// Изменяем идентификатор данных
-						arr[i]._id = arr[i].id;
-						// Удаляем основной идентификатор
-						arr[i].id = undefined;
+						
 						
 
 						console.log("+++++++++++++++++++++++++", arr[i]._id, cache.src);
