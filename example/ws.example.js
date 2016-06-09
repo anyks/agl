@@ -27,3 +27,5 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "initEmptyDatabases"}));
 //
 // socket.send(JSON.stringify({"action": "updateMetroCity"}));
+// 
+// socket.send(JSON.stringify({"action": "initEmptyDatabases"}));
