@@ -316,17 +316,8 @@ const anyks = require("./lib.anyks");
 						getCache(obj).then(cache => {
 							// Сохраняем данные в кеше
 							cache.src[cache.char][cache.id] = Object.assign({}, obj);
-
-							if(!$.isset(idObj.i)) idObj.i = 0;
-
-							idObj.i++;
-
-
-
 							// Сохраняем данные в кеше
 							idObj.clients.redis.set(cache.key, JSON.stringify(cache.src), callback);
-
-							console.log("+++++++++++++++++++", idObj.i);
 						});
 					};
 					// Если ошибки нет
@@ -459,7 +450,8 @@ const anyks = require("./lib.anyks");
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
 			// Выполняем поиск GPS координат для текущего адреса
 			getGPSForAddress(res.result, address, idObj, scheme)
-			.then(result => idObj.log([
+			.then(result => {
+				idObj.log([
 				"получение gps координат для адреса:",
 				(res.result.length ? (res.result.length > 1 ? res.result.reduce((sum, val) => {
 					// Формируем строку отчета
@@ -467,8 +459,9 @@ const anyks = require("./lib.anyks");
 					+ ", " + val.name + " " + val.typeShort + ".";
 				}) : res.result[0].name + " " + res.result[0].typeShort + ".") : ""),
 				(result ? "Ok" : "Not ok")
-			], "info"));
-			// Выполняем копирование объекта
+			], "info");
+
+				// Выполняем копирование объекта
 			let result = JSON.parse(JSON.stringify(res.result));
 			// Приводим ответ к общему виду
 			result = result.map(obj => {
@@ -497,6 +490,9 @@ const anyks = require("./lib.anyks");
 			});
 			// Выводим результат
 			callback(result);
+
+			});
+			
 		// Если данные не найдены то сообщаем об этом
 		} else {
 			// Выводим сообщение об ошибке
