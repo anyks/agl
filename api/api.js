@@ -632,7 +632,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} noCache  отключить кеш
 		 * @return {Promise}          промис результата
 		 */
-		searchRegion({str = "", limit = 10, noCache = false}){
+		searchRegion({str, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -674,7 +674,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} noCache    отключить кеш
 		 * @return {Promise}            промис результата
 		 */
-		searchDistrict({str = "", regionId = null, limit = 10, noCache = false}){
+		searchDistrict({str, regionId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -721,7 +721,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} noCache    отключить кеш
 		 * @return {Promise}            промис результата
 		 */
-		searchCity({str = "", regionId = null, districtId = null, limit = 10, noCache = false}){
+		searchCity({str, regionId, districtId = null, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -772,7 +772,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} limit  количество результатов к выдаче
 		 * @return {Promise}       промис результата
 		 */
-		searchStreet({str = "", cityId = null, limit = 10}){
+		searchStreet({str, cityId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -810,7 +810,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} limit    количество результатов к выдаче
 		 * @return {Promise}         промис результата
 		 */
-		searchHouse({str = "", streetId = null, limit = 10}){
+		searchHouse({str, streetId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -847,7 +847,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Float}   lng    долгота
 		 * @return {Promise}        промис содержащий объект с адресом
 		 */
-		getAddressFromGPS({lat = 0.0, lng = 0.0}){
+		getAddressFromGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -924,7 +924,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {String}   address строка запроса
 		 * @return {Promise}          промис содержащий объект с адресом
 		 */
-		getAddressFromString({address = ""}){
+		getAddressFromString({address}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1040,7 +1040,7 @@ const anyks = require("./lib.anyks");
 						}
 					});
 				// Обрабатываем возникшую ошибку
-				} catch(e) {idObj.log(["что-то с поиском регионов", e], "error");}
+				} catch(e) {idObj.log(["извлечение списка регионов", e], "error");}
 			}));
 		}
 		/**
@@ -1102,7 +1102,73 @@ const anyks = require("./lib.anyks");
 						}
 					});
 				// Обрабатываем возникшую ошибку
-				} catch(e) {idObj.log(["что-то с поиском районов", e], "error");}
+				} catch(e) {idObj.log(["извлечение списка районов", e], "error");}
+			}));
+		}
+		/**
+		 * getCities Метод получения списка городов
+		 * @param  {String}  regionId    идентификатор региона
+		 * @param  {String}  districtId  идентификатор района
+		 * @param  {Number}  limit       количество результатов к выдаче
+		 * @return {Promise}             промис результата
+		 */
+		getCities({regionId, districtId = null, limit = 10}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Ключ запроса
+					const key = "address:subjects:city";
+					// Считываем данные из кеша
+					idObj.clients.redis.get(key, (error, cacheObject) => {
+						// Если данные не найдены, сообщаем что в кеше ничего не найдено
+						if(!$.isset(cacheObject)) resolve(false);
+						// Если данные пришли
+						else {
+							// Функция поиска данных в кеше
+							const searchCache = () => {
+								// Текущее значение итерации
+								let i = 0;
+								// Массив найденных городов
+								const cities = [];
+								// Выполняем парсинг ответа
+								cacheObject = JSON.parse(cacheObject);
+								// Переходим по всему массиву городов
+								for(let val in cacheObject){
+									for(let key in cacheObject[val]){
+										// Если родительский элемент передан
+										if($.isset(regionId) || $.isset(districtId)){
+											// Если родительский элемент найден
+											if(((cacheObject[val][key].districtId === districtId)
+											|| (key === districtId))
+											|| ((cacheObject[val][key].regionId === regionId)
+											|| (key === regionId))){
+												// Добавляем в массив город
+												cities.push(cacheObject[val][key]);
+												// Увеличиваем значение индекса
+												if(i < (limit - 1)) i++;
+												// Выходим
+												else return cities;
+											}
+										// Если родительский элемент не существует тогда просто добавляем в список
+										} else {
+											// Добавляем в массив город
+											cities.push(cacheObject[val][key]);
+											// Увеличиваем значение индекса
+											if(i < (limit - 1)) i++;
+											// Выходим
+											else return cities;
+										}
+									}
+								}
+							};
+							// Выводим результат
+							resolve(searchCache());
+						}
+					});
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["извлечение списка городов", e], "error");}
 			}));
 		}
 		/**
@@ -1111,7 +1177,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} lng долгота
 		 * @return {Promise}    промис содержащий данные временной зоны
 		 */
-		getTimezone({lat = 0.0, lng = 0.0}){
+		getTimezone({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1174,7 +1240,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} distance дистанция поиска в метрах
 		 * @return {Promise}         промис содержащий найденные станции метро
 		 */
-		searchMetroFromGPS({lat = 0.0, lng = 0.0, distance = 3000}){
+		searchMetroFromGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки

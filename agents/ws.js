@@ -293,6 +293,9 @@ const Agl = require("../api/api");
 			setTimeout(() => {
 				// Получаем текущий час
 				const hour = parseInt((new Date()).getHours(), 10);
+				
+				console.log("++++++", hour);
+
 				// Если время 3 утра тогда отправляем запрос
 				if(hour === 3){
 					// Отправляем сообщение серверу
@@ -305,7 +308,7 @@ const Agl = require("../api/api");
 				updateTimeZones();
 				// Выводим сообщение в консоль
 				agl.log('выполняем попытку обновить временные зоны', "info");
-			}, 1800000);
+			}, 1000);// 1800000);
 		};
 		// Запускаем проверку обновления временной зоны
 		updateTimeZones();
