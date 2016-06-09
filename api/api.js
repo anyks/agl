@@ -947,11 +947,11 @@ const anyks = require("./lib.anyks");
 							if(/район/i.test(addrArr[2])) addrArr.splice(2, 1);
 							// Получаем последний элемент
 							const lastWord = addrArr[addrArr.length - 1].split(" ");
+							// Регулярное выражение для поиска
+							const wreg = /(?:деревня|город|село|поселок|посёлок|поселение)/i;
 							// Если найдено одно из сопоставлений тогда убираем его
-							if(/(?:деревня|город|село|поселок|посёлок|поселение)/i.test(lastWord[1])){
-								// Преобразуем последний элемент
-								addrArr[addrArr.length - 1] = lastWord[0];
-							}
+							if(wreg.test(lastWord[1]))		addrArr[addrArr.length - 1] = lastWord[0];
+							else if(wreg.test(lastWord[0]))	addrArr[addrArr.length - 1] = lastWord[1];
 							// Создаем строку обратно
 							const addressOsm = addrArr.join(", ");
 							// Заменяем адрес OSM
