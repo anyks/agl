@@ -796,6 +796,8 @@ const anyks = require("./lib.anyks");
 				// Результат работы функции
 				let result = false;
 				// Регулярные выражения для поиска
+				// Страна
+				const regCo = /(?:страна|стр\.|ст\.)/i;
 				// Области
 				const regR = /(?:область|край|республика|респ\.|обл\.|кр\.)/i;
 				// Районы
@@ -833,18 +835,30 @@ const anyks = require("./lib.anyks");
 				 * @return {String}           название страны
 				 */
 				const getCountry = () => {
-					// Определяем страну
-					const result = /^([А-ЯЁё\-\s]+),?\s*\{(?:zip|region|district|city|street|house)\}/i.exec(addObject.address);
-					// Создаем название страны
-					let country = false;
-					// Если это массив
-					if($.isset(result) && (result.length === 2))
-						// Выводим название страны
-						country = result[1].anyks_trim().anyks_ucwords();
-					// Заменяем в основном адресе параметры
-					if($.isset(country)) addObject.address = addObject.address.replace(country, "{country}");
-					// Выводим результат
-					return country;
+					/**
+					 * searchCountry Функция поиска страны
+					 * @return {String} название страны
+					 */
+					const searchCountry = () => {
+						// Определяем страну
+						const result = /^([А-ЯЁё\-\s]+),?\s*\{(?:zip|region|district|city|street|house)\}/i.exec(addObject.address);
+						// Создаем название страны
+						let country = false;
+						// Если это массив
+						if($.isset(result) && (result.length === 2))
+							// Выводим название страны
+							country = result[1].anyks_trim().anyks_ucwords();
+						// Заменяем в основном адресе параметры
+						if($.isset(country)) addObject.address = addObject.address.replace(country, "{country}");
+						// Выводим результат
+						return country;
+					};
+					// Получаем данные страны
+					const country = getAddress(regCo, "country");
+					// Если страна найден тогда выводим ее данные
+					if($.isset(country)) return country;
+					// Генерируем другую страну
+					else return searchCountry();
 				};
 				/**
 				 * getAddress Функция поиска области
