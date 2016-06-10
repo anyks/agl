@@ -618,20 +618,15 @@ const anyks = require("./lib.anyks");
 				if($.isset(idObj.clients.redis[command])){
 					// Преобразуем время жизни
 					expire = parseInt(Math.ceil(parseFloat(expire)), 10);
-
-
-					idObj.clients.redis.multi([
-						[command, key],
-						["EXPIRE", key, expire]
-					]).exec((err, cache) => {
-						console.log("-------", err, cache);
-					});
-
-
 					// Устанавливаем время жизни
-					if($.isset(expire)) idObj.clients.redis.multi([["EXPIRE", key, expire]]).exec();
+					if($.isset(expire)){
+						// Считываем данные кеша
+						idObj.clients.redis.multi([
+							[command, key],
+							["EXPIRE", key, expire]
+						]).exec((err, cache) => resolve({err, cache}));
 					// Считываем данные
-					idObj.clients.redis[command](key, (err, cache) => resolve({err, cache}));
+					} else idObj.clients.redis[command](key, (err, cache) => resolve({err, cache}));
 				// Сообщаем что такая комманда не найдена
 				} else resolve({err: "not found", cache: false});
 			}));
