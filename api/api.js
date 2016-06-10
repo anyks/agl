@@ -1745,7 +1745,7 @@ const anyks = require("./lib.anyks");
 
 							let body = new Buffer(cache, 'binary');
 							let conv = new iconv.Iconv('windows-1251', 'utf8');
-							let body = conv.convert(body).toString();
+							body = conv.convert(body).toString();
 
 							console.log("_________", body);
 
