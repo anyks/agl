@@ -29,3 +29,6 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "updateMetroCity"}));
 //
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"limit": 100}}));
+
+// socket.send(JSON.stringify({"action": "getTimezone", "query": {"lat":"55.870031", "lng":"41.772074"}}));
+
