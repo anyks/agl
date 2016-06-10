@@ -933,6 +933,9 @@ const anyks = require("./lib.anyks");
 						src:	"д." + " " + name
 					} : false);
 				};
+
+				console.log("--------------", getAddress(regR, "region"), addObject.address);
+
 				// Если запятые не найдены тогда выходим
 				if(!/,/i.test(addObject.address)) resolve(false);
 				// Формируем объект ответа
