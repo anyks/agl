@@ -793,6 +793,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Результат работы функции
+				let result = false;
 				// Регулярные выражения для поиска
 				// Области
 				const regR = /(?:область|край|республика|респ\.|обл\.|кр\.)/i;
@@ -940,10 +942,8 @@ const anyks = require("./lib.anyks");
 						src:	"д." + " " + name
 					} : false);
 				};
-				// Если запятые не найдены тогда выходим
-				if(!/,/i.test(addObject.address)) resolve(false);
-				// Формируем объект ответа
-				else {
+				// Если запятые найдены
+				if(/\,/i.test(addObject.address)){
 					// Формируем блок результата
 					const result = {
 						"region":		getAddress(regR, "region"),
@@ -951,19 +951,20 @@ const anyks = require("./lib.anyks");
 						"city":			getAddress(regC, "city"),
 						"street":		getAddress(regS, "street"),
 						"apartment":	getAddress(regA, "apartment"),
-						"house":		getHouse(),
-						"zip":			getZip(),
-						"country":		getCountry(),
+						// "house":		getHouse(),
+						// "zip":			getZip(),
+						// "country":		getCountry(),
 						"address":		addObject.address
 					};
 
 					console.log("-----------", result);
 
-					// Выводим в консоль результат
-					idObj.log(["строка адреса интерпретирована", result], "info");
-					// Выводим результат
-					resolve(result);
+					
 				}
+				// Выводим в консоль результат
+				idObj.log(["строка адреса интерпретирована", result], "info");
+				// Выводим результат
+				resolve(result);
 			}));
 		}
 		/**
