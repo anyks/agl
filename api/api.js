@@ -919,7 +919,7 @@ const anyks = require("./lib.anyks");
 							// Если дом найден
 							if(regH1.test(val) || regH2.test(val)){
 								// Запоминаем номер дома
-								house = val.trim();
+								house = val.anyks_trim();
 								// Выходим
 								arr.length = 0;
 							}
@@ -931,16 +931,19 @@ const anyks = require("./lib.anyks");
 					};
 					// Получаем данные дома
 					const house = getAddress(regH, "house");
-					// Получаем название дома
-					const name = searchHouse().anyks_ucwords();
 					// Если дом найден тогда выводим его данные
 					if($.isset(house)) return house;
 					// Генерируем другой номер дома
-					else return ($.isset(name) ? {
-						name:	name,
-						type:	"д.",
-						src:	"д." + " " + name
-					} : false);
+					else {
+						// Получаем название дома
+						const name = searchHouse();
+						// Возвращаем результат
+						return ($.isset(name) ? {
+							name:	name,
+							type:	"д.",
+							src:	"д." + " " + name
+						} : false);
+					}
 				};
 				// Если запятые найдены
 				if(/\,/i.test(addObject.address)){
@@ -951,7 +954,7 @@ const anyks = require("./lib.anyks");
 						"city":			getAddress(regC, "city"),
 						"street":		getAddress(regS, "street"),
 						"apartment":	getAddress(regA, "apartment"),
-						// "house":		getHouse(),
+						"house":		getHouse(),
 						"zip":			getZip(),
 						"country":		getCountry(),
 						"address":		addObject.address
