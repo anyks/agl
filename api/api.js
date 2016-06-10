@@ -877,7 +877,7 @@ const anyks = require("./lib.anyks");
 							// Исправляем название улицы
 							data.name = data.name.anyks_trim().anyks_ucwords();
 							// Запоминаем значение
-							data.src = val;
+							data.src = val.replace(/\.\s+/ig, ".");
 							// Удаляем из массива наш регион
 							arr.splice(i, 1);
 							// Выходим из функции
@@ -886,9 +886,6 @@ const anyks = require("./lib.anyks");
 					});
 					// Заменяем в основном адресе параметры
 					if(data) addObject.address = addObject.address.replace(data.src, "{" + name + "}");
-
-					console.log("++++++", data, addObject.address);
-
 					// Выводим результат
 					return data;
 				};
@@ -938,6 +935,17 @@ const anyks = require("./lib.anyks");
 						src:	"д." + " " + name
 					} : false);
 				};
+
+				console.log("++++++1", getAddress(regR, "region"));
+				console.log("++++++2", getAddress(regD, "district"));
+				console.log("++++++3", getAddress(regC, "city"));
+				console.log("++++++4", getAddress(regS, "street"));
+				console.log("++++++5", getAddress(regA, "apartment"));
+				console.log("++++++6", getHouse());
+				console.log("++++++7", getZip());
+				console.log("++++++8", getCountry());
+				console.log("++++++9", addObject.address);
+
 				// Если запятые не найдены тогда выходим
 				if(!/,/i.test(addObject.address)) resolve(false);
 				// Формируем объект ответа
