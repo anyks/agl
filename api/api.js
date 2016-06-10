@@ -1703,10 +1703,11 @@ const anyks = require("./lib.anyks");
 		 * getCities Метод получения списка городов
 		 * @param  {String}  regionId    идентификатор региона
 		 * @param  {String}  districtId  идентификатор района
+		 * @param  {String}  type        тип города (деревня, село, город)
 		 * @param  {Number}  limit       количество результатов к выдаче
 		 * @return {Promise}             промис результата
 		 */
-		getCities({regionId, districtId, limit = 10}){
+		getCities({regionId, districtId, type, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1722,6 +1723,7 @@ const anyks = require("./lib.anyks");
 						// Если регион или район передан
 						if($.isset(regionId))	query.regionId		= regionId;
 						if($.isset(districtId))	query.districtId	= districtId;
+						if($.isset(type))		query.typeShort		= type[0].toLowerCase();
 						// Запрашиваем все данные из базы
 						idObj.schemes.Cities.find(query).sort({_id: 1})
 						.limit(limit)
@@ -1745,13 +1747,17 @@ const anyks = require("./lib.anyks");
 							// Переходим по всему массиву городов
 							for(let val in cache){
 								for(let key in cache[val]){
+									// Устанавливаем флаг поиска по типу адреса
+									let flag = ($.isset(type) ? (cache[val][key].typeShort === type[0].toLowerCase()) : true);
 									// Если родительский элемент передан
 									if($.isset(regionId) || $.isset(districtId)){
 										// Если родительский элемент найден
-										if(((cache[val][key].districtId === districtId)
-										|| (key === districtId))
-										|| ((cache[val][key].regionId === regionId)
-										|| (key === regionId))){
+										if(flag && (($.isset(districtId)
+										&& ((cache[val][key].districtId === districtId)
+										|| (key === districtId)))
+										|| ($.isset(regionId)
+										&& ((cache[val][key].regionId === regionId)
+										|| (key === regionId))))){
 											// Добавляем в массив город
 											cities.push(cache[val][key]);
 											// Увеличиваем значение индекса
@@ -1760,7 +1766,7 @@ const anyks = require("./lib.anyks");
 											else return cities;
 										}
 									// Если родительский элемент не существует тогда просто добавляем в список
-									} else {
+									} else if(flag) {
 										// Добавляем в массив город
 										cities.push(cache[val][key]);
 										// Увеличиваем значение индекса
