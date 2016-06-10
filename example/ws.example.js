@@ -34,3 +34,6 @@ socket.onerror = function(error){
 // 
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
 
+// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
+
+// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));

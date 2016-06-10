@@ -99,7 +99,7 @@ const anyks = require("./lib.anyks");
 						let boundingbox	= $.fnShowProps(data, "boundingbox");
 						let description	= $.fnShowProps(data, "display_name");
 						let zip			= parseInt($.fnShowProps(data, "postcode"), 10);
-						let gps			= [parseFloat(lat), parseFloat(lng)];
+						let gps			= [parseFloat(lng), parseFloat(lat)];
 						let _id			= idObj.generateKey(description);
 						// Формируем объект
 						result = {
@@ -130,7 +130,7 @@ const anyks = require("./lib.anyks");
 						let lowerCorner	= $.fnShowProps(data, "lowerCorner").split(" ");
 						let upperCorner = $.fnShowProps(data, "upperCorner").split(" ");
 						let boundingbox = [lowerCorner[1], upperCorner[1], lowerCorner[0], upperCorner[0]];
-						let gps			= [parseFloat(lat), parseFloat(lng)];
+						let gps			= [parseFloat(lng), parseFloat(lat)];
 						let _id			= idObj.generateKey(description);
 						// Формируем объект
 						result = {
@@ -150,7 +150,7 @@ const anyks = require("./lib.anyks");
 						// Координаты запроса
 						let lat	= $.fnShowProps(data.geometry.location, "lat");
 						let lng	= $.fnShowProps(data.geometry.location, "lng");
-						let gps	= [parseFloat(lat), parseFloat(lng)];
+						let gps	= [parseFloat(lng), parseFloat(lat)];
 						// Описание адреса
 						let description = data.formatted_address;
 						// Переменные адреса
@@ -1280,6 +1280,9 @@ const anyks = require("./lib.anyks");
 				const key = "address:gps:" + idObj.generateKey(lat + ":" + lng);
 				// Ищем станции в кеше
 				Agl.getRedis(idObj, "get", key, 3600).then(({err, result}) => {
+					
+					console.log("---------", result);
+
 					// Если данные это не массив тогда создаем его
 					if($.isset(result)) resolve(JSON.parse(result));
 					// Если данные в кеше не найдены тогда продолжаем искать
