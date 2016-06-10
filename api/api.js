@@ -1569,7 +1569,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if($.isset(cache)){
+					if(!$.isset(cache)){
 						// Запрашиваем все данные из базы
 						idObj.schemes.Regions.find({})
 						.sort({_id: 1})
@@ -1633,7 +1633,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cache)){
+					if($.isset(cache)){
 						// Запрашиваем все данные из базы
 						idObj.schemes.Districts.find({regionId: regionId})
 						.sort({_id: 1})
