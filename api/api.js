@@ -871,8 +871,6 @@ const anyks = require("./lib.anyks");
 								if(reg.test(val)){
 									// Запоминаем тип адреса
 									data.type = val;
-									// Удаляем его из массива
-									param.splice(i, 1);
 								// Запоминаем тип
 								} else data.name += val + " ";
 							});
