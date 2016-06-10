@@ -805,13 +805,13 @@ const anyks = require("./lib.anyks");
 				// Страна
 				const regCo = /(?:страна|стр\.|ст\.)/i;
 				// Области
-				const regR = /(?:область|край|республика|респ\.|обл\.|кр\.)/i;
+				const regR = /(?:область|край|республика|автономный округ|респ\.|обл\.|кр\.|рес\.|ао\.|аок\.|аокр\.)/i;
 				// Районы
-				const regD = /(?:район|р-н\.)/i;
+				const regD = /(?:район|округ|р-н\.|окр\.)/i;
 				// Река
 				const regRi = /(?:река|(?:^|\s)р\.)/i;
 				// Города
-				const regC = /(?:деревня|город|округ|село|поселение|поселок|посёлок|товарищество|поселение городского типа|тов\.|пгт\.|д\.|г\.|окр\.|с\.|п\.|пос\.|пос-к\.)/i;
+				const regC = /(?:деревня|город|село|поселение|поселок|посёлок|товарищество|поселение городского типа|тов\.|пгт\.|д\.|г\.|с\.|п\.|пос\.|пос-к\.)/i;
 				// Улицы
 				const regS = /(?:улица|площадь|проспект|авеню|ул\.|пл\.|пр\.|пр-т\.|ав\.)/i;
 				// Квартиры
@@ -823,8 +823,8 @@ const anyks = require("./lib.anyks");
 					"стр.":		"Страна",
 					"ст.":		"Страна",
 					"респ.":	"Республика",
+					"рес.":		"Республика",
 					"обл.":		"Область",
-					"кр.":		"Край",
 					"р-н.":		"Район",
 					"р.":		"Река",
 					"тов.":		"Товарищество",
@@ -832,6 +832,10 @@ const anyks = require("./lib.anyks");
 					"д.":		"Деревня",
 					"г.":		"Город",
 					"окр.":		"Округ",
+					"ао.":		"Автономный округ",
+					"аок.":		"Автономный округ",
+					"аокр.":	"Автономный округ",
+					"кр.":		"Край",
 					"с.":		"Село",
 					"п.":		"Поселение",
 					"пос.":		"Поселение",
@@ -1556,58 +1560,58 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * getRegions Метод получения списка регионов
+		 * @param  {String}  type  тип региона (область, край, республика, автономный округ)
+		 * @param  {Number}  page  номер страницы для запроса
 		 * @param  {Number}  limit количество результатов к выдаче
 		 * @return {Promise}       промис результата
 		 */
-		getRegions({limit = 10}){
+		getRegions({type, page = 0, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса
-				const key = "address:subjects:region";
+				const key = "address:regions:" + idObj.generateKey(type + ":" + page + ":" + limit);
 				// Считываем данные из кеша
-				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+				Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
 					if(!$.isset(cache)){
+						// Формируем параметры запроса
+						const query = {};
+						// Если тип передан
+						if($.isset(type)) query.typeShort = type[0].toLowerCase();
 						// Запрашиваем все данные из базы
-						idObj.schemes.Regions.find({})
+						idObj.schemes.Regions.find(query)
 						.sort({_id: 1})
+						.skip(page * limit)
 						.limit(limit)
 						.exec((err, data) => {
 							// Если ошибки нет, выводим результат
 							if(!$.isset(err) && $.isArray(data)
-							&& data.length) resolve(data);
+							&& data.length){
+								// Запрашиваем количество записей
+								idObj.schemes.Regions.count(query, (err, count) => {
+									// Если произошла ошибка то выводим в консоль
+									if($.isset(err)){
+										// Выводим сообщение
+										idObj.log(["чтение из базы данных", err], "error");
+										// Сообщаем что ничего не найдено
+										resolve(false);
+									// Выводим результат
+									} else {
+										// Формируем объект
+										const obj = {data, page, limit, count};
+										// Отправляем в Redis на час
+										Agl.setRedis(idObj, "set", key, obj, 3600).then();
+										// Выводим результат
+										resolve(obj);
+									}
+								});
 							// Сообщаем что ничего не найдено
-							else resolve(false);
+							} else resolve(false);
 						});
-					// Если данные пришли
-					} else {
-						// Функция поиска данных в кеше
-						const searchCache = () => {
-							// Текущее значение итерации
-							let i = 0;
-							// Массив найденных регионов
-							const regions = [];
-							// Выполняем парсинг ответа
-							cache = JSON.parse(cache);
-							// Переходим по всему массиву регионов
-							for(let val in cache){
-								for(let key in cache[val]){
-									// Добавляем в массив регион
-									regions.push(cache[val][key]);
-									// Увеличиваем значение индекса
-									if(i < (limit - 1)) i++;
-									// Выходим
-									else return regions;
-								}
-							}
-							// Выводим все регионы
-							return regions;
-						};
-						// Выводим результат
-						resolve(searchCache());
-					}
+					// Если данные пришли, выводим результат
+					} else resolve(JSON.parse(cache));
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
@@ -1620,76 +1624,63 @@ const anyks = require("./lib.anyks");
 		/**
 		 * getDistricts Метод получения списка районов
 		 * @param  {String}  regionId  идентификатор региона
+		 * @param  {String}  type      тип района (район, округ)
+		 * @param  {Number}  page      номер страницы для запроса
 		 * @param  {Number}  limit     количество результатов к выдаче
 		 * @return {Promise}           промис результата
 		 */
-		getDistricts({regionId, limit = 10}){
+		getDistricts({regionId, type, page = 0, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса
-				const key = "address:subjects:district";
+				const key = "address:districts:" + idObj.generateKey(
+					regionId + ":" +
+					type + ":" +
+					page + ":" + limit
+				);
 				// Считываем данные из кеша
-				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+				Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
 					if(!$.isset(cache)){
 						// Формируем параметры запроса
 						const query = {};
-						// Если регион передан
-						if($.isset(regionId)) query.regionId = regionId;
+						// Если регион или тип переданы
+						if($.isset(regionId))	query.regionId	= regionId;
+						if($.isset(type))		query.typeShort	= type[0].toLowerCase();
 						// Запрашиваем все данные из базы
 						idObj.schemes.Districts.find(query)
 						.sort({_id: 1})
+						.skip(page * limit)
 						.limit(limit)
 						.exec((err, data) => {
 							// Если ошибки нет, выводим результат
 							if(!$.isset(err) && $.isArray(data)
-							&& data.length) resolve(data);
-							// Сообщаем что ничего не найдено
-							else resolve(false);
-						});
-					// Если данные пришли
-					} else {
-						// Функция поиска данных в кеше
-						const searchCache = () => {
-							// Текущее значение итерации
-							let i = 0;
-							// Массив найденных районов
-							const districts = [];
-							// Выполняем парсинг ответа
-							cache = JSON.parse(cache);
-							// Переходим по всему массиву районов
-							for(let val in cache){
-								for(let key in cache[val]){
-									// Если родительский элемент передан
-									if($.isset(regionId)){
-										// Если родительский элемент найден
-										if((cache[val][key].regionId === regionId) || (key === regionId)){
-											// Добавляем в массив район
-											districts.push(cache[val][key]);
-											// Увеличиваем значение индекса
-											if(i < (limit - 1)) i++;
-											// Выходим
-											else return districts;
-										}
-									// Если родительский элемент не существует тогда просто добавляем в список
+							&& data.length){
+								// Запрашиваем количество записей
+								idObj.schemes.Districts.count(query, (err, count) => {
+									// Если произошла ошибка то выводим в консоль
+									if($.isset(err)){
+										// Выводим сообщение
+										idObj.log(["чтение из базы данных", err], "error");
+										// Сообщаем что ничего не найдено
+										resolve(false);
+									// Выводим результат
 									} else {
-										// Добавляем в массив район
-										districts.push(cache[val][key]);
-										// Увеличиваем значение индекса
-										if(i < (limit - 1)) i++;
-										// Выходим
-										else return districts;
+										// Формируем объект
+										const obj = {data, page, limit, count};
+										// Отправляем в Redis на час
+										Agl.setRedis(idObj, "set", key, obj, 3600).then();
+										// Выводим результат
+										resolve(obj);
 									}
-								}
-							}
-							// Выводим все районы
-							return districts;
-						};
-						// Выводим результат
-						resolve(searchCache());
-					}
+								});
+							// Сообщаем что ничего не найдено
+							} else resolve(false);
+						});
+					// Если данные пришли, выводим результат
+					} else resolve(JSON.parse(cache));
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
@@ -1704,18 +1695,24 @@ const anyks = require("./lib.anyks");
 		 * @param  {String}  regionId    идентификатор региона
 		 * @param  {String}  districtId  идентификатор района
 		 * @param  {String}  type        тип города (деревня, село, город)
+		 * @param  {Number}  page        номер страницы для запроса
 		 * @param  {Number}  limit       количество результатов к выдаче
 		 * @return {Promise}             промис результата
 		 */
-		getCities({regionId, districtId, type, limit = 10}){
+		getCities({regionId, districtId, type, page = 0, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса
-				const key = "address:subjects:city";
+				const key = "address:cities:" + idObj.generateKey(
+					regionId + ":" +
+					districtId + ":" +
+					type + ":" +
+					page + ":" + limit
+				);
 				// Считываем данные из кеша
-				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+				Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
 					if(!$.isset(cache)){
 						// Формируем параметры запроса
@@ -1725,63 +1722,37 @@ const anyks = require("./lib.anyks");
 						if($.isset(districtId))	query.districtId	= districtId;
 						if($.isset(type))		query.typeShort		= type[0].toLowerCase();
 						// Запрашиваем все данные из базы
-						idObj.schemes.Cities.find(query).sort({_id: 1})
+						idObj.schemes.Cities.find(query)
+						.sort({_id: 1})
+						.skip(page * limit)
 						.limit(limit)
 						.exec((err, data) => {
 							// Если ошибки нет, выводим результат
 							if(!$.isset(err) && $.isArray(data)
-							&& data.length) resolve(data);
-							// Сообщаем что ничего не найдено
-							else resolve(false);
-						});
-					// Если данные пришли
-					} else {
-						// Функция поиска данных в кеше
-						const searchCache = () => {
-							// Текущее значение итерации
-							let i = 0;
-							// Массив найденных городов
-							const cities = [];
-							// Выполняем парсинг ответа
-							cache = JSON.parse(cache);
-							// Переходим по всему массиву городов
-							for(let val in cache){
-								for(let key in cache[val]){
-									// Устанавливаем флаг поиска по типу адреса
-									const flag = ($.isset(type) ? (cache[val][key].typeShort === type[0].toLowerCase()) : true);
-									// Если родительский элемент передан
-									if($.isset(regionId) || $.isset(districtId)){
-										// Если родительский элемент найден
-										if(flag && (($.isset(districtId)
-										&& ((cache[val][key].districtId === districtId)
-										|| (key === districtId)))
-										|| ($.isset(regionId)
-										&& ((cache[val][key].regionId === regionId)
-										|| (key === regionId))))){
-											// Добавляем в массив город
-											cities.push(cache[val][key]);
-											// Увеличиваем значение индекса
-											if(i < (limit - 1)) i++;
-											// Выходим
-											else return cities;
-										}
-									// Если родительский элемент не существует тогда просто добавляем в список
-									} else if(flag) {
-										// Добавляем в массив город
-										cities.push(cache[val][key]);
-										// Увеличиваем значение индекса
-										if(i < (limit - 1)) i++;
-										// Выходим
-										else return cities;
+							&& data.length){
+								// Запрашиваем количество записей
+								idObj.schemes.Cities.count(query, (err, count) => {
+									// Если произошла ошибка то выводим в консоль
+									if($.isset(err)){
+										// Выводим сообщение
+										idObj.log(["чтение из базы данных", err], "error");
+										// Сообщаем что ничего не найдено
+										resolve(false);
+									// Выводим результат
+									} else {
+										// Формируем объект
+										const obj = {data, page, limit, count};
+										// Отправляем в Redis на час
+										Agl.setRedis(idObj, "set", key, obj, 3600).then();
+										// Выводим результат
+										resolve(obj);
 									}
-								}
-							}
-							// Выводим все города
-							return cities;
-						};
-						// Выводим результат
-						resolve(searchCache());
-					}
+								});
+							// Сообщаем что ничего не найдено
+							} else resolve(false);
+						});
+					// Если данные пришли, выводим результат
+					} else resolve(JSON.parse(cache));
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
