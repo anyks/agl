@@ -841,10 +841,15 @@ const anyks = require("./lib.anyks");
 				};
 				// Создаем объект с адресом
 				const addObject = {address};
-				// Исправляем адрес
-				addObject.address = addObject.address
-				.replace(/\./ig, ". ")
-				.replace(/\s+\,/ig, ", ").anyks_trim();
+				/**
+				 * fixAddress Функция исправления адреса
+				 */
+				const fixAddress = () => {
+					// Исправляем адрес
+					addObject.address = addObject.address
+					.replace(/\./ig, ". ")
+					.replace(/\s*\,/ig, ", ").anyks_trim();
+				};
 				/**
 				 * getZip Функция поиска почтового индекса
 				 * @return {String}           почтовый индекс
@@ -857,7 +862,12 @@ const anyks = require("./lib.anyks");
 					// Если почтовый индекс найден то выводим его
 					if($.isset(result)) zip = result[0];
 					// Заменяем в основном адресе параметры
-					if($.isset(zip)) addObject.address = addObject.address.replace(zip, "{zip}");
+					if($.isset(zip)){
+						// Заменяем название адреса
+						addObject.address = addObject.address.replace(zip, "{zip}");
+						// Исправляем название адреса
+						fixAddress();
+					}
 					// Выводим результат
 					return zip;
 				};
@@ -880,7 +890,12 @@ const anyks = require("./lib.anyks");
 							// Выводим название страны
 							country = result[1].anyks_trim().anyks_ucwords();
 						// Заменяем в основном адресе параметры
-						if($.isset(country)) addObject.address = addObject.address.replace(country, "{country}");
+						if($.isset(country)){
+							// Запоминаем название страны
+							addObject.address = addObject.address.replace(country, "{country}");
+							// Исправляем название адреса
+							fixAddress();
+						}
 						// Выводим результат
 						return country;
 					};
@@ -929,7 +944,12 @@ const anyks = require("./lib.anyks");
 							}
 						});
 						// Заменяем в основном адресе параметры
-						if(house) addObject.address = addObject.address.replace(house, "{house}");
+						if(house){
+							// Заменяем название дома
+							addObject.address = addObject.address.replace(house, "{house}");
+							// Исправляем название адреса
+							fixAddress();
+						}
 						// Выводим номер дома
 						return house;
 					};
@@ -994,6 +1014,8 @@ const anyks = require("./lib.anyks");
 					if(data){
 						// Изменяем адрес
 						addObject.address = addObject.address.replace(data.src, "{" + name + "}");
+						// Исправляем название адреса
+						fixAddress();
 						// Запоминаем значение
 						data.src = data.src.replace(/\.\s+/ig, ".");
 					}
@@ -1002,6 +1024,8 @@ const anyks = require("./lib.anyks");
 				};
 				// Если запятые найдены
 				if(/\,/i.test(addObject.address)){
+					// Исправляем название адреса
+					fixAddress();
 					// Формируем блок результата
 					result = {
 						"region":		getAddress(regR, "region"),
