@@ -844,7 +844,7 @@ const anyks = require("./lib.anyks");
 				// Исправляем адрес
 				addObject.address = addObject.address
 				.replace(/\./ig, ". ")
-				.replace(/\s+\,/ig, ",");.anyks_trim();
+				.replace(/\s+\,/ig, ", ");.anyks_trim();
 				/**
 				 * getZip Функция поиска почтового индекса
 				 * @return {String}           почтовый индекс
