@@ -1633,9 +1633,13 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cache)){
+					if($.isset(cache)){
+						// Формируем параметры запроса
+						const query = {};
+						// Если регион передан
+						if($.isset(regionId)) query.regionId = regionId;
 						// Запрашиваем все данные из базы
-						idObj.schemes.Districts.find({regionId: regionId})
+						idObj.schemes.Districts.find(query)
 						.sort({_id: 1})
 						.limit(limit)
 						.exec((err, data) => {
@@ -1712,12 +1716,14 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if($.isset(cache)){
+					if(!$.isset(cache)){
+						// Формируем параметры запроса
+						const query = {};
+						// Если регион или район передан
+						if($.isset(regionId))	query.regionId		= regionId;
+						if($.isset(districtId))	query.districtId	= districtId;
 						// Запрашиваем все данные из базы
-						idObj.schemes.Cities.find({
-							regionId:	regionId,
-							districtId:	districtId
-						}).sort({_id: 1})
+						idObj.schemes.Cities.find(query).sort({_id: 1})
 						.limit(limit)
 						.exec((err, data) => {
 							// Если ошибки нет, выводим результат
