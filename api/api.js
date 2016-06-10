@@ -1744,8 +1744,9 @@ const anyks = require("./lib.anyks");
 							const cities = [];
 
 							try {
+								var Iconv  = require('iconv').Iconv;
 								let body = new Buffer(cache, 'binary');
-								let conv = new iconv.Iconv('windows-1251', 'utf8');
+								let conv = new Iconv('windows-1251', 'utf8');
 								body = conv.convert(body).toString();
 
 								console.log("_________", body);
