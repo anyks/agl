@@ -951,9 +951,9 @@ const anyks = require("./lib.anyks");
 						"city":			getAddress(regC, "city"),
 						"street":		getAddress(regS, "street"),
 						"apartment":	getAddress(regA, "apartment"),
-						"house":		getHouse(),
-						// "zip":			getZip(),
-						// "country":		getCountry(),
+						// "house":		getHouse(),
+						"zip":			getZip(),
+						"country":		getCountry(),
 						"address":		addObject.address
 					};
 
