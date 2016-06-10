@@ -618,6 +618,16 @@ const anyks = require("./lib.anyks");
 				if($.isset(idObj.clients.redis[command])){
 					// Преобразуем время жизни
 					expire = parseInt(Math.ceil(parseFloat(expire)), 10);
+
+
+					idObj.clients.redis.multi([
+						[command, key],
+						["EXPIRE", key, expire]
+					]).exec((err, cache) => {
+						console.log("-------", err, cache);
+					});
+
+
 					// Устанавливаем время жизни
 					if($.isset(expire)) idObj.clients.redis.multi([["EXPIRE", key, expire]]).exec();
 					// Считываем данные
