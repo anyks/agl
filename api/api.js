@@ -1434,6 +1434,8 @@ const anyks = require("./lib.anyks");
 									"address.street":	($.isset(result.street)		? (new RegExp('^' + result.street.name		+ '$', "i")) : null)
 								// Выполняем запрос
 								}).exec((err, data) => {
+									// Выводим результат поиска по базе
+									idObj.log(["поиск адреса в базе", data], "info");
 									// Если ошибки нет, выводим результат
 									if(!$.isset(err) && $.isset(data)
 									&& $.isObject(data)) resolve(data);
