@@ -864,8 +864,8 @@ const anyks = require("./lib.anyks");
 						// Возвращаем результат
 						return ($.isset(name) ? {
 							name:	name,
-							type:	"стр.",
-							src:	"стр." + name
+							type:	"страна",
+							src:	"страна " + name
 						} : false);
 					}
 				};
@@ -913,8 +913,8 @@ const anyks = require("./lib.anyks");
 						// Возвращаем результат
 						return ($.isset(name) ? {
 							name:	name,
-							type:	"д.",
-							src:	"д." + name
+							type:	"дом",
+							src:	"дом " + name
 						} : false);
 					}
 				};
