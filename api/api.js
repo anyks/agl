@@ -623,7 +623,11 @@ const anyks = require("./lib.anyks");
 					// Устанавливаем время жизни
 					if($.isset(expire)) params.push(["EXPIRE", key, expire]);
 					// Считываем данные кеша
-					idObj.clients.redis.multi(params).exec((err, cache) => resolve({err, cache}));
+					idObj.clients.redis.multi(params)
+					.exec((err, cache) => resolve({
+						err,
+						"cache": ($.isArray(cache) && cache.length ? cache[0] : false)
+					}));
 				// Сообщаем что такая комманда не найдена
 				} else resolve({err: "not found", cache: false});
 			}));
