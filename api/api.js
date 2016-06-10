@@ -327,7 +327,7 @@ const anyks = require("./lib.anyks");
 						// Если временная зона была не найдена
 						if(!$.isset(obj.timezone)) obj.timezone = data.timezone;
 						// Выполняем обновление
-						scheme.update({_id: obj._id}, obj, {upsert: true, multi: true}, saveCache);
+						scheme.update({_id: obj._id}, obj, {upsert: true}, saveCache);
 					// Просто добавляем новый объект
 					} else (new scheme(obj)).save(saveCache);
 				});
@@ -688,7 +688,8 @@ const anyks = require("./lib.anyks");
 							// Собираем массив для удаления ключей
 							result.forEach(val => removes.push(["del", val]));
 							// Удаляем данные
-							idObj.clients.redis.multi(removes).exec((err, cache) => resolve({err, cache}));
+							idObj.clients.redis.multi(removes)
+							.exec((err, cache) => resolve({err, cache}));
 						// Выводим что ничего не удалено
 						} else resolve({err: "not found", cache: false});
 					});
@@ -1776,10 +1777,7 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(err) && $.isset(data)
 						&& $.isObject(data)){
 							// Выполняем обновление
-							idObj.schemes.Cities.update({_id: obj._id}, obj, {
-								upsert:	true,
-								multi:	true
-							}, saveCache);
+							idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
 						// Просто добавляем новый объект
 						} else (new idObj.schemes.Cities(obj)).save(saveCache);
 					});
@@ -1878,10 +1876,7 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(err) && $.isset(data)
 						&& $.isObject(data)){
 							// Выполняем обновление
-							scheme.update({_id: obj._id}, obj, {
-								upsert:	true,
-								multi:	true
-							}, saveCache);
+							scheme.update({_id: obj._id}, obj, {upsert: true}, saveCache);
 						// Просто добавляем новый объект
 						} else (new scheme(obj)).save(saveCache);
 					});
