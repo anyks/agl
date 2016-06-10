@@ -1743,11 +1743,13 @@ const anyks = require("./lib.anyks");
 							// Массив найденных городов
 							const cities = [];
 
-							let body = new Buffer(cache, 'binary');
-							let conv = new iconv.Iconv('windows-1251', 'utf8');
-							body = conv.convert(body).toString();
+							try {
+								let body = new Buffer(cache, 'binary');
+								let conv = new iconv.Iconv('windows-1251', 'utf8');
+								body = conv.convert(body).toString();
 
-							console.log("_________", body);
+								console.log("_________", body);
+							} catch(e) {console.log("+++++++", e);}
 
 							// Выполняем парсинг ответа
 							cache = JSON.parse(cache);
