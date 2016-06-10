@@ -959,10 +959,6 @@ const anyks = require("./lib.anyks");
 						"country":		getCountry(),
 						"address":		addObject.address
 					};
-
-					console.log("-----------", result);
-
-					
 				}
 				// Выводим в консоль результат
 				idObj.log(["строка адреса интерпретирована", result], "info");
@@ -1436,6 +1432,15 @@ const anyks = require("./lib.anyks");
 						idObj.parseAddress({address}).then(result => {
 							// Если данные пришли
 							if($.isObject(result)){
+								
+								console.log("-------------",{
+									"address.district": ($.isset(result.district)	? (new RegExp('^' + result.district.name	+ '$', "i")) : null),
+									"address.city":		($.isset(result.city)		? (new RegExp('^' + result.city.name		+ '$', "i")) : null),
+									"address.region":	($.isset(result.region)		? (new RegExp('^' + result.region.name		+ '$', "i")) : null),
+									"address.street":	($.isset(result.street)		? (new RegExp('^' + result.street.name		+ '$', "i")) : null)
+								// Выполняем запрос
+								});
+
 								// Запрашиваем все данные из базы
 								idObj.schemes.Address.findOne({
 									"address.district": ($.isset(result.district)	? (new RegExp('^' + result.district.name	+ '$', "i")) : null),
