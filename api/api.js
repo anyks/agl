@@ -1286,9 +1286,6 @@ const anyks = require("./lib.anyks");
 				const key = "address:gps:" + idObj.generateKey(lat + ":" + lng);
 				// Ищем станции в кеше
 				Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
-					
-					console.log("++++++++", cache);
-
 					// Если данные это не массив тогда создаем его
 					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
@@ -1572,7 +1569,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cache)){
+					if($.isset(cache)){
 						// Запрашиваем все данные из базы
 						idObj.schemes.Regions.find({})
 						.sort({_id: 1})
