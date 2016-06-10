@@ -858,7 +858,65 @@ const anyks = require("./lib.anyks");
 					// Если страна найден тогда выводим ее данные
 					if($.isset(country)) return country;
 					// Генерируем другую страну
-					else return searchCountry();
+					else {
+						// Получаем название страны
+						const name = searchCountry();
+						// Возвращаем результат
+						return ($.isset(name) ? {
+							name:	name,
+							type:	"стр.",
+							src:	"стр." + name
+						} : false);
+					}
+				};
+				/**
+				 * getHouse Функция поиска номера дома
+				 * @return {String}           номер дома
+				 */
+				const getHouse = () => {
+					/**
+					 * searchHouse Функция поиска дома
+					 * @return {String} название и номер дома
+					 */
+					const searchHouse = () => {
+						// Разбиваем на массив
+						const arr = addObject.address.split(",").reverse();
+						// Дома
+						const regH1 = /(?:дом|строение|корпус|д\.|стр\.|с\.|корп\.|к\.)/i;
+						// Дома второй вариант
+						const regH2 = /(?:\d+)\s*(?:к|с)?\s*(?:\d+)?\s*(?:к|с)?\s*(?:\d+)?/i;
+						// Объект с данными
+						let house = false;
+						// Ищем адрес
+						arr.forEach((val, i) => {
+							// Если дом найден
+							if(regH1.test(val) || regH2.test(val)){
+								// Запоминаем номер дома
+								house = val.anyks_trim();
+								// Выходим
+								arr.length = 0;
+							}
+						});
+						// Заменяем в основном адресе параметры
+						if(house) addObject.address = addObject.address.replace(house, "{house}");
+						// Выводим номер дома
+						return house;
+					};
+					// Получаем данные дома
+					const house = getAddress(regH, "house");
+					// Если дом найден тогда выводим его данные
+					if($.isset(house)) return house;
+					// Генерируем другой номер дома
+					else {
+						// Получаем название дома
+						const name = searchHouse();
+						// Возвращаем результат
+						return ($.isset(name) ? {
+							name:	name,
+							type:	"д.",
+							src:	"д." + name
+						} : false);
+					}
 				};
 				/**
 				 * getAddress Функция поиска области
@@ -909,55 +967,6 @@ const anyks = require("./lib.anyks");
 					}
 					// Выводим результат
 					return data;
-				};
-				/**
-				 * getHouse Функция поиска номера дома
-				 * @return {String}           номер дома
-				 */
-				const getHouse = () => {
-					/**
-					 * searchHouse Функция поиска дома
-					 * @return {String} название и номер дома
-					 */
-					const searchHouse = () => {
-						// Разбиваем на массив
-						const arr = addObject.address.split(",").reverse();
-						// Дома
-						const regH1 = /(?:дом|строение|корпус|д\.|стр\.|с\.|корп\.|к\.)/i;
-						// Дома второй вариант
-						const regH2 = /(?:\d+)\s*(?:к|с)?\s*(?:\d+)?\s*(?:к|с)?\s*(?:\d+)?/i;
-						// Объект с данными
-						let house = false;
-						// Ищем адрес
-						arr.forEach((val, i) => {
-							// Если дом найден
-							if(regH1.test(val) || regH2.test(val)){
-								// Запоминаем номер дома
-								house = val.anyks_trim();
-								// Выходим
-								arr.length = 0;
-							}
-						});
-						// Заменяем в основном адресе параметры
-						if(house) addObject.address = addObject.address.replace(house, "{house}");
-						// Выводим номер дома
-						return house;
-					};
-					// Получаем данные дома
-					const house = getAddress(regH, "house");
-					// Если дом найден тогда выводим его данные
-					if($.isset(house)) return house;
-					// Генерируем другой номер дома
-					else {
-						// Получаем название дома
-						const name = searchHouse();
-						// Возвращаем результат
-						return ($.isset(name) ? {
-							name:	name,
-							type:	"д.",
-							src:	"д." + " " + name
-						} : false);
-					}
 				};
 				// Если запятые найдены
 				if(/\,/i.test(addObject.address)){
