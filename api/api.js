@@ -1432,23 +1432,15 @@ const anyks = require("./lib.anyks");
 						idObj.parseAddress({address}).then(result => {
 							// Если данные пришли
 							if($.isObject(result)){
-								
-								console.log("------", {
-									"address.district": ($.isset(result.district)	? (new RegExp(result.district.name, "i"))	: undefined),
-									"address.city":		($.isset(result.city)		? (new RegExp(result.city.name, "i")) 		: undefined),
-									"address.region":	($.isset(result.region)		? (new RegExp(result.region.name, "i"))		: undefined),
-									"address.street":	($.isset(result.street)		? (new RegExp(result.street.name, "i"))		: undefined)
-								// Выполняем запрос
-								});
-
+								// Параметры запроса
+								const query = {};
+								// Создаем параметры запроса
+								if($.isset(result.district))	query["address.district"]	= (new RegExp(result.district.name, "i"));
+								if($.isset(result.city))		query["address.city"]		= (new RegExp(result.city.name, "i"));
+								if($.isset(result.region))		query["address.region"]		= (new RegExp(result.region.name, "i"));
+								if($.isset(result.street))		query["address.street"]		= (new RegExp(result.street.name, "i"));
 								// Запрашиваем все данные из базы
-								idObj.schemes.Address.findOne({
-									"address.district": ($.isset(result.district)	? (new RegExp(result.district.name, "i"))	: undefined),
-									"address.city":		($.isset(result.city)		? (new RegExp(result.city.name, "i")) 		: undefined),
-									"address.region":	($.isset(result.region)		? (new RegExp(result.region.name, "i"))		: undefined),
-									"address.street":	($.isset(result.street)		? (new RegExp(result.street.name, "i"))		: undefined)
-								// Выполняем запрос
-								}).exec((err, data) => {
+								idObj.schemes.Address.findOne(query).exec((err, data) => {
 									// Выводим результат поиска по базе
 									idObj.log(["поиск адреса в базе", data], "info");
 									// Если ошибки нет, выводим результат
