@@ -803,7 +803,7 @@ const anyks = require("./lib.anyks");
 				// Районы
 				const regD = /(?:район|р-н\.)/i;
 				// Река
-				const regRi = /(?:река|р\.)/i;
+				const regRi = /(?:река|(?:^|\s)р\.)/i;
 				// Города
 				const regC = /(?:деревня|город|округ|село|поселение|поселок|посёлок|товарищество|поселение городского типа|тов\.|пгт\.|д\.|г\.|окр\.|с\.|п\.|пос\.|пос-к\.)/i;
 				// Улицы
@@ -973,7 +973,7 @@ const anyks = require("./lib.anyks");
 								// Если мы нашли адрес
 								if(reg.test(val)){
 									// Запоминаем тип адреса
-									data.type = (name === "house" ? "Дом" : (mapSubjects[val] ? mapSubjects[val] : val));
+									data.type = (name === "house" ? "Дом" : ($.isset(mapSubjects[val]) ? mapSubjects[val] : val));
 								// Запоминаем тип
 								} else data.name += val + " ";
 							});
