@@ -888,6 +888,9 @@ const anyks = require("./lib.anyks");
 					});
 					// Заменяем в основном адресе параметры
 					if(data) addObject.address = addObject.address.replace(data.src, "{" + name + "}");
+
+					console.log("++++++", data, addObject.address);
+
 					// Выводим результат
 					return data;
 				};
