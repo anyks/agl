@@ -764,6 +764,182 @@ const anyks = require("./lib.anyks");
 			return key.replace(key.substr(4, 8), mkey.substr(8, 16));
 		}
 		/**
+		 * parseAddress Метод парсинга адреса
+		 * @param  {String} address адрес для парсинга
+		 * @return {Object}         объект ответа
+		 */
+		parseAddress({address}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				try {
+					// Регулярные выражения для поиска
+					// Области
+					const regR = /(?:область|край|республика|респ\.|обл\.|кр\.)/i;
+					// Районы
+					const regD = /(?:район|р\.)/i;
+					// Города
+					const regC = /(?:деревня|город|округ|село|поселение|поселок|посёлок|товарищество|поселение городского типа|тов\.|пгт\.|д\.|г\.|окр\.|с\.|п\.)/i;
+					// Улицы
+					const regS = /(?:улица|площадь|проспект|авеню|ул\.|пл\.|пр\.|ав\.)/i;
+					// Квартиры
+					const regA = /(?:квартира|офис|комната|кв\.|ком\.|оф\.)/i;
+					// Дома
+					const regH = /(?:дом|д\.)/i
+					// Создаем объект с адресом
+					const addObject = {address};
+					// Исправляем адрес
+					addObject.address = addObject.address.replace(/\./ig, ". ");
+					/**
+					 * getZip Функция поиска почтового индекса
+					 * @return {String}           почтовый индекс
+					 */
+					const getZip = () => {
+						// Определяем почтовый индекс
+						const result = /\d{6}/.exec(addObject.address);
+						// Создаем почтовый индекс
+						let zip = false;
+						// Если почтовый индекс найден то выводим его
+						if($.isset(result)) zip = result[0];
+						// Заменяем в основном адресе параметры
+						if($.isset(zip)) addObject.address = addObject.address.replace(zip, "{zip}");
+						// Выводим результат
+						return zip;
+					};
+					/**
+					 * getCountry Функция извлечения страны
+					 * @return {String}           название страны
+					 */
+					const getCountry = () => {
+						// Определяем страну
+						const result = /^([А-ЯЁё\-\s]+),?\s*\{(?:zip|region|district|city|street|house)\}/i.exec(addObject.address);
+						// Создаем название страны
+						let country = false;
+						// Если это массив
+						if($.isset(result) && (result.length === 2))
+							// Выводим название страны
+							country = result[1].trim().anyks_ucwords();
+						// Заменяем в основном адресе параметры
+						if($.isset(country)) addObject.address = addObject.address.replace(country, "{country}");
+						// Выводим результат
+						return country;
+					};
+					/**
+					 * getAddress Функция поиска области
+					 * @param  {RegExp} reg       регулярное выражение
+					 * @param  {String} name      название поискового элемента
+					 * @return {Object}           объект с адресом
+					 */
+					const getAddress = (reg, name) => {
+						// Разбиваем на массив
+						const arr = addObject.address.split(",");
+						// Объект с данными
+						let data = false;
+						// Ищем адрес
+						arr.forEach((val, i) => {
+							// Удаляем пробелы
+							val = val.trim();
+							// Если мы нашли адрес
+							if(reg.test(val)){
+								// Создаем объект
+								if(!data) data = {};
+								// Разбиваем на массив
+								const param = val.split(" ");
+								// Выполняем поиск по массиву
+								param.forEach((val, i) => {
+									// Если мы нашли адрес
+									if(reg.test(val)) data.type = val;
+									// Запоминаем тип
+									else data.name = val.anyks_ucwords();
+									// Завершаем обход
+									if(data.type && data.name) param.length = 0;
+								});
+								// Запоминаем значение
+								data.src = val;
+								// Удаляем из массива наш регион
+								arr.splice(i, 1);
+								// Выходим из функции
+								arr.length = 0;
+							}
+						});
+						// Заменяем в основном адресе параметры
+						if(data) addObject.address = addObject.address.replace(data.src, "{" + name + "}");
+						// Выводим результат
+						return data;
+					};
+					/**
+					 * getHouse Функция поиска номера дома
+					 * @return {String}           номер дома
+					 */
+					const getHouse = () => {
+						/**
+						 * searchHouse Функция поиска дома
+						 * @return {String} название и номер дома
+						 */
+						const searchHouse = () => {
+							// Разбиваем на массив
+							const arr = addObject.address.split(",").reverse();
+							// Дома
+							const regH1 = /(?:дом|строение|корпус|д\.|стр\.|с\.|корп\.|к\.)/i;
+							// Дома второй вариант
+							const regH2 = /(?:\d+)\s*(?:к|с)?\s*(?:\d+)?\s*(?:к|с)?\s*(?:\d+)?/i;
+							// Объект с данными
+							let house = false;
+							// Ищем адрес
+							arr.forEach((val, i) => {
+								// Если дом найден
+								if(regH1.test(val) || regH2.test(val)){
+									// Запоминаем номер дома
+									house = val.trim();
+									// Выходим
+									arr.length = 0;
+								}
+							});
+							// Заменяем в основном адресе параметры
+							if(house) addObject.address = addObject.address.replace(house, "{house}");
+							// Выводим номер дома
+							return house;
+						};
+						// Получаем данные дома
+						const house = getAddress(regH, "house");
+						// Получаем название дома
+						const name = searchHouse().anyks_ucwords();
+						// Если дом найден тогда выводим его данные
+						if($.isset(house)) return house;
+						// Генерируем другой номер дома
+						else return ($.isset(name) ? {
+							name:	name,
+							type:	"д.",
+							src:	"д." + " " + name
+						} : false);
+					};
+					// Если запятые не найдены тогда выходим
+					if(!/,/i.test(addObject.address)) resolve(false);
+					// Формируем объект ответа
+					else {
+						// Формируем блок результата
+						const result = {
+							"region":		getAddress(regR, "region"),
+							"district":		getAddress(regD, "district"),
+							"city":			getAddress(regC, "city"),
+							"street":		getAddress(regS, "street"),
+							"apartment":	getAddress(regA, "apartment"),
+							"house":		getHouse(),
+							"zip":			getZip(),
+							"country":		getCountry(),
+							"address":		addObject.address
+						};
+						// Выводим в консоль результат
+						idObj.log(["строка адреса интерпретирована", result], "info");
+						// Выводим результат
+						resolve(result);
+					}
+				// Обрабатываем возникшую ошибку
+				} catch(e) {idObj.log(["преобразование строки адреса в объект", e], "error");}
+			}));
+		}
+		/**
 		 * searchRegion Метод поиска региона
 		 * @param  {String}  str      строка запроса
 		 * @param  {Number}  limit    количество результатов к выдаче
@@ -859,7 +1035,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} noCache    отключить кеш
 		 * @return {Promise}            промис результата
 		 */
-		searchCity({str, regionId, districtId = null, limit = 10, noCache = false}){
+		searchCity({str, regionId, districtId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -998,67 +1174,92 @@ const anyks = require("./lib.anyks");
 					if($.isset(result)) resolve(JSON.parse(result));
 					// Если данные в кеше не найдены тогда продолжаем искать
 					else {
-						// Подключаем модуль закачки данных
-						const fetch = require('node-fetch');
-						// Массив с геокодерами
-						const urlsGeo = [
-							'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
-							'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
-							'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
-						].map(val => val.replace("$lat", lat).replace("$lng", lng));
-						// Получаем объект запроса с геокодера
-						const init = obj => {
-							// Выполняем обработку результата геокодера
-							parseAnswerGeoCoder(obj, idObj).then(result => {
-								// Выводим сообщение об удачном приведении типов
-								idObj.log(["приведение типов выполнено", result], "info");
-								// Сохраняем результат в базу данных
-								if(result) (new idObj.schemes.Address(result)).save();
-								// Отправляем в Redis на час
-								Agl.setRedis(idObj, "set", key, result, 3600).then();
-								// Выводим результат
-								resolve(result);
-							});
-						};
 						/**
-						 * *getData Генератор для получения данных с геокодеров
+						 * getDataFromGeocoder Функция запроса данных с геокодера
 						 */
-						const getData = function * (){
-							// Выводим сообщение что выполняем запрос с геокодера
-							idObj.log(["выполняем запрос с геокодера,", "lat =", lat + ",", "lng =", lng], "info");
-							// Выполняем запрос с геокодера Yandex
-							const yandex = yield fetch(urlsGeo[0]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => idObj.log(['получения данных с yandex api', err], "error")
-							);
-							// Выполняем запрос с геокодера Google
-							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => idObj.log(['получения данных с google api', err], "error")
-							) : false);
-							// Выполняем запрос с геокодера OpenStreet Maps
-							const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => idObj.log(['получения данных с osm api', err], "error")
-							) : false);
-							// Создаем объект ответа
-							const obj = (
-								yandex ? {data: yandex, status: "yandex"} :
-								(google ? {data: google, status: "google"} :
-								(osm ? {data: osm, status: "osm"} : false))
-							);
-							// Выводим сообщение отработки геокодеров
-							idObj.log([
-								"обработка геокодеров:",
-								"yandex =", (yandex ? "Ok" : "Not") + ",",
-								"google =", (google ? "Ok" : "Not") + ",",
-								"osm =", (osm ? "Ok" : "Not")
-							], "info");
-							// Выполняем инициализацию
-							init(obj);
+						const getDataFromGeocoder = () => {
+							// Подключаем модуль закачки данных
+							const fetch = require('node-fetch');
+							// Массив с геокодерами
+							const urlsGeo = [
+								'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
+								'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
+								'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
+							].map(val => val.replace("$lat", lat).replace("$lng", lng));
+							// Получаем объект запроса с геокодера
+							const init = obj => {
+								// Выполняем обработку результата геокодера
+								parseAnswerGeoCoder(obj, idObj).then(result => {
+									// Выводим сообщение об удачном приведении типов
+									idObj.log(["приведение типов выполнено", result], "info");
+									// Сохраняем результат в базу данных
+									if(result) (new idObj.schemes.Address(result)).save();
+									// Отправляем в Redis на час
+									Agl.setRedis(idObj, "set", key, result, 3600).then();
+									// Выводим результат
+									resolve(result);
+								});
+							};
+							/**
+							 * *getData Генератор для получения данных с геокодеров
+							 */
+							const getData = function * (){
+								// Выводим сообщение что выполняем запрос с геокодера
+								idObj.log(["выполняем запрос с геокодера,", "lat =", lat + ",", "lng =", lng], "info");
+								// Выполняем запрос с геокодера Yandex
+								const yandex = yield fetch(urlsGeo[0]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log(['получения данных с yandex api', err], "error")
+								);
+								// Выполняем запрос с геокодера Google
+								const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log(['получения данных с google api', err], "error")
+								) : false);
+								// Выполняем запрос с геокодера OpenStreet Maps
+								const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log(['получения данных с osm api', err], "error")
+								) : false);
+								// Создаем объект ответа
+								const obj = (
+									yandex ? {data: yandex, status: "yandex"} :
+									(google ? {data: google, status: "google"} :
+									(osm ? {data: osm, status: "osm"} : false))
+								);
+								// Выводим сообщение отработки геокодеров
+								idObj.log([
+									"обработка геокодеров:",
+									"yandex =", (yandex ? "Ok" : "Not") + ",",
+									"google =", (google ? "Ok" : "Not") + ",",
+									"osm =", (osm ? "Ok" : "Not")
+								], "info");
+								// Выполняем инициализацию
+								init(obj);
+							};
+							// Запускаем коннект
+							exec(getData());
 						};
-						// Запускаем коннект
-						exec(getData());
+						// Запрашиваем все данные из базы
+						idObj.schemes.Address.findOne({
+							'gps': {
+								$near: {
+									$geometry: {
+										type: 'Point',
+										// Широта и долгота поиска
+										coordinates: [lat, lng]
+									},
+									$maxDistance: 25
+								}
+							}
+						// Выполняем запрос
+						}).exec((err, data) => {
+							// Если ошибки нет, выводим результат
+							if(!$.isset(err) && $.isset(data)
+							&& $.isObject(data)) resolve(data);
+							// Продолжаем дальше если данные не найдены
+							else getDataFromGeocoder();
+						});
 					}
 				});
 			}));
@@ -1083,97 +1284,123 @@ const anyks = require("./lib.anyks");
 					if($.isset(result)) resolve(JSON.parse(result));
 					// Если данные в кеше не найдены тогда продолжаем искать
 					else {
-						// Подключаем модуль закачки данных
-						const fetch = require('node-fetch');
-						// Массив с геокодерами
-						const urlsGeo = [
-							'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
-							'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
-							'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
-						].map(val => val.replace("$address", encodeURI(address)));
 						/**
-						 * getAddressOSM Функция преобразования адреса для геокодера OSM
-						 * @return {String} новый вид адреса
+						 * getDataFromGeocoder Функция запроса данных с геокодера
 						 */
-						const getAddressOSM = address => {
-							// Разбиваем адрес на составляющие
-							const addrArr = address.split(", ");
-							// Переходим по всему массиву адреса
-							addrArr.forEach((val, i) => {
-								// Если район найден, удаляем его
-								if(/район/i.test(val)) addrArr.splice(i, 1);
-							});
-							// Переходим по всему массиву адреса
-							addrArr.forEach((val, i) => {
-								// Разделяем адрес на составляющие
-								const words = val.split(" ");
-								// Переходим по всему массиву
-								words.forEach((val, i) => {
-									// Регулярное выражение для поиска
-									if(/(?:деревня|город|село|поселок|посёлок|поселение|улица|площадь|проспект|авеню|дом|строение|корпус)/i
-									.test(val)) words.splice(i, 1);
+						const getDataFromGeocoder = () => {
+							// Подключаем модуль закачки данных
+							const fetch = require('node-fetch');
+							// Массив с геокодерами
+							const urlsGeo = [
+								'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
+								'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
+								'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
+							].map(val => val.replace("$address", encodeURI(address)));
+							/**
+							 * getAddressOSM Функция преобразования адреса для геокодера OSM
+							 * @return {String} новый вид адреса
+							 */
+							const getAddressOSM = address => {
+								// Разбиваем адрес на составляющие
+								const addrArr = address.split(", ");
+								// Переходим по всему массиву адреса
+								addrArr.forEach((val, i) => {
+									// Если район найден, удаляем его
+									if(/район/i.test(val)) addrArr.splice(i, 1);
 								});
-								// Собираем обратно массив
-								addrArr[i] = words.join(" ");
-							});
-							// Создаем строку обратно
-							return encodeURI(addrArr.join(", "));
+								// Переходим по всему массиву адреса
+								addrArr.forEach((val, i) => {
+									// Разделяем адрес на составляющие
+									const words = val.split(" ");
+									// Переходим по всему массиву
+									words.forEach((val, i) => {
+										// Регулярное выражение для поиска
+										if(/(?:деревня|город|село|поселок|округ|посёлок|поселение|улица|площадь|проспект|авеню|дом|строение|корпус)/i
+										.test(val)) words.splice(i, 1);
+									});
+									// Собираем обратно массив
+									addrArr[i] = words.join(" ");
+								});
+								// Создаем строку обратно
+								return encodeURI(addrArr.join(", "));
+							};
+							// Заменяем адрес OSM
+							urlsGeo[2].replace(encodeURI(address), getAddressOSM(address));
+							// Получаем объект запроса с геокодера
+							const init = obj => {
+								// Выполняем обработку результата геокодера
+								parseAnswerGeoCoder(obj, idObj).then(result => {
+									// Выводим сообщение об удачном приведении типов
+									idObj.log(["приведение типов выполнено", result], "info");
+									// Сохраняем результат в базу данных
+									if(result) (new idObj.schemes.Address(result)).save();
+									// Отправляем в Redis на час
+									Agl.setRedis(idObj, "set", key, result, 3600).then();
+									// Выводим результат
+									resolve(result);
+								});
+							};
+							/**
+							 * *getData Генератор для получения данных с геокодеров
+							 */
+							const getData = function * (){
+								// Выводим сообщение что выполняем запрос с геокодера
+								idObj.log(["выполняем запрос с геокодера,", "address =", address], "info");
+								// Выполняем запрос с геокодера Yandex
+								const yandex = yield fetch(urlsGeo[0]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log(['получения данных с yandex api', err], "error")
+								);
+								// Выполняем запрос с геокодера Google
+								const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log(['получения данных с google api', err], "error")
+								) : false);
+								// Выполняем запрос с геокодера OpenStreet Maps
+								const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log(['получения данных с osm api', err], "error")
+								) : false);
+								// Создаем объект ответа
+								const obj = (
+									yandex ? {data: yandex, status: "yandex"} :
+									(google ? {data: google, status: "google"} :
+									(osm ? {data: osm, status: "osm"} : false))
+								);
+								// Выводим сообщение отработки геокодеров
+								idObj.log([
+									"обработка геокодеров:",
+									"yandex =", (yandex ? "Ok" : "Not") + ",",
+									"google =", (google ? "Ok" : "Not") + ",",
+									"osm =", (osm ? "Ok" : "Not")
+								], "info");
+								// Выполняем инициализацию
+								init(obj);
+							};
+							// Запускаем коннект
+							exec(getData());
 						};
-						// Заменяем адрес OSM
-						urlsGeo[2].replace(encodeURI(address), getAddressOSM(address));
-						// Получаем объект запроса с геокодера
-						const init = obj => {
-							// Выполняем обработку результата геокодера
-							parseAnswerGeoCoder(obj, idObj).then(result => {
-								// Выводим сообщение об удачном приведении типов
-								idObj.log(["приведение типов выполнено", result], "info");
-								// Сохраняем результат в базу данных
-								if(result) (new idObj.schemes.Address(result)).save();
-								// Отправляем в Redis на час
-								Agl.setRedis(idObj, "set", key, result, 3600).then();
-								// Выводим результат
-								resolve(result);
-							});
-						};
-						/**
-						 * *getData Генератор для получения данных с геокодеров
-						 */
-						const getData = function * (){
-							// Выводим сообщение что выполняем запрос с геокодера
-							idObj.log(["выполняем запрос с геокодера,", "address =", address], "info");
-							// Выполняем запрос с геокодера Yandex
-							const yandex = yield fetch(urlsGeo[0]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => idObj.log(['получения данных с yandex api', err], "error")
-							);
-							// Выполняем запрос с геокодера Google
-							const google = (!yandex ? yield fetch(urlsGeo[1]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => idObj.log(['получения данных с google api', err], "error")
-							) : false);
-							// Выполняем запрос с геокодера OpenStreet Maps
-							const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
-								res => (res.status === 200 ? res.json() : false),
-								err => idObj.log(['получения данных с osm api', err], "error")
-							) : false);
-							// Создаем объект ответа
-							const obj = (
-								yandex ? {data: yandex, status: "yandex"} :
-								(google ? {data: google, status: "google"} :
-								(osm ? {data: osm, status: "osm"} : false))
-							);
-							// Выводим сообщение отработки геокодеров
-							idObj.log([
-								"обработка геокодеров:",
-								"yandex =", (yandex ? "Ok" : "Not") + ",",
-								"google =", (google ? "Ok" : "Not") + ",",
-								"osm =", (osm ? "Ok" : "Not")
-							], "info");
-							// Выполняем инициализацию
-							init(obj);
-						};
-						// Запускаем коннект
-						exec(getData());
+						// Выполняем интерпретацию адреса
+						idObj.parseAddress(address).then(result => {
+							// Если данные пришли
+							if($.isObject(result)){
+								// Запрашиваем все данные из базы
+								idObj.schemes.Address.findOne({
+									"address.district": ($.isset(result.district)	? (new RegExp('^' + result.district.name	+ '$', "i")) : null),
+									"address.city":		($.isset(result.city)		? (new RegExp('^' + result.city.name		+ '$', "i")) : null),
+									"address.region":	($.isset(result.region)		? (new RegExp('^' + result.region.name		+ '$', "i")) : null),
+									"address.street":	($.isset(result.street)		? (new RegExp('^' + result.street.name		+ '$', "i")) : null)
+								// Выполняем запрос
+								}).exec((err, data) => {
+									// Если ошибки нет, выводим результат
+									if(!$.isset(err) && $.isset(data)
+									&& $.isObject(data)) resolve(data);
+									// Продолжаем дальше если данные не найдены
+									else getDataFromGeocoder();
+								});
+							// Продолжаем дальше
+							} else getDataFromGeocoder();
+						});
 					}
 				});
 			}));
@@ -1193,13 +1420,21 @@ const anyks = require("./lib.anyks");
 					const key = "address:subjects:region";
 					// Считываем данные из кеша
 					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
-						
-						console.log("---------------", err, cache);
-
 						// Если данные не найдены, сообщаем что в кеше ничего не найдено
-						if(!$.isset(cache)) resolve(false);
+						if(!$.isset(cache)){
+							// Запрашиваем все данные из базы
+							idObj.schemes.Regions.find({})
+							.sort({_id: 1})
+							.limit(limit)
+							.exec((err, data) => {
+								// Если ошибки нет, выводим результат
+								if(!$.isset(err) && $.isArray(data)
+								&& data.length) resolve(data);
+								// Сообщаем что ничего не найдено
+								else resolve(false);
+							});
 						// Если данные пришли
-						else {
+						} else {
 							// Функция поиска данных в кеше
 							const searchCache = () => {
 								// Текущее значение итерации
@@ -1247,9 +1482,20 @@ const anyks = require("./lib.anyks");
 					// Считываем данные из кеша
 					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 						// Если данные не найдены, сообщаем что в кеше ничего не найдено
-						if(!$.isset(cache)) resolve(false);
+						if(!$.isset(cache)){
+							// Запрашиваем все данные из базы
+							idObj.schemes.Districts.find({regionId: regionId})
+							.sort({_id: 1})
+							.limit(limit)
+							.exec((err, data) => {
+								// Если ошибки нет, выводим результат
+								if(!$.isset(err) && $.isArray(data)
+								&& data.length) resolve(data);
+								// Сообщаем что ничего не найдено
+								else resolve(false);
+							});
 						// Если данные пришли
-						else {
+						} else {
 							// Функция поиска данных в кеше
 							const searchCache = () => {
 								// Текущее значение итерации
@@ -1301,7 +1547,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  limit       количество результатов к выдаче
 		 * @return {Promise}             промис результата
 		 */
-		getCities({regionId, districtId = null, limit = 10}){
+		getCities({regionId, districtId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1312,9 +1558,22 @@ const anyks = require("./lib.anyks");
 					// Считываем данные из кеша
 					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 						// Если данные не найдены, сообщаем что в кеше ничего не найдено
-						if(!$.isset(cache)) resolve(false);
+						if(!$.isset(cache)){
+							// Запрашиваем все данные из базы
+							idObj.schemes.Cities.find({
+								regionId:	regionId,
+								districtId:	districtId
+							}).sort({_id: 1})
+							.limit(limit)
+							.exec((err, data) => {
+								// Если ошибки нет, выводим результат
+								if(!$.isset(err) && $.isArray(data)
+								&& data.length) resolve(data);
+								// Сообщаем что ничего не найдено
+								else resolve(false);
+							});
 						// Если данные пришли
-						else {
+						} else {
 							// Функция поиска данных в кеше
 							const searchCache = () => {
 								// Текущее значение итерации
