@@ -810,6 +810,9 @@ const anyks = require("./lib.anyks");
 				const addObject = {address};
 				// Исправляем адрес
 				addObject.address = addObject.address.replace(/\./ig, ". ");
+
+				console.log("--------------1");
+
 				/**
 				 * getZip Функция поиска почтового индекса
 				 * @return {String}           почтовый индекс
@@ -826,6 +829,9 @@ const anyks = require("./lib.anyks");
 					// Выводим результат
 					return zip;
 				};
+
+				console.log("--------------2");
+
 				/**
 				 * getCountry Функция извлечения страны
 				 * @return {String}           название страны
@@ -838,12 +844,15 @@ const anyks = require("./lib.anyks");
 					// Если это массив
 					if($.isset(result) && (result.length === 2))
 						// Выводим название страны
-						country = result[1].trim().anyks_ucwords();
+						country = result[1].anyks_trim().anyks_ucwords();
 					// Заменяем в основном адресе параметры
 					if($.isset(country)) addObject.address = addObject.address.replace(country, "{country}");
 					// Выводим результат
 					return country;
 				};
+
+				console.log("--------------3");
+
 				/**
 				 * getAddress Функция поиска области
 				 * @param  {RegExp} reg       регулярное выражение
@@ -855,16 +864,25 @@ const anyks = require("./lib.anyks");
 					const arr = addObject.address.split(",");
 					// Объект с данными
 					let data = false;
+
+					console.log("++++++++++++++++1");
+
 					// Ищем адрес
 					arr.forEach((val, i) => {
 						// Удаляем пробелы
 						val = val.trim();
+
+						console.log("++++++++++++++++2");
+
 						// Если мы нашли адрес
 						if(reg.test(val)){
 							// Создаем объект
 							if(!data) data = {};
 							// Разбиваем на массив
 							const param = val.split(" ");
+
+							console.log("++++++++++++++++3");
+
 							// Выполняем поиск по массиву
 							param.forEach((val, i) => {
 								// Если мы нашли адрес
@@ -873,6 +891,9 @@ const anyks = require("./lib.anyks");
 								else data.name = val.anyks_ucwords();
 								// Завершаем обход
 								if(data.type && data.name) param.length = 0;
+
+								console.log("++++++++++++++++4");
+
 							});
 							// Запоминаем значение
 							data.src = val;
@@ -880,13 +901,21 @@ const anyks = require("./lib.anyks");
 							arr.splice(i, 1);
 							// Выходим из функции
 							arr.length = 0;
+
+							console.log("++++++++++++++++5");
 						}
 					});
 					// Заменяем в основном адресе параметры
 					if(data) addObject.address = addObject.address.replace(data.src, "{" + name + "}");
+
+					console.log("++++++++++++++++6");
+
 					// Выводим результат
 					return data;
 				};
+
+				console.log("--------------4");
+
 				/**
 				 * getHouse Функция поиска номера дома
 				 * @return {String}           номер дома
@@ -934,7 +963,7 @@ const anyks = require("./lib.anyks");
 					} : false);
 				};
 
-				console.log("--------------", getAddress(regR, "region"), addObject.address);
+				console.log("--------------5");
 
 				// Если запятые не найдены тогда выходим
 				if(!/,/i.test(addObject.address)) resolve(false);
