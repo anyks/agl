@@ -1717,7 +1717,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cache)){
+					if($.isset(cache)){
 						// Формируем параметры запроса
 						const query = {};
 						// Если регион или район передан
