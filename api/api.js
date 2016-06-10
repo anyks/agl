@@ -1748,7 +1748,7 @@ const anyks = require("./lib.anyks");
 							for(let val in cache){
 								for(let key in cache[val]){
 									// Устанавливаем флаг поиска по типу адреса
-									let flag = ($.isset(type) ? (cache[val][key].typeShort === type[0].toLowerCase()) : true);
+									const flag = ($.isset(type) ? (cache[val][key].typeShort === type[0].toLowerCase()) : true);
 									// Если родительский элемент передан
 									if($.isset(regionId) || $.isset(districtId)){
 										// Если родительский элемент найден
