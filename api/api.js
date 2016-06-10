@@ -257,6 +257,12 @@ const anyks = require("./lib.anyks");
 						resolve(result.length < 1 ? false : result);
 					}
 				}
+			// Если происходит ошибка тогда выходим
+			}).catch(err => {
+				// Выводим ошибку метода
+				idObj.log(["getRedis in searchAddressInCache", err], "error");
+				// Выходим
+				resolve(false);
 			});
 		}));
 	};
@@ -295,6 +301,12 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(cache[char][obj._id])) cache[char][obj._id] = {};
 						// Выводим результат
 						resolve({id: obj._id, char: char, key: key, src: cache});
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getRedis in getGPSForAddress", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				}));
 			};
@@ -317,8 +329,13 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные в кеше
 							cache.src[cache.char][cache.id] = Object.assign({}, obj);
 							// Сохраняем данные в кеше
-							Agl.setRedis(idObj, "set", cache.key, cache.src).then(callback);
-						});
+							Agl.setRedis(idObj, "set", cache.key, cache.src)
+							// Если все удачно то выходим
+							.then(callback)
+							// Если нет то тоже выходим
+							.catch(callback);
+						// Если происходит ошибка тогда выходим
+						}).catch(callback);
 					};
 					// Если ошибки нет
 					if(!$.isset(err) && $.isset(data) && $.isObject(data)){
@@ -347,9 +364,9 @@ const anyks = require("./lib.anyks");
 					// Получаем данные из кеша
 					getCache(arr[i]).then(cache => {
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
-						if(!$.isArray(cache.src[cache.char][cache.id].gps)
+						if(!cache || (!$.isArray(cache.src[cache.char][cache.id].gps)
 						|| !$.isArray(cache.src[cache.char][cache.id].metro)
-						|| !$.isset(cache.src[cache.char][cache.id].timezone)){
+						|| !$.isset(cache.src[cache.char][cache.id].timezone))){
 							// Выполняем запрос данных
 							idObj.getAddressFromString({
 								"address": address + " " +
@@ -404,14 +421,39 @@ const anyks = require("./lib.anyks");
 												}
 												// Сохраняем данные
 												updateDB(arr[i], () => getGPS(arr, i + 1));
+											// Если происходит ошибка тогда выходим
+											}).catch(err => {
+												// Выводим ошибку метода
+												idObj.log(["searchMetroFromGPS in getGPSForAddress", err], "error");
+												// Сохраняем данные и выходим
+												updateDB(arr[i], () => getGPS(arr, i + 1));
 											});
 										// Сохраняем данные
 										} else updateDB(arr[i], () => getGPS(arr, i + 1));
+									// Если происходит ошибка тогда выходим
+									}).catch(err => {
+										// Выводим ошибку метода
+										idObj.log(["getAddressFromString in getGPSForAddress", err], "error");
+										// Выходим
+										getGPS(arr, i + 1);
 									});
-								}
+								// Идем дальше
+								} else getGPS(arr, i + 1);
+							// Если происходит ошибка тогда выходим
+							}).catch(err => {
+								// Выводим ошибку метода
+								idObj.log(["getRedis in getGPSForAddress", err], "error");
+								// Выходим
+								getGPS(arr, i + 1);
 							});
 						// Идем дальше
 						} else getGPS(arr, i + 1);
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getCache in getGPSForAddress", err], "error");
+						// Выходим
+						resolve(arr);
 					});
 				// Сообщаем что все сохранено удачно
 				} else resolve(arr);
@@ -463,6 +505,12 @@ const anyks = require("./lib.anyks");
 				], "info");
 				// Выводим результат
 				callback(result);
+			// Если происходит ошибка тогда выходим
+			}).catch(err => {
+				// Выводим ошибку метода
+				idObj.log(["getGPSForAddress in processResultKladr", err], "error");
+				// Выходим
+				callback(false);
 			});
 		// Если данные не найдены то сообщаем об этом
 		} else {
@@ -692,6 +740,12 @@ const anyks = require("./lib.anyks");
 							.exec((err, cache) => resolve({err, cache}));
 						// Выводим что ничего не удалено
 						} else resolve({err: "not found", cache: false});
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getKeys in rmRedis", err], "error");
+						// Выходим
+						resolve({err: "not found", cache: false});
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {
@@ -976,6 +1030,12 @@ const anyks = require("./lib.anyks");
 							});
 						// Отдаем результат из кеша
 						} else resolve(result);
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["searchAddressInCache in searchRegion", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -1022,6 +1082,12 @@ const anyks = require("./lib.anyks");
 							});
 						// Отдаем результат из кеша
 						} else resolve(result);
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["searchAddressInCache in searchDistrict", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -1075,6 +1141,12 @@ const anyks = require("./lib.anyks");
 							});
 						// Отдаем результат из кеша
 						} else resolve(result);
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["searchAddressInCache in searchCity", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с параметрами Kladr", e], "error");}
@@ -1199,6 +1271,12 @@ const anyks = require("./lib.anyks");
 									Agl.setRedis(idObj, "set", key, result, 3600).then();
 									// Выводим результат
 									resolve(result);
+								// Если происходит ошибка тогда выходим
+								}).catch(err => {
+									// Выводим ошибку метода
+									idObj.log(["parseAnswerGeoCoder in getAddressFromGPS", err], "error");
+									// Выходим
+									resolve(false);
 								});
 							};
 							/**
@@ -1262,6 +1340,12 @@ const anyks = require("./lib.anyks");
 							else getDataFromGeocoder();
 						});
 					}
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedis in getAddressFromGPS", err], "error");
+					// Выходим
+					resolve(false);
 				});
 			}));
 		}
@@ -1339,6 +1423,12 @@ const anyks = require("./lib.anyks");
 									Agl.setRedis(idObj, "set", key, result, 3600).then();
 									// Выводим результат
 									resolve(result);
+								// Если происходит ошибка тогда выходим
+								}).catch(err => {
+									// Выводим ошибку метода
+									idObj.log(["parseAnswerGeoCoder in getAddressFromString", err], "error");
+									// Выходим
+									resolve(false);
 								});
 							};
 							/**
@@ -1401,8 +1491,20 @@ const anyks = require("./lib.anyks");
 								});
 							// Продолжаем дальше
 							} else getDataFromGeocoder();
+						// Если происходит ошибка тогда выходим
+						}).catch(err => {
+							// Выводим ошибку метода
+							idObj.log(["parseAddress in getAddressFromString", err], "error");
+							// Выходим
+							getDataFromGeocoder();
 						});
 					}
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedis in getAddressFromString", err], "error");
+					// Выходим
+					resolve(false);
 				});
 			}));
 		}
@@ -1461,6 +1563,12 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							resolve(searchCache());
 						}
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getRedis in getRegions", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["извлечение списка регионов", e], "error");}
@@ -1536,6 +1644,12 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							resolve(searchCache());
 						}
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getRedis in getDistricts", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["извлечение списка районов", e], "error");}
@@ -1617,6 +1731,12 @@ const anyks = require("./lib.anyks");
 							// Выводим результат
 							resolve(searchCache());
 						}
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getRedis in getCities", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["извлечение списка городов", e], "error");}
@@ -1670,10 +1790,25 @@ const anyks = require("./lib.anyks");
 								.replace("$lng", lng)
 								.replace("$tm", timestamp)
 							// Преобразуем полученный объект
-							).then(res => res.json(), e => idObj.log(["get timezone", e], "error"))
+							).then(
+								res => (res.status === 200 ? res.json() : false),
+								err => idObj.log(["get timezone", err], "error")
 							// Обрабатываем полученные данные
-							.then(getData, e => idObj.log(["parse timezone", e], "error"));
+							).then(getData, err => idObj.log(["parse timezone", err], "error"))
+							// Если происходит ошибка тогда выходим
+							.catch(err => {
+								// Ошибка метода getTimezone
+								idObj.log(["getTimezone", err], "error");
+								// Сообщаем что дальше некуда
+								resolve(false);
+							});
 						}
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getRedis in getTimezone", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с поиском временной зоны", e], "error");}
@@ -1726,6 +1861,12 @@ const anyks = require("./lib.anyks");
 								resolve(result);
 							});
 						}
+					// Если происходит ошибка тогда выходим
+					}).catch(err => {
+						// Выводим ошибку метода
+						idObj.log(["getRedis in searchMetroFromGPS", err], "error");
+						// Выходим
+						resolve(false);
 					});
 				// Обрабатываем возникшую ошибку
 				} catch(e) {idObj.log(["что-то с поиском блжайших станций метро по GPS координатам", e], "error");}
@@ -1766,8 +1907,13 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные в кеше
 							cache[char][obj._id] = obj;
 							// Сохраняем данные в кеше
-							Agl.setRedis(idObj, "set", key, cache).then(callback);
-						});
+							Agl.setRedis(idObj, "set", key, cache)
+							// Если данные сохранены то выводим результат
+							.then(callback)
+							// Если происходит ошибка то также выводим результат
+							.catch(callback);
+						// Если происходит ошибка тогда выходим
+						}).catch(callback);
 					};
 					// Запрашиваем все данные из базы
 					idObj.schemes.Cities.findOne({_id: obj._id})
@@ -1813,6 +1959,12 @@ const anyks = require("./lib.anyks");
 										updateDB(data[i], () => getData(i + 1));
 									// Просто продолжаем дальше
 									} else getData(i + 1);
+								// Если происходит ошибка тогда выходим
+								}).catch(err => {
+									// Выводим ошибку метода
+									idObj.log(["searchMetroFromGPS in updateMetroCity", err], "error");
+									// Выходим
+									getData(i + 1);
 								});
 							// Если все загружено тогда сообщаем об этом
 							} else {
@@ -1865,8 +2017,13 @@ const anyks = require("./lib.anyks");
 							// Сохраняем данные в кеше
 							cache[char][obj._id] = obj;
 							// Сохраняем данные в кеше
-							Agl.setRedis(idObj, "set", key, cache).then(callback);
-						});
+							Agl.setRedis(idObj, "set", key, cache)
+							// Если вес удачно то выходим
+							.then(callback)
+							// Если происходит ошибка то выходим
+							.catch(callback);
+						// Если происходит ошибка тогда выходим
+						}).catch(callback);
 					};
 					// Запрашиваем все данные из базы
 					scheme.findOne({_id: obj._id})
@@ -1912,6 +2069,12 @@ const anyks = require("./lib.anyks");
 												updateDB(data[i], scheme, () => getData(i + 1));
 											// Просто продолжаем дальше
 											} else getData(i + 1);
+										// Если происходит ошибка тогда выходим
+										}).catch(err => {
+											// Выводим ошибку метода
+											idObj.log(["getTimezone in updateTimeZones", err], "error");
+											// Выходим
+											getData(i + 1);
 										});
 									// Если все загружено тогда сообщаем об этом
 									} else {
@@ -2000,6 +2163,12 @@ const anyks = require("./lib.anyks");
 							}
 							// Продолжаем загрузку дальше
 							getRegion(i + 1);
+						// Если происходит ошибка тогда выходим
+						}).catch(err => {
+							// Выводим ошибку метода
+							idObj.log(["searchRegion in updateRegions", err], "error");
+							// Выходим
+							getRegion(i + 1);
 						});
 					// Если все данные загружены тогда создаем индексы
 					} else {
@@ -2082,6 +2251,12 @@ const anyks = require("./lib.anyks");
 												idObj.log(["район(ы) загружен(ы) [", districsChar[j], "]:", str], "info");
 											}
 											// Продолжаем загрузку дальше
+											getDistrict(j + 1);
+										// Если происходит ошибка тогда выходим
+										}).catch(err => {
+											// Выводим ошибку метода
+											idObj.log(["searchDistrict in updateDistricts", err], "error");
+											// Выходим
 											getDistrict(j + 1);
 										});
 									// Если все данные загружены, переходим к следующему району
@@ -2176,6 +2351,12 @@ const anyks = require("./lib.anyks");
 												idObj.log(["город(а) загружен(ы) [", citiesChar[j], "]:", str], "info");
 											}
 											// Продолжаем загрузку дальше
+											getCity(j + 1);
+										// Если происходит ошибка тогда выходим
+										}).catch(err => {
+											// Выводим ошибку метода
+											idObj.log(["searchCity in updateCities", err], "error");
+											// Выходим
 											getCity(j + 1);
 										});
 									// Если все данные загружены, переходим к следующему региону
@@ -2363,9 +2544,18 @@ const anyks = require("./lib.anyks");
 				// Закачиваем данные метро
 				fetch('https://api.hh.ru/metro')
 				// Преобразуем полученный объект
-				.then(res => res.json(), e => idObj.log(["get metro", e], "error"))
+				.then(
+					res => (res.status === 200 ? res.json() : false),
+					err => idObj.log(["get metro", err], "error")
 				// Обрабатываем полученные данные
-				.then(getData, e => idObj.log(["parse metro", e], "error"));
+				).then(getData, err => idObj.log(["parse metro", err], "error"))
+				// Если происходит ошибка тогда выходим
+				.catch(err => {
+					// Ошибка метода getTimezone
+					idObj.log(["updateMetro", err], "error");
+					// Сообщаем что дальше некуда
+					resolve(false);
+				});
 			}));
 		}
 		/**
