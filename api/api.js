@@ -842,7 +842,9 @@ const anyks = require("./lib.anyks");
 				// Создаем объект с адресом
 				const addObject = {address};
 				// Исправляем адрес
-				addObject.address = addObject.address.replace(/\./ig, ". ").anyks_trim();
+				addObject.address = addObject.address
+				.replace(/\./ig, ". ")
+				.replace(/\s+\,/ig, ",");.anyks_trim();
 				/**
 				 * getZip Функция поиска почтового индекса
 				 * @return {String}           почтовый индекс
