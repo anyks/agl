@@ -945,13 +945,13 @@ const anyks = require("./lib.anyks");
 				// Если запятые найдены
 				if(/\,/i.test(addObject.address)){
 					// Формируем блок результата
-					const result = {
+					result = {
 						"region":		getAddress(regR, "region"),
 						"district":		getAddress(regD, "district"),
 						"city":			getAddress(regC, "city"),
 						"street":		getAddress(regS, "street"),
 						"apartment":	getAddress(regA, "apartment"),
-						// "house":		getHouse(),
+						"house":		getHouse(),
 						// "zip":			getZip(),
 						// "country":		getCountry(),
 						"address":		addObject.address
