@@ -1742,16 +1742,6 @@ const anyks = require("./lib.anyks");
 							let i = 0;
 							// Массив найденных городов
 							const cities = [];
-
-							try {
-								var Iconv  = require('iconv').Iconv;
-								let body = new Buffer(cache, 'binary');
-								let conv = new Iconv('windows-1251', 'utf8');
-								body = conv.convert(body).toString();
-
-								console.log("_________", body);
-							} catch(e) {console.log("+++++++", e);}
-
 							// Выполняем парсинг ответа
 							cache = JSON.parse(cache);
 							// Переходим по всему массиву городов
