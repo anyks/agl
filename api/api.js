@@ -809,7 +809,7 @@ const anyks = require("./lib.anyks");
 				// Создаем объект с адресом
 				const addObject = {address};
 				// Исправляем адрес
-				addObject.address = addObject.address.replace(/\./ig, ". ");
+				addObject.address = addObject.address.replace(/\./ig, ". ").anyks_trim();
 
 				console.log("--------------1");
 
@@ -870,7 +870,7 @@ const anyks = require("./lib.anyks");
 					// Ищем адрес
 					arr.forEach((val, i) => {
 						// Удаляем пробелы
-						val = val.trim();
+						val = val.anyks_trim();
 
 						console.log("++++++++++++++++2");
 
@@ -1451,7 +1451,7 @@ const anyks = require("./lib.anyks");
 							exec(getData());
 						};
 						// Выполняем интерпретацию адреса
-						idObj.parseAddress(address).then(result => {
+						idObj.parseAddress({address}).then(result => {
 							// Если данные пришли
 							if($.isObject(result)){
 								// Запрашиваем все данные из базы
