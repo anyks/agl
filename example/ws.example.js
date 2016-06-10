@@ -31,4 +31,6 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"limit": 100}}));
 
 // socket.send(JSON.stringify({"action": "getTimezone", "query": {"lat":"55.870031", "lng":"41.772074"}}));
+// 
+// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
 

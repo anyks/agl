@@ -390,7 +390,14 @@
 					// Если объект не передан то создаем его
 					if(!ax.isset(obj.data.query)) obj.data.query = {};
 					// Выполняем запрос данных из api
-					agl[obj.data.action](obj.data.query).then(sendResult);
+					agl[obj.data.action](obj.data.query)
+					.then(sendResult)
+					.catch(err => {
+						// Выводим ошибку метода
+						agl.log(["экшен", obj.data.action, "параметры запроса", obj.data.query, err], "error");
+						// Выводим сообщение по умолчанию
+						sendResult(false);
+					});
 				}
 			};
 			// Ловим входящие сообщения от мастера
