@@ -1717,7 +1717,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
 					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if($.isset(cache)){
+					if(!$.isset(cache)){
 						// Формируем параметры запроса
 						const query = {};
 						// Если регион или район передан
@@ -1742,6 +1742,9 @@ const anyks = require("./lib.anyks");
 							let i = 0;
 							// Массив найденных городов
 							const cities = [];
+
+							console.log("_________", cache);
+
 							// Выполняем парсинг ответа
 							cache = JSON.parse(cache);
 							// Переходим по всему массиву городов
