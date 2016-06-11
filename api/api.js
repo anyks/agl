@@ -977,7 +977,10 @@ const anyks = require("./lib.anyks");
 					 */
 					const searchCountry = () => {
 						// Определяем страну
-						const result = /^([А-ЯЁё\-\s]+),?\s*\{(?:zip|region|district|city|street|house)\}/i.exec(addObject.address);
+						const result = (new RegExp("^([А-ЯЁё\\-\\s]+),?\\s*\\{(?:river|zip|region|"
+						+ "district|city|community|street|house|apartment)\\}", "i"))
+						// Выполняем поиск страны в адресе
+						.exec(addObject.address);
 						// Создаем название страны
 						let country = false;
 						// Если это массив
@@ -1025,7 +1028,8 @@ const anyks = require("./lib.anyks");
 						// Дома
 						const regH1 = /(?:дом|строение|корпус|д\.|стр\.|с\.|корп\.|к\.)/i;
 						// Дома второй вариант
-						const regH2 = /(?:\d+[А-ЯЁ]*\s*(?:\/|-)\s*\d+[А-ЯЁ]*)|(?:(?:\d+)[А-ЯЁ]*\s*(?:к|с)?\s*(?:\d+)?\s*(?:к|с)?\s*(?:\d+)?)/i;
+						const regH2 = new RegExp("(?:(?:№\\s*)?\\d+[А-ЯЁ]*\\s*(?:\\/|-)\\s*\\d+[А-ЯЁ]*)|"
+						+ "(?:(?:№\\s*)?(?:\\d+)[А-ЯЁ]*\\s*(?:к|с)?\\s*(?:\\d+)?\\s*(?:к|с)?\\s*(?:\\d+)?)", "i");
 						// Объект с данными
 						let house = false;
 						// Ищем адрес
