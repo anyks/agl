@@ -1618,23 +1618,33 @@ const anyks = require("./lib.anyks");
 						idObj.parseAddress({address}).then(result => {
 							// Если данные пришли
 							if($.isObject(result)){
-								// Параметры запроса
-								const query = {};
-								// Создаем параметры запроса
-								if($.isset(result.district))	query["address.district"]	= (new RegExp(result.district.name, "i"));
-								if($.isset(result.city))		query["address.city"]		= (new RegExp(result.city.name, "i"));
-								if($.isset(result.region))		query["address.region"]		= (new RegExp(result.region.name, "i"));
-								if($.isset(result.street))		query["address.street"]		= (new RegExp(result.street.name, "i"));
-								// Запрашиваем все данные из базы
-								idObj.schemes.Address.findOne(query).exec((err, data) => {
-									// Выводим результат поиска по базе
-									idObj.log(["поиск адреса в базе", data], "info");
-									// Если ошибки нет, выводим результат
-									if(!$.isset(err) && $.isset(data)
-									&& $.isObject(data)) resolve(data);
-									// Продолжаем дальше если данные не найдены
-									else getDataFromGeocoder();
-								});
+								// Флаг проверки искать ли данные или нет
+								let flag = true;
+								// Проверяем какие пришли данные
+								if(($.isset(result.region) || $.isset(result.district))
+								&& ($.isset(result.street) || $.isset(result.house) || $.isset(result.apartment))
+								&& (!$.isset(result.city) || !$.isset(result.street) || /[А-ЯЁ]/i.test(result.address))) flag = false;
+								// Если флаг активирован
+								if(flag){
+									// Параметры запроса
+									const query = {};
+									// Создаем параметры запроса
+									if($.isset(result.district))	query["address.district"]	= (new RegExp(result.district.name, "i"));
+									if($.isset(result.city))		query["address.city"]		= (new RegExp(result.city.name, "i"));
+									if($.isset(result.region))		query["address.region"]		= (new RegExp(result.region.name, "i"));
+									if($.isset(result.street))		query["address.street"]		= (new RegExp(result.street.name, "i"));
+									// Запрашиваем все данные из базы
+									idObj.schemes.Address.findOne(query).exec((err, data) => {
+										// Выводим результат поиска по базе
+										idObj.log(["поиск адреса в базе", data], "info");
+										// Если ошибки нет, выводим результат
+										if(!$.isset(err) && $.isset(data)
+										&& $.isObject(data)) resolve(data);
+										// Продолжаем дальше если данные не найдены
+										else getDataFromGeocoder();
+									});
+								// Продолжаем дальше если данные не найдены
+								} else getDataFromGeocoder();
 							// Продолжаем дальше
 							} else getDataFromGeocoder();
 						// Если происходит ошибка тогда выходим
