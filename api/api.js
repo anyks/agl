@@ -2530,7 +2530,11 @@ const anyks = require("./lib.anyks");
 													+ ", " + val.name + " " + val.type;
 												}) : result[0].name + " " + result[0].type);
 												// Выводим данные в консоль
-												idObj.log(["район(ы) загружен(ы) [", districsChar[j], "]:", str], "info");
+												idObj.log([
+													"район(ы) загружен(ы) [", districsChar[j], "]:", str,
+													"номер района =", (i + 1),
+													"из", data.length
+												], "info");
 											}
 											// Продолжаем загрузку дальше
 											getDistrict(j + 1);
@@ -2566,7 +2570,12 @@ const anyks = require("./lib.anyks");
 						// Извлекаем данные регионов
 						getRegion();
 					// Выводим сообщение в консоль
-					} else idObj.log(["ошибка загрузки данных регионов", err], "error");
+					} else {
+						// Выводим сообщение в консоль
+						idObj.log(["ошибка загрузки данных регионов", err], "error");
+						// Сообщаем что такие данные не найдены
+						resolve(false);
+					}
 				});
 			}));
 		}
@@ -2630,7 +2639,11 @@ const anyks = require("./lib.anyks");
 													+ ", " + val.name + " " + val.type;
 												}) : result[0].name + " " + result[0].type);
 												// Выводим данные в консоль
-												idObj.log(["город(а) загружен(ы) [", citiesChar[j], "]:", str], "info");
+												idObj.log([
+													"город(а) загружен(ы) [", citiesChar[j], "]:", str,
+													"номер региона =", (i + 1),
+													"из", data.length
+												], "info");
 											}
 											// Продолжаем загрузку дальше
 											getCity(j + 1);
@@ -2667,7 +2680,12 @@ const anyks = require("./lib.anyks");
 						// Извлекаем данные регионов
 						getRegions();
 					// Выводим сообщение в консоль
-					} else idObj.log(["ошибка загрузки данных регионов", err], "error");
+					} else {
+						// Выводим сообщение в консоль
+						idObj.log(["ошибка загрузки данных регионов", err], "error");
+						// Сообщаем что такие данные не найдены
+						resolve(false);
+					}
 				});
 			}));
 		}
