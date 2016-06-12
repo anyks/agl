@@ -950,7 +950,14 @@ const anyks = require("./lib.anyks");
 					text:		"\u00A9 " + idObj.copyright + " ver." + idObj.version
 				};
 				// Выводи данные в консоль
-				idObj.log(["\x1B[0;31m\x1B[1m\u00A9", idObj.copyright, "ver.", idObj.version, "\x1B[0m"], "info");
+				idObj.log([
+					"\x1B[31m\x1B[1m\u00A9"
+					.clearColor(idObj.debug.console),
+					idObj.copyright, "ver.",
+					idObj.version,
+					"\x1B[0m"
+					.clearColor(idObj.debug.console)
+				], "info");
 				// Выводим результат
 				resolve(object);
 			}));
