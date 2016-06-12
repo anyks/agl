@@ -268,51 +268,56 @@ const anyks = require("./lib.anyks");
 			});
 		}));
 	};
+
 	/**
-	 * getGPSForAddress Функция получения gps координат для указанного адреса
-	 * @param  {Array}   arr       Массив с адресами для получения данных
-	 * @param  {String}  address   префикс для адреса
-	 * @param  {Object}  scheme    схема для сохранения
-	 * @return {Promise}           промис ответа
+	 * getAddressCache Функция извлечения данных кеша
+	 * @param  {Object} obj объект данных для запроса из кеша
+	 * @return {Promise}    промис содержащий объект из кеша
 	 */
-	const getGPSForAddress = function(arr, address, scheme){
+	const getAddressCache = function(obj){
 		// Получаем идентификатор текущего объекта
 		const idObj = this;
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
-			/**
-			 * getCache Функция извлечения данных кеша
-			 * @param  {Object} obj объект данных для запроса из кеша
-			 * @return {Promise}    промис содержащий объект из кеша
-			 */
-			const getCache = obj => {
-				// Создаем промис для обработки
-				return (new Promise(resolve => {
-					// Ключ запроса
-					const key = "address:subjects:" + obj.contentType;
-					// Считываем данные из кеша
-					Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
-						// Создаем ключ названия
-						const char = obj.name[0].toLowerCase();
-						// Если данные не найдены
-						if(!$.isset(cache)) cache = {};
-						// Выполняем парсинг ответа
-						else cache = JSON.parse(cache);
-						// Если идентификатор на такую букву не существует то создаем его
-						if(!$.isset(cache[char])) cache[char] = {};
-						// Если идентификатор объекта не существует то создаем его
-						if(!$.isset(cache[char][obj._id])) cache[char][obj._id] = {};
-						// Выводим результат
-						resolve({id: obj._id, char: char, key: key, src: cache});
-					// Если происходит ошибка тогда выходим
-					}).catch(err => {
-						// Выводим ошибку метода
-						idObj.log(["getRedis in getGPSForAddress", err], "error");
-						// Выходим
-						resolve(false);
-					});
-				}));
-			};
+			// Ключ запроса
+			const key = "address:subjects:" + obj.contentType;
+			// Считываем данные из кеша
+			Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+				// Создаем ключ названия
+				const char = obj.name[0].toLowerCase();
+				// Если данные не найдены
+				if(!$.isset(cache)) cache = {};
+				// Выполняем парсинг ответа
+				else cache = JSON.parse(cache);
+				// Если идентификатор на такую букву не существует то создаем его
+				if(!$.isset(cache[char])) cache[char] = {};
+				// Если идентификатор объекта не существует то создаем его
+				if(!$.isset(cache[char][obj._id])) cache[char][obj._id] = {};
+				// Выводим результат
+				resolve({id: obj._id, char: char, key: key, src: cache});
+			// Если происходит ошибка тогда выходим
+			}).catch(err => {
+				// Выводим ошибку метода
+				idObj.log(["getRedis in getAddressCache", err], "error");
+				// Выходим
+				resolve(false);
+			});
+		}));
+	};
+	/**
+	 * getGPSForAddress Функция получения gps координат для указанного адреса
+	 * @param  {Object}  scheme    схема для сохранения
+	 * @param  {Array}   arr       Массив с адресами для получения данных
+	 * @param  {String}  address   префикс для адреса
+	 * @return {Promise}           промис ответа
+	 */
+	const getGPSForAddress = function(scheme, arr, address){
+		// Получаем идентификатор текущего объекта
+		const idObj = this;
+		// Создаем промис для обработки
+		return (new Promise(resolve => {
+			// Изменяем данные схемы
+			scheme = idObj.schemes[scheme];
 			/**
 			 * updateDB Функция обновления данных в базе
 			 * @param  {Object} obj      объект для обновления данных
@@ -328,7 +333,7 @@ const anyks = require("./lib.anyks");
 					 */
 					const saveCache = () => {
 						// Получаем данные из кеша
-						getCache(obj).then(cache => {
+						getAddressCache.call(idObj, obj).then(cache => {
 							// Сохраняем данные в кеше
 							cache.src[cache.char][cache.id] = Object.assign({}, obj);
 							// Сохраняем данные в кеше
@@ -365,7 +370,7 @@ const anyks = require("./lib.anyks");
 					// Удаляем основной идентификатор
 					arr[i].id = undefined;
 					// Получаем данные из кеша
-					getCache(arr[i]).then(cache => {
+					getAddressCache.call(idObj, arr[i]).then(cache => {
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
 						if(!cache || (!$.isArray(cache.src[cache.char][cache.id].gps)
 						|| !$.isArray(cache.src[cache.char][cache.id].metro)
@@ -384,7 +389,7 @@ const anyks = require("./lib.anyks");
 									arr[i].gps	= res.gps;
 									arr[i].code	= res.address.code;
 									// Выполняем поиск временную зону
-									idObj.getTimezone({lat: arr[i].lat, lng: arr[i].lng}).then(timezone => {
+									idObj.getTimezoneByGPS({lat: arr[i].lat, lng: arr[i].lng}).then(timezone => {
 										// Если временная зона найдена
 										if(timezone) arr[i].timezone = timezone;
 										// Если объект внешних ключей существует тогда добавляем их
@@ -414,7 +419,7 @@ const anyks = require("./lib.anyks");
 												distance:	(arr[i].typeShort === "г" ? 150000 : 3000)
 											};
 											// Выполняем поиск ближайших станций метро
-											idObj.searchMetroFromGPS(query).then(metro => {
+											idObj.getMetroByGPS(query).then(metro => {
 												// Если метро передано
 												if($.isArray(metro) && metro.length){
 													// Создаем пустой массив с метро
@@ -427,7 +432,7 @@ const anyks = require("./lib.anyks");
 											// Если происходит ошибка тогда выходим
 											}).catch(err => {
 												// Выводим ошибку метода
-												idObj.log(["searchMetroFromGPS in getGPSForAddress", err], "error");
+												idObj.log(["getMetroByGPS in getGPSForAddress", err], "error");
 												// Сохраняем данные и выходим
 												updateDB(arr[i], () => getGPS(arr, i + 1));
 											});
@@ -436,7 +441,7 @@ const anyks = require("./lib.anyks");
 									// Если происходит ошибка тогда выходим
 									}).catch(err => {
 										// Выводим ошибку метода
-										idObj.log(["getAddressFromString in getGPSForAddress", err], "error");
+										idObj.log(["getTimezoneByGPS in getGPSForAddress", err], "error");
 										// Выходим
 										getGPS(arr, i + 1);
 									});
@@ -454,7 +459,7 @@ const anyks = require("./lib.anyks");
 					// Если происходит ошибка тогда выходим
 					}).catch(err => {
 						// Выводим ошибку метода
-						idObj.log(["getCache in getGPSForAddress", err], "error");
+						idObj.log(["getAddressCache in getGPSForAddress", err], "error");
 						// Выходим
 						resolve(arr);
 					});
@@ -469,12 +474,12 @@ const anyks = require("./lib.anyks");
 	};
 	/**
 	 * processResultKladr Функция обработки результата полученного с базы данных Кладр
+	 * @param  {Object}   scheme   объект схемы базы данных
 	 * @param  {Object}   err      объект с ошибкой
 	 * @param  {Object}   res      объект с результатом
-	 * @param  {Object}   scheme   объект схемы базы данных
 	 * @param  {Function} callback функция обратного вызова
 	 */
-	const processResultKladr = function(err, res, scheme, callback){
+	const processResultKladr = function(scheme, err, res, callback){
 		// Получаем идентификатор текущего объекта
 		const idObj = this;
 		// Если возникает ошибка тогда выводим её
@@ -495,7 +500,7 @@ const anyks = require("./lib.anyks");
 				+ ", " + val.name + " " + val.type;
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
 			// Выполняем поиск GPS координат для текущего адреса
-			getGPSForAddress.call(idObj, res.result, address, scheme)
+			getGPSForAddress.call(scheme, idObj, res.result, address)
 			.then(result => {
 				// Выводим сообщение в консоль
 				idObj.log([
@@ -525,7 +530,7 @@ const anyks = require("./lib.anyks");
 		}
 	};
 	/**
-	 * searchFromGPS Метод поиска данных по GPS координатам
+	 * getByGPS Метод поиска данных по GPS координатам
 	 * @param  {Object} scheme   схема базы данных MongoDB
 	 * @param  {String} key      ключ для запроса данных из Redis
 	 * @param  {Number} lat      широта
@@ -533,11 +538,13 @@ const anyks = require("./lib.anyks");
 	 * @param  {Number} distance дистанция поиска в метрах
 	 * @return {Promise}         промис содержащий найденные данные
 	 */
-	const searchFromGPS = function(scheme, key, lat, lng, distance = 3000){
+	const getByGPS = function(scheme, key, lat, lng, distance = 3000){
 		// Получаем идентификатор текущего объекта
 		const idObj = this;
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
+			// Изменяем данные схемы
+			scheme = idObj.schemes[scheme];
 			// Ищем данные в кеше
 			Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
 				// Если данные в кеше сть тогда выводим их
@@ -572,7 +579,118 @@ const anyks = require("./lib.anyks");
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
-				idObj.log(["getRedis in searchFromGPS", err], "error");
+				idObj.log(["getRedis in getByGPS", err], "error");
+				// Выходим
+				resolve(false);
+			});
+		}));
+	};
+	/**
+	 * getAddressById Функция поиска данных адресов по id
+	 * @param  {Object} scheme схема базы данных MongoDB
+	 * @param  {String} key    ключ для запроса данных из Redis
+	 * @param  {String} id     идентификатор искомого объекта
+	 * @return {Promise}       промис содержащий найденные данные
+	 */
+	const getAddressById = function(scheme, key, id){
+		// Получаем идентификатор текущего объекта
+		const idObj = this;
+		// Создаем промис для обработки
+		return (new Promise(resolve => {
+			// Изменяем данные схемы
+			scheme = idObj.schemes[scheme];
+			// Считываем данные из кеша
+			Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+				// Если данные в кеше сть тогда выводим их
+				if($.isset(cache)){
+					// Результат поиска
+					let result = false;
+					// Обреобразуем кеш в объект
+					cache = JSON.parse(cache);
+					// Переходим по всем объекта
+					for(let key in cache){
+						// Если объект найден тогда выходим
+						if($.isset(cache[key][id])){
+							// Выводим результат
+							result = cache[key][id];
+							// Выходим из цикла
+							break;
+						}
+					}
+					// Выводим результат
+					resolve(result);
+				// Если данные в кеше не найдены тогда продолжаем искать
+				} else {
+					// Выполняем поиск идентификатора
+					scheme.findOne({"_id": id}).exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isset(data)){
+							// Получаем данные из кеша
+							getAddressCache.call(idObj, data).then(cache => {
+								// Сохраняем данные в кеше
+								cache.src[cache.char][cache.id] = Object.assign({}, data);
+								// Сохраняем данные в кеше
+								Agl.setRedis(idObj, "set", cache.key, cache.src).then();
+								// Выводим результат
+								resolve(data);
+							// Если происходит ошибка тогда выходим
+							}).catch(() => resolve(data));
+						// Выводим в консоль сообщение что данные не найдены
+						} else {
+							// Выводим сообщение об ошибке
+							idObj.log(["поиск по id не дал результатов:", "id =", id, err, data], "error");
+							// Выводим результат
+							resolve(false);
+						}
+					});
+				}
+			// Если происходит ошибка тогда выходим
+			}).catch(err => {
+				// Выводим ошибку метода
+				idObj.log(["getRedis in ggetAddressById", err], "error");
+				// Выходим
+				resolve(false);
+			});
+		}));
+	};
+	/**
+	 * getDataById Функция поиска данных по id
+	 * @param  {Object} scheme схема базы данных MongoDB
+	 * @param  {String} key    ключ для запроса данных из Redis
+	 * @param  {String} id     идентификатор искомого объекта
+	 * @return {Promise}       промис содержащий найденные данные
+	 */
+	const getDataById = function(scheme, key, id){
+		// Получаем идентификатор текущего объекта
+		const idObj = this;
+		// Создаем промис для обработки
+		return (new Promise(resolve => {
+			// Изменяем данные схемы
+			scheme = idObj.schemes[scheme];
+			// Ищем данные в кеше
+			Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
+				// Если данные в кеше сть тогда выводим их
+				if($.isset(cache)) resolve(JSON.parse(cache));
+				// Если данные в кеше не найдены тогда продолжаем искать
+				else {
+					// Выполняем поиск идентификатора
+					scheme.findOne({"_id": id}).exec((err, data) => {
+						// Результат ответа
+						let result = false;
+						// Если ошибки нет
+						if(!$.isset(err) && $.isset(data)) result = data;
+						// Выводим в консоль сообщение что данные не найдены
+						else idObj.log(["поиск по id не дал результатов:", "id =", id, err, data], "error");
+						// Отправляем в Redis на час
+						Agl.setRedis(idObj, "set", key, result, 3600).then();
+						// Выводим результат
+						resolve(result);
+					});
+				}
+			// Если происходит ошибка тогда выходим
+			}).catch(err => {
+				// Выводим ошибку метода
+				idObj.log(["getRedis in getDataById", err], "error");
 				// Выходим
 				resolve(false);
 			});
@@ -589,6 +707,8 @@ const anyks = require("./lib.anyks");
 		static createModels(idObj){
 			// Подключаем модель адреса
 			const ModelAddress = require('../models/address');
+			// Подключаем модель стран
+			const ModelCountries = require('../models/countries');
 			// Подключаем модель регионов
 			const ModelRegions = require('../models/regions');
 			// Подключаем модель района
@@ -609,6 +729,8 @@ const anyks = require("./lib.anyks");
 			const ModelMetro_stations = require('../models/metro_stations');
 			// Создаем модель адресов
 			const modelAddress = (new ModelAddress("address")).getData();
+			// Создаем модель стран
+			const modelCountries = (new ModelCountries("countries")).getData();
 			// Создаем модель регионов
 			const modelRegions = (new ModelRegions("regions")).getData();
 			// Создаем модель районов
@@ -629,6 +751,8 @@ const anyks = require("./lib.anyks");
 			const modelMetro_stations = (new ModelMetro_stations("metro_stations")).getData();
 			// Создаем схему адресов
 			const Address = idObj.clients.mongo.model("Address", modelAddress);
+			// Создаем схему стран
+			const Countries = idObj.clients.mongo.model("Countries", modelCountries);
 			// Создаем схему регионов
 			const Regions = idObj.clients.mongo.model("Regions", modelRegions);
 			// Создаем схему районов
@@ -650,6 +774,7 @@ const anyks = require("./lib.anyks");
 			// Сохраняем схемы
 			idObj.schemes = {
 				Address,
+				Countries,
 				Regions,
 				Districts,
 				Cities,
@@ -849,8 +974,8 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * parseAddress Метод парсинга адреса
-		 * @param  {String} address адрес для парсинга
-		 * @return {Object}         объект ответа
+		 * @param  {String} options.address адрес для парсинга
+		 * @return {Object}                 объект ответа
 		 */
 		parseAddress({address}){
 			// Получаем идентификатор текущего объекта
@@ -1200,6 +1325,25 @@ const anyks = require("./lib.anyks");
 						"country":		getCountry(),
 						"address":		addObject.address.replace(/\./g, "").anyks_trim()
 					};
+					// Формируем массив найденных данных
+					const arrParamAddress = [], addrLightParam = [], addrFullParam = [];
+					// Добавляем в массив найденные данные
+					if($.isset(result.country))		arrParamAddress.push(result.country);
+					if($.isset(result.region))		arrParamAddress.push(result.region);
+					if($.isset(result.city))		arrParamAddress.push(result.city);
+					if($.isset(result.street))		arrParamAddress.push(result.street);
+					if($.isset(result.house))		arrParamAddress.push(result.house);
+					if($.isset(result.apartment))	arrParamAddress.push(result.apartment);
+					// Создаем адреса в строковом виде
+					arrParamAddress.forEach(val => {
+						// Создаем адреса в простом виде
+						addrLightParam.push(val.name);
+						// Создаем адреса в полном виде
+						addrFullParam.push(val.name + " " + val.type.toLowerCase());
+					});
+					// Добавляем в массив результаты строковых адресов
+					result.lightAddress	= addrLightParam.join(", ");
+					result.fullAddress	= addrFullParam.join(", ");
 				}
 				// Выводим в консоль результат
 				idObj.log(["строка адреса интерпретирована", result], "info");
@@ -1208,11 +1352,54 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * searchCountry Метод поиска страны
+		 * @param  {String}  options.str      строка запроса
+		 * @param  {Number}  options.limit    количество результатов к выдаче
+		 * @param  {Boolean} options.noCache  отключить кеш
+		 * @return {Promise}                  промис результата
+		 */
+		searchCountry({str, limit = 10, noCache = false}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Создаем переменные
+				const ContentName	= str;
+				const ContentType	= 'country';
+				const Limit			= limit;
+				// Ищем данные адреса сначала в кеше
+				searchAddressInCache.call(idObj, ContentName, ContentType, null, null, Limit).then(result => {
+					// Если данные не найдены
+					if(!$.isset(result) || noCache){
+						// Формируем данные страны
+						const res = [{
+							"id":			"7",
+							"name":			"Россия",
+							"type":			"Страна",
+							"typeShort":	"ст-а",
+							"contentType":	"country",
+							"nameFull":		"Российская Федерация",
+							"nameShort":	"РФ"
+						}];
+						// Выполняем обработку данных
+						processResultKladr.call(idObj, "Countries", err, res, resolve);
+					// Отдаем результат из кеша
+					} else resolve(result);
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["searchAddressInCache in searchCountry", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
 		 * searchRegion Метод поиска региона
-		 * @param  {String}  str      строка запроса
-		 * @param  {Number}  limit    количество результатов к выдаче
-		 * @param  {Boolean} noCache  отключить кеш
-		 * @return {Promise}          промис результата
+		 * @param  {String}  options.str      строка запроса
+		 * @param  {Number}  options.limit    количество результатов к выдаче
+		 * @param  {Boolean} options.noCache  отключить кеш
+		 * @return {Promise}                  промис результата
 		 */
 		searchRegion({str, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
@@ -1238,7 +1425,7 @@ const anyks = require("./lib.anyks");
 							ContentType
 						}, (err, res) => {
 							// Выполняем обработку данных
-							processResultKladr.call(idObj, err, res, idObj.schemes.Regions, resolve);
+							processResultKladr.call(idObj, "Regions", err, res, resolve);
 						});
 					// Отдаем результат из кеша
 					} else resolve(result);
@@ -1253,11 +1440,11 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchDistrict Метод поиска района
-		 * @param  {String}  str        строка запроса
-		 * @param  {String}  regionId   идентификатор региона
-		 * @param  {Number}  limit      количество результатов к выдаче
-		 * @param  {Boolean} noCache    отключить кеш
-		 * @return {Promise}            промис результата
+		 * @param  {String}  options.str        строка запроса
+		 * @param  {String}  options.regionId   идентификатор региона
+		 * @param  {Number}  options.limit      количество результатов к выдаче
+		 * @param  {Boolean} options.noCache    отключить кеш
+		 * @return {Promise}                    промис результата
 		 */
 		searchDistrict({str, regionId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
@@ -1287,7 +1474,7 @@ const anyks = require("./lib.anyks");
 							ContentType
 						}, (err, res) => {
 							// Выполняем обработку данных
-							processResultKladr.call(idObj, err, res, idObj.schemes.Districts, resolve);
+							processResultKladr.call(idObj, "Districts", err, res, resolve);
 						});
 					// Отдаем результат из кеша
 					} else resolve(result);
@@ -1302,12 +1489,12 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchCity Метод поиска города
-		 * @param  {String}  str        строка запроса
-		 * @param  {String}  regionId   идентификатор региона
-		 * @param  {String}  districtId идентификатор района
-		 * @param  {Number}  limit      количество результатов к выдаче
-		 * @param  {Boolean} noCache    отключить кеш
-		 * @return {Promise}            промис результата
+		 * @param  {String}  options.str        строка запроса
+		 * @param  {String}  options.regionId   идентификатор региона
+		 * @param  {String}  options.districtId идентификатор района
+		 * @param  {Number}  options.limit      количество результатов к выдаче
+		 * @param  {Boolean} options.noCache    отключить кеш
+		 * @return {Promise}                    промис результата
 		 */
 		searchCity({str, regionId, districtId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
@@ -1343,7 +1530,7 @@ const anyks = require("./lib.anyks");
 							ContentName
 						}, (err, res) => {
 							// Выполняем обработку данных
-							processResultKladr.call(idObj, err, res, idObj.schemes.Cities, resolve);
+							processResultKladr.call(idObj, "Cities", err, res, resolve);
 						});
 					// Отдаем результат из кеша
 					} else resolve(result);
@@ -1358,10 +1545,10 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * searchStreet Метод поиска улицы
-		 * @param  {String} str    строка запроса
-		 * @param  {String} cityId идентификатор города
-		 * @param  {Number} limit  количество результатов к выдаче
-		 * @return {Promise}       промис результата
+		 * @param  {String} options.str    строка запроса
+		 * @param  {String} options.cityId идентификатор города
+		 * @param  {Number} options.limit  количество результатов к выдаче
+		 * @return {Promise}               промис результата
 		 */
 		searchStreet({str, cityId, limit = 10}){
 			// Получаем идентификатор текущего объекта
@@ -1387,16 +1574,16 @@ const anyks = require("./lib.anyks");
 					ContentType
 				}, (err, res) => {
 					// Выполняем обработку данных
-					processResultKladr.call(idObj, err, res, idObj.schemes.Streets, resolve);
+					processResultKladr.call(idObj, "Streets", err, res, resolve);
 				});
 			}));
 		}
 		/**
 		 * searchHouse Метод поиска дома
-		 * @param  {String} str      строка запроса
-		 * @param  {String} streetId идентификатор улицы
-		 * @param  {Number} limit    количество результатов к выдаче
-		 * @return {Promise}         промис результата
+		 * @param  {String} options.str      строка запроса
+		 * @param  {String} options.streetId идентификатор улицы
+		 * @param  {Number} options.limit    количество результатов к выдаче
+		 * @return {Promise}                 промис результата
 		 */
 		searchHouse({str, streetId, limit = 10}){
 			// Получаем идентификатор текущего объекта
@@ -1422,17 +1609,17 @@ const anyks = require("./lib.anyks");
 					ContentType
 				}, (err, res) => {
 					// Выполняем обработку данных
-					processResultKladr.call(idObj, err, res, idObj.schemes.Houses, resolve);
+					processResultKladr.call(idObj, "Houses", err, res, resolve);
 				});
 			}));
 		}
 		/**
-		 * getAddressFromGPS Метод получения данных адреса по GPS координатам
-		 * @param  {Float}   lat    широта
-		 * @param  {Float}   lng    долгота
-		 * @return {Promise}        промис содержащий объект с адресом
+		 * getAddressByGPS Метод получения данных адреса по GPS координатам
+		 * @param  {Float}   options.lat    широта
+		 * @param  {Float}   options.lng    долгота
+		 * @return {Promise}                промис содержащий объект с адресом
 		 */
-		getAddressFromGPS({lat, lng}){
+		getAddressByGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1472,7 +1659,7 @@ const anyks = require("./lib.anyks");
 								// Если происходит ошибка тогда выходим
 								}).catch(err => {
 									// Выводим ошибку метода
-									idObj.log(["parseAnswerGeoCoder in getAddressFromGPS", err], "error");
+									idObj.log(["parseAnswerGeoCoder in getAddressByGPS", err], "error");
 									// Выходим
 									resolve(false);
 								});
@@ -1541,7 +1728,7 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getRedis in getAddressFromGPS", err], "error");
+					idObj.log(["getRedis in getAddressByGPS", err], "error");
 					// Выходим
 					resolve(false);
 				});
@@ -1549,8 +1736,8 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * getAddressFromString Метод получения данных адреса по строке
-		 * @param  {String}   address строка запроса
-		 * @return {Promise}          промис содержащий объект с адресом
+		 * @param  {String}   options.address строка запроса
+		 * @return {Promise}                  промис содержащий объект с адресом
 		 */
 		getAddressFromString({address}){
 			// Получаем идентификатор текущего объекта
@@ -1570,7 +1757,7 @@ const anyks = require("./lib.anyks");
 						/**
 						 * getDataFromGeocoder Функция запроса данных с геокодера
 						 */
-						const getDataFromGeocoder = () => {
+						const getDataFromGeocoder = (address, osmAddress) => {
 							// Подключаем модуль закачки данных
 							const fetch = require('node-fetch');
 							// Массив с геокодерами
@@ -1579,36 +1766,13 @@ const anyks = require("./lib.anyks");
 								'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
 								'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 							].map(val => val.replace("$address", encodeURI(address)));
-							/**
-							 * getAddressOSM Функция преобразования адреса для геокодера OSM
-							 * @return {String} новый вид адреса
-							 */
-							const getAddressOSM = address => {
-								// Разбиваем адрес на составляющие
-								const addrArr = address.split(", ");
-								// Переходим по всему массиву адреса
-								addrArr.forEach((val, i) => {
-									// Если район найден, удаляем его
-									if(/район/i.test(val)) addrArr.splice(i, 1);
-								});
-								// Переходим по всему массиву адреса
-								addrArr.forEach((val, i) => {
-									// Разделяем адрес на составляющие
-									const words = val.split(" ");
-									// Переходим по всему массиву
-									words.forEach((val, i) => {
-										// Регулярное выражение для поиска
-										if(/(?:деревня|город|село|поселок|округ|посёлок|поселение|улица|площадь|проспект|авеню|дом|строение|корпус)/i
-										.test(val)) words.splice(i, 1);
-									});
-									// Собираем обратно массив
-									addrArr[i] = words.join(" ");
-								});
-								// Создаем строку обратно
-								return encodeURI(addrArr.join(", "));
-							};
-							// Заменяем адрес OSM
-							urlsGeo[2].replace(encodeURI(address), getAddressOSM(address));
+							// Заменяем адрес OSM если он существует
+							if($.isset(osmAddress)) urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
+
+
+							console.log("++++++++++++++++++++ OSM Address ++++++++++++++++++++", osmAddress);
+
+
 							// Получаем объект запроса с геокодера
 							const init = obj => {
 								// Выполняем обработку результата геокодера
@@ -1696,18 +1860,18 @@ const anyks = require("./lib.anyks");
 										if(!$.isset(err) && $.isset(data)
 										&& $.isObject(data)) resolve(data);
 										// Продолжаем дальше если данные не найдены
-										else getDataFromGeocoder();
+										else getDataFromGeocoder(address, result.lightAddress);
 									});
 								// Продолжаем дальше если данные не найдены
-								} else getDataFromGeocoder();
+								} else getDataFromGeocoder(address, result.lightAddress);
 							// Продолжаем дальше
-							} else getDataFromGeocoder();
+							} else getDataFromGeocoder(address);
 						// Если происходит ошибка тогда выходим
 						}).catch(err => {
 							// Выводим ошибку метода
 							idObj.log(["parseAddress in getAddressFromString", err], "error");
 							// Выходим
-							getDataFromGeocoder();
+							getDataFromGeocoder(address);
 						});
 					}
 				// Если происходит ошибка тогда выходим
@@ -1720,11 +1884,69 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * getCountries Метод получения списка стран
+		 * @param  {Number}  options.page  номер страницы для запроса
+		 * @param  {Number}  options.limit количество результатов к выдаче
+		 * @return {Promise}               промис результата
+		 */
+		getCountries({page = 0, limit = 10}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ запроса
+				const key = "address:countries:" + idObj.generateKey(type + ":" + page + ":" + limit);
+				// Считываем данные из кеша
+				Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
+					// Если данные не найдены, сообщаем что в кеше ничего не найдено
+					if(!$.isset(cache)){
+						// Запрашиваем все данные из базы
+						idObj.schemes.Countries.find({})
+						.sort({_id: 1})
+						.skip(page * limit)
+						.limit(limit)
+						.exec((err, data) => {
+							// Если ошибки нет, выводим результат
+							if(!$.isset(err) && $.isArray(data)
+							&& data.length){
+								// Запрашиваем количество записей
+								idObj.schemes.Countries.count({}, (err, count) => {
+									// Если произошла ошибка то выводим в консоль
+									if($.isset(err)){
+										// Выводим сообщение
+										idObj.log(["чтение из базы данных", err], "error");
+										// Сообщаем что ничего не найдено
+										resolve(false);
+									// Выводим результат
+									} else {
+										// Формируем объект
+										const obj = {data, page, limit, count};
+										// Отправляем в Redis на час
+										Agl.setRedis(idObj, "set", key, obj, 3600).then();
+										// Выводим результат
+										resolve(obj);
+									}
+								});
+							// Сообщаем что ничего не найдено
+							} else resolve(false);
+						});
+					// Если данные пришли, выводим результат
+					} else resolve(JSON.parse(cache));
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedis in getCountries", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
 		 * getRegions Метод получения списка регионов
-		 * @param  {String}  type  тип региона (область, край, республика, автономный округ)
-		 * @param  {Number}  page  номер страницы для запроса
-		 * @param  {Number}  limit количество результатов к выдаче
-		 * @return {Promise}       промис результата
+		 * @param  {String}  options.type  тип региона (область, край, республика, автономный округ)
+		 * @param  {Number}  options.page  номер страницы для запроса
+		 * @param  {Number}  options.limit количество результатов к выдаче
+		 * @return {Promise}               промис результата
 		 */
 		getRegions({type, page = 0, limit = 10}){
 			// Получаем идентификатор текущего объекта
@@ -1784,11 +2006,11 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * getDistricts Метод получения списка районов
-		 * @param  {String}  regionId  идентификатор региона
-		 * @param  {String}  type      тип района (район, округ)
-		 * @param  {Number}  page      номер страницы для запроса
-		 * @param  {Number}  limit     количество результатов к выдаче
-		 * @return {Promise}           промис результата
+		 * @param  {String}  options.regionId  идентификатор региона
+		 * @param  {String}  options.type      тип района (район, округ)
+		 * @param  {Number}  options.page      номер страницы для запроса
+		 * @param  {Number}  options.limit     количество результатов к выдаче
+		 * @return {Promise}                   промис результата
 		 */
 		getDistricts({regionId, type, page = 0, limit = 10}){
 			// Получаем идентификатор текущего объекта
@@ -1853,12 +2075,12 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * getCities Метод получения списка городов
-		 * @param  {String}  regionId    идентификатор региона
-		 * @param  {String}  districtId  идентификатор района
-		 * @param  {String}  type        тип города (деревня, село, город)
-		 * @param  {Number}  page        номер страницы для запроса
-		 * @param  {Number}  limit       количество результатов к выдаче
-		 * @return {Promise}             промис результата
+		 * @param  {String}  options.regionId    идентификатор региона
+		 * @param  {String}  options.districtId  идентификатор района
+		 * @param  {String}  options.type        тип города (деревня, село, город)
+		 * @param  {Number}  options.page        номер страницы для запроса
+		 * @param  {Number}  options.limit       количество результатов к выдаче
+		 * @return {Promise}                     промис результата
 		 */
 		getCities({regionId, districtId, type, page = 0, limit = 10}){
 			// Получаем идентификатор текущего объекта
@@ -1924,12 +2146,219 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * getTimezone Метод получения данных временной зоны по GPS координатам
-		 * @param  {Number} lat широта
-		 * @param  {Number} lng долгота
-		 * @return {Promise}    промис содержащий данные временной зоны
+		 * getCountryById Метод поиска страны по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
 		 */
-		getTimezone({lat, lng}){
+		getCountryById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ запроса
+				const key = "address:subjects:country";
+				// Выполняем запрос данных в базе по идентификатору объекта
+				getAddressById.call(idObj, "Countries", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getAddressById in getCountryById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getRegionById Метод поиска региона по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getRegionById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ запроса
+				const key = "address:subjects:region";
+				// Выполняем запрос данных в базе по идентификатору объекта
+				getAddressById.call(idObj, "Regions", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getAddressById in getRegionById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getDistrictById Метод поиска района по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getDistrictById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ запроса
+				const key = "address:subjects:district";
+				// Выполняем запрос данных в базе по идентификатору объекта
+				getAddressById.call(idObj, "Districts", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getAddressById in getDistrictById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getCityById Метод поиска города по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getCityById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ запроса
+				const key = "address:subjects:city";
+				// Выполняем запрос данных в базе по идентификатору объекта
+				getAddressById.call(idObj, "Cities", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getAddressById in getCityById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getStreetById Метод поиска улицы по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getStreetById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ запроса
+				const key = "address:subjects:street";
+				// Выполняем запрос данных в базе по идентификатору объекта
+				getAddressById.call(idObj, "Streets", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getAddressById in getStreetById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getHouseById Метод поиска дома по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getHouseById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ запроса
+				const key = "address:subjects:house";
+				// Выполняем запрос данных в базе по идентификатору объекта
+				getAddressById.call(idObj, "Houses", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getAddressById in getHouseById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getMetroStationById Метод поиска станции метро по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getMetroStationById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ кеша метро
+				const key = "address:metro:stations:ids:" + idObj.generateKey(id);
+				// Ищем станцию метро в базе
+				getDataById.call(idObj, "ModelMetro_stations", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getDataById in getMetroStationById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getMetroLineById Метод поиска линии метро по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getMetroLineById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ кеша метро
+				const key = "address:metro:lines:ids:" + idObj.generateKey(id);
+				// Ищем линию метро в базе
+				getDataById.call(idObj, "ModelMetro_lines", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getDataById in getMetroLineById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getMetroCityById Метод поиска города метро по идентификатору
+		 * @param  {String} options.id идентификатор объекта
+		 * @return {Promise}           результат поиска данных
+		 */
+		getMetroCityById({id}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ кеша метро
+				const key = "address:metro:cities:ids:" + idObj.generateKey(id);
+				// Ищем город в котором есть метро в базе
+				getDataById.call(idObj, "ModelMetro_cities", key, id)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getDataById in getMetroCityById", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getTimezoneByGPS Метод получения данных временной зоны по GPS координатам
+		 * @param  {Number} options.lat широта
+		 * @param  {Number} options.lng долгота
+		 * @return {Promise}            промис содержащий данные временной зоны
+		 */
+		getTimezoneByGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1977,8 +2406,8 @@ const anyks = require("./lib.anyks");
 						).then(getData, err => idObj.log(["parse timezone", err], "error"))
 						// Если происходит ошибка тогда выходим
 						.catch(err => {
-							// Ошибка метода getTimezone
-							idObj.log(["getTimezone", err], "error");
+							// Ошибка метода getTimezoneByGPS
+							idObj.log(["getTimezoneByGPS", err], "error");
 							// Сообщаем что дальше некуда
 							resolve(false);
 						});
@@ -1986,20 +2415,45 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getRedis in getTimezone", err], "error");
+					idObj.log(["getRedis in getTimezoneByGPS", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchRegionsFromGPS Метод поиска регионов по GPS координатам
-		 * @param  {Number} lat      широта
-		 * @param  {Number} lng      долгота
-		 * @param  {Number} distance дистанция поиска в метрах
-		 * @return {Promise}         промис содержащий найденные регионы
+		 * getCountriesByGPS Метод поиска стран по GPS координатам
+		 * @param  {Number} options.lat      широта
+		 * @param  {Number} options.lng      долгота
+		 * @param  {Number} options.distance дистанция поиска в метрах
+		 * @return {Promise}                 промис содержащий найденные регионы
 		 */
-		searchRegionsFromGPS({lat, lng, distance = 3000}){
+		getCountriesByGPS({lat, lng, distance = 3000}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ кеша стран
+				const key = "address:countries:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
+				// Ищем страны
+				getByGPS.call(idObj, "Countries", key, lat, lng, distance)
+				// Выполняем поиск стран
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getByGPS in getCountriesByGPS", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getRegionsByGPS Метод поиска регионов по GPS координатам
+		 * @param  {Number} options.lat      широта
+		 * @param  {Number} options.lng      долгота
+		 * @param  {Number} options.distance дистанция поиска в метрах
+		 * @return {Promise}                 промис содержащий найденные регионы
+		 */
+		getRegionsByGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2007,24 +2461,24 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша регионов
 				const key = "address:regions:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 				// Ищем регионы
-				searchFromGPS.call(idObj, idObj.schemes.Regions, key, lat, lng, distance)
+				getByGPS.call(idObj, "Regions", key, lat, lng, distance)
 				// Выполняем поиск регионов
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchFromGPS in searchRegionsFromGPS", err], "error");
+					idObj.log(["getByGPS in getRegionsByGPS", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchDistrictsFromGPS Метод поиска районов по GPS координатам
-		 * @param  {Number} lat      широта
-		 * @param  {Number} lng      долгота
-		 * @param  {Number} distance дистанция поиска в метрах
-		 * @return {Promise}         промис содержащий найденные районы
+		 * getDistrictsByGPS Метод поиска районов по GPS координатам
+		 * @param  {Number} options.lat      широта
+		 * @param  {Number} options.lng      долгота
+		 * @param  {Number} options.distance дистанция поиска в метрах
+		 * @return {Promise}                 промис содержащий найденные районы
 		 */
-		searchDistrictsFromGPS({lat, lng, distance = 3000}){
+		getDistrictsByGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2032,24 +2486,24 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша районов
 				const key = "address:districts:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 				// Ищем районы
-				searchFromGPS.call(idObj, idObj.schemes.Districts, key, lat, lng, distance)
+				getByGPS.call(idObj, "Districts", key, lat, lng, distance)
 				// Выполняем поиск районов
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchFromGPS in searchDistrictsFromGPS", err], "error");
+					idObj.log(["getByGPS in getDistrictsByGPS", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchCitiesFromGPS Метод поиска городов по GPS координатам
-		 * @param  {Number} lat      широта
-		 * @param  {Number} lng      долгота
-		 * @param  {Number} distance дистанция поиска в метрах
-		 * @return {Promise}         промис содержащий найденные города
+		 * getCitiesByGPS Метод поиска городов по GPS координатам
+		 * @param  {Number} options.lat      широта
+		 * @param  {Number} options.lng      долгота
+		 * @param  {Number} options.distance дистанция поиска в метрах
+		 * @return {Promise}                 промис содержащий найденные города
 		 */
-		searchCitiesFromGPS({lat, lng, distance = 3000}){
+		getCitiesByGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2057,24 +2511,24 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша городов
 				const key = "address:cities:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 				// Ищем города
-				searchFromGPS.call(idObj, idObj.schemes.Cities, key, lat, lng, distance)
+				getByGPS.call(idObj, "Cities", key, lat, lng, distance)
 				// Выполняем поиск городов
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchFromGPS in searchCitiesFromGPS", err], "error");
+					idObj.log(["getByGPS in getCitiesByGPS", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchStreetsFromGPS Метод поиска улиц по GPS координатам
-		 * @param  {Number} lat      широта
-		 * @param  {Number} lng      долгота
-		 * @param  {Number} distance дистанция поиска в метрах
-		 * @return {Promise}         промис содержащий найденные улицы
+		 * getStreetsByGPS Метод поиска улиц по GPS координатам
+		 * @param  {Number} options.lat      широта
+		 * @param  {Number} options.lng      долгота
+		 * @param  {Number} options.distance дистанция поиска в метрах
+		 * @return {Promise}                 промис содержащий найденные улицы
 		 */
-		searchStreetsFromGPS({lat, lng, distance = 3000}){
+		getStreetsByGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2082,24 +2536,24 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша улиц
 				const key = "address:streets:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 				// Ищем улицы
-				searchFromGPS.call(idObj, idObj.schemes.Streets, key, lat, lng, distance)
+				getByGPS.call(idObj, "Streets", key, lat, lng, distance)
 				// Выполняем поиск улиц
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchFromGPS in searchStreetsFromGPS", err], "error");
+					idObj.log(["getByGPS in getStreetsByGPS", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchHousesFromGPS Метод поиска домов по GPS координатам
-		 * @param  {Number} lat      широта
-		 * @param  {Number} lng      долгота
-		 * @param  {Number} distance дистанция поиска в метрах
-		 * @return {Promise}         промис содержащий найденные дома
+		 * getHousesByGPS Метод поиска домов по GPS координатам
+		 * @param  {Number} options.lat      широта
+		 * @param  {Number} options.lng      долгота
+		 * @param  {Number} options.distance дистанция поиска в метрах
+		 * @return {Promise}                 промис содержащий найденные дома
 		 */
-		searchHousesFromGPS({lat, lng, distance = 3000}){
+		getHousesByGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2107,27 +2561,27 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша домов
 				const key = "address:houses:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 				// Ищем дома
-				searchFromGPS.call(idObj, idObj.schemes.Houses, key, lat, lng, distance)
+				getByGPS.call(idObj, "Houses", key, lat, lng, distance)
 				// Выполняем поиск домов
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchFromGPS in searchHousesFromGPS", err], "error");
+					idObj.log(["getByGPS in getHousesByGPS", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 
-		/** Добписать метод searchMetroFromGPS чтобы он содержал также данные о линии и городе */
+		/** Добписать метод getMetroByGPS чтобы он содержал также данные о линии и городе */
 
 		/**
-		 * searchMetroFromGPS Метод поиска метро по GPS координатам
-		 * @param  {Number} lat      широта
-		 * @param  {Number} lng      долгота
-		 * @param  {Number} distance дистанция поиска в метрах
-		 * @return {Promise}         промис содержащий найденные станции метро
+		 * getMetroByGPS Метод поиска метро по GPS координатам
+		 * @param  {Number} options.lat      широта
+		 * @param  {Number} options.lng      долгота
+		 * @param  {Number} options.distance дистанция поиска в метрах
+		 * @return {Promise}                 промис содержащий найденные станции метро
 		 */
-		searchMetroFromGPS({lat, lng, distance = 3000}){
+		getMetroByGPS({lat, lng, distance = 3000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2135,7 +2589,7 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша метро
 				const key = "metro:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 				// Ищем станции в кеше
-				searchFromGPS.call(idObj, idObj.schemes.Metro_stations, key, lat, lng, distance)
+				getByGPS.call(idObj, "Metro_stations", key, lat, lng, distance)
 				// Выполняем поиск домов
 				.then(result => {
 					
@@ -2145,118 +2599,9 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchFromGPS in searchMetroFromGPS", err], "error");
+					idObj.log(["getByGPS in getMetroByGPS", err], "error");
 					// Выходим
 					resolve(false);
-				});
-			}));
-		}
-		/**
-		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
-		 * @return {Promise} промис с данными результата обновлений станций метро
-		 */
-		updateMetroCity(){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				/**
-				 * updateDB Функция обновления данных в базе
-				 * @param  {Object}   obj      объект для обновления данных
-				 * @param  {Function} callback функция обратного вызова
-				 */
-				const updateDB = (obj, callback) => {
-					/**
-					 * Функция сохранения данных в кеше saveCache
-					 */
-					const saveCache = () => {
-						// Ключ запроса
-						const key = "address:subjects:" + obj.contentType;
-						// Считываем данные из кеша
-						Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
-							// Если данные не найдены
-							if(!$.isset(cache)) cache = {};
-							// Выполняем парсинг ответа
-							else cache = JSON.parse(cache);
-							// Создаем ключ названия
-							const char = obj.name[0].toLowerCase();
-							// Если такого блока данных нет тогда создаем его
-							if(!$.isset(cache[char]))			cache[char]				= {};
-							if(!$.isset(cache[char][obj._id]))	cache[char][obj._id]	= {};
-							// Сохраняем данные в кеше
-							cache[char][obj._id] = obj;
-							// Сохраняем данные в кеше
-							Agl.setRedis(idObj, "set", key, cache)
-							// Если данные сохранены то выводим результат
-							.then(callback)
-							// Если происходит ошибка то также выводим результат
-							.catch(callback);
-						// Если происходит ошибка тогда выходим
-						}).catch(callback);
-					};
-					// Запрашиваем все данные из базы
-					idObj.schemes.Cities.findOne({_id: obj._id})
-					// Выполняем запрос
-					.exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isset(data)
-						&& $.isObject(data)){
-							// Выполняем обновление
-							idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
-						// Просто добавляем новый объект
-						} else (new idObj.schemes.Cities(obj)).save(saveCache);
-					});
-				};
-				// Запрашиваем все данные городов
-				idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
-				// Запрашиваем данные регионов
-				.exec((err, data) => {
-					// Если ошибки нет
-					if(!$.isset(err) && $.isArray(data) && data.length){
-						/**
-						 * getData Рекурсивная функция перехода по массиву
-						 * @param  {Number} i индекс текущего значения массива
-						 */
-						const getData = (i = 0) => {
-							// Если не все данные пришли тогда продолжаем загружать
-							if(i < data.length){
-								// Параметры запроса
-								const query = {
-									lat:		data[i].lat,
-									lng:		data[i].lng,
-									distance:	150000
-								};
-								// Получаем данные метро
-								idObj.searchMetroFromGPS(query).then(metro => {
-									// Если метро передано
-									if($.isArray(metro) && metro.length){
-										// Создаем пустой массив с метро
-										data[i].metro = [];
-										// Переходим по всему массиву данных
-										metro.forEach(val => data[i].metro.push(val._id));
-										// Сохраняем метро
-										updateDB(data[i], () => getData(i + 1));
-									// Просто продолжаем дальше
-									} else getData(i + 1);
-								// Если происходит ошибка тогда выходим
-								}).catch(err => {
-									// Выводим ошибку метода
-									idObj.log(["searchMetroFromGPS in updateMetroCity", err], "error");
-									// Выходим
-									getData(i + 1);
-								});
-							// Если все загружено тогда сообщаем об этом
-							} else {
-								// Выводим в консоль сообщение
-								idObj.log("все станции метро в городах установлены!", "info");
-								// Выводим результат
-								resolve(true);
-							}
-						};
-						// Запускаем запрос данных
-						getData();
-					// Сообщаем что такие данные не найдены
-					} else resolve(false);
 				});
 			}));
 		}
@@ -2339,7 +2684,7 @@ const anyks = require("./lib.anyks");
 									// Если не все данные пришли тогда продолжаем загружать
 									if(i < data.length){
 										// Получаем данные временной зоны
-										idObj.getTimezone({lat: data[i].lat, lng: data[i].lng}).then(timezone => {
+										idObj.getTimezoneByGPS({lat: data[i].lat, lng: data[i].lng}).then(timezone => {
 											// Если временная зона пришла
 											if(timezone){
 												// Сохраняем временную зону
@@ -2351,7 +2696,7 @@ const anyks = require("./lib.anyks");
 										// Если происходит ошибка тогда выходим
 										}).catch(err => {
 											// Выводим ошибку метода
-											idObj.log(["getTimezone in updateTimeZones", err], "error");
+											idObj.log(["getTimezoneByGPS in updateTimeZones", err], "error");
 											// Выходим
 											getData(i + 1);
 										});
@@ -2391,6 +2736,82 @@ const anyks = require("./lib.anyks");
 				};
 				// Запускаем коннект
 				exec(getData());
+			}));
+		}
+		/**
+		 * updateCountries Метод обновления данных базы стран
+		 */
+		updateCountries(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Массив букв для названий стран
+				const countriesChar = [
+					"А", "Б", "В", "Г", "Д", "E", "Ж",
+					"З", "И", "К", "Л", "М", "Н", "О",
+					"П", "Р", "С", "Т", "У", "Ф", "Х",
+					"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+				];
+				// Подключаемся к коллекции стран
+				const countries = idObj.clients.mongo.connection.db.collection("countries");
+				// Удаляем колекцию стран
+				countries.drop();
+				// Удаляем данные из кеша
+				Agl.rmRedis(idObj, "address:subjects:country");
+				/**
+				 * getCountry Рекурсивная функция загрузки страны
+				 * @param  {Number} i текущий индекс массива
+				 */
+				const getCountry = (i = 0) => {
+					// Если данные не все загружены то загружаем дальше
+					if(i < countriesChar.length){
+						// Формируем параметры запроса
+						const query = {
+							str:		countriesChar[i],
+							limit:		100,
+							noCache:	true
+						};
+						// Выполняем загрузку данных
+						idObj.searchCountry(query).then(result => {
+							// Если это массив
+							if($.isArray(result) && result.length){
+								// Переходим по всему массиву
+								const str = (result.length > 1 ? result.reduce((sum, val) => {
+									// Формируем строку отчета
+									return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+									+ ", " + val.name + " " + val.type;
+								}) : result[0].name + " " + result[0].type);
+								// Выводим данные в консоль
+								idObj.log(["страны(ы) загружен(ы) [", countriesChar[i], "]:", str], "info");
+							}
+							// Продолжаем загрузку дальше
+							getCountry(i + 1);
+						// Если происходит ошибка тогда выходим
+						}).catch(err => {
+							// Выводим ошибку метода
+							idObj.log(["searchCountry in updateCountries", err], "error");
+							// Выходим
+							getCountry(i + 1);
+						});
+					// Если все данные загружены тогда создаем индексы
+					} else {
+						// Создаем индексы стран
+						countries.createIndex({name: 1}, {name: "country"});
+						countries.createIndex({type: 1}, {name: "type"});
+						countries.createIndex({typeShort: 1}, {name: "typeShort"});
+						countries.createIndex({lat: 1, lng: 1}, {name: "gps"});
+						countries.createIndex({nameShort: 1}, {name: "nameShort"});
+						countries.createIndex({nameFull: 1}, {name: "nameFull"});
+						countries.createIndex({gps: "2dsphere"}, {name: "locations"});
+						// Выводим в консоль сообщение
+						idObj.log("все страны установлены!", "info");
+						// Сообщаем что все удачно выполнено
+						resolve(true);
+					}
+				};
+				// Выполняем загрузку стран
+				getCountry();
 			}));
 		}
 		/**
@@ -2573,6 +2994,115 @@ const anyks = require("./lib.anyks");
 						// Сообщаем что такие данные не найдены
 						resolve(false);
 					}
+				});
+			}));
+		}
+		/**
+		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
+		 * @return {Promise} промис с данными результата обновлений станций метро
+		 */
+		updateMetroCity(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * updateDB Функция обновления данных в базе
+				 * @param  {Object}   obj      объект для обновления данных
+				 * @param  {Function} callback функция обратного вызова
+				 */
+				const updateDB = (obj, callback) => {
+					/**
+					 * Функция сохранения данных в кеше saveCache
+					 */
+					const saveCache = () => {
+						// Ключ запроса
+						const key = "address:subjects:" + obj.contentType;
+						// Считываем данные из кеша
+						Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+							// Если данные не найдены
+							if(!$.isset(cache)) cache = {};
+							// Выполняем парсинг ответа
+							else cache = JSON.parse(cache);
+							// Создаем ключ названия
+							const char = obj.name[0].toLowerCase();
+							// Если такого блока данных нет тогда создаем его
+							if(!$.isset(cache[char]))			cache[char]				= {};
+							if(!$.isset(cache[char][obj._id]))	cache[char][obj._id]	= {};
+							// Сохраняем данные в кеше
+							cache[char][obj._id] = obj;
+							// Сохраняем данные в кеше
+							Agl.setRedis(idObj, "set", key, cache)
+							// Если данные сохранены то выводим результат
+							.then(callback)
+							// Если происходит ошибка то также выводим результат
+							.catch(callback);
+						// Если происходит ошибка тогда выходим
+						}).catch(callback);
+					};
+					// Запрашиваем все данные из базы
+					idObj.schemes.Cities.findOne({_id: obj._id})
+					// Выполняем запрос
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isset(data)
+						&& $.isObject(data)){
+							// Выполняем обновление
+							idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
+						// Просто добавляем новый объект
+						} else (new idObj.schemes.Cities(obj)).save(saveCache);
+					});
+				};
+				// Запрашиваем все данные городов
+				idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
+				// Запрашиваем данные регионов
+				.exec((err, data) => {
+					// Если ошибки нет
+					if(!$.isset(err) && $.isArray(data) && data.length){
+						/**
+						 * getData Рекурсивная функция перехода по массиву
+						 * @param  {Number} i индекс текущего значения массива
+						 */
+						const getData = (i = 0) => {
+							// Если не все данные пришли тогда продолжаем загружать
+							if(i < data.length){
+								// Параметры запроса
+								const query = {
+									lat:		data[i].lat,
+									lng:		data[i].lng,
+									distance:	150000
+								};
+								// Получаем данные метро
+								idObj.getMetroByGPS(query).then(metro => {
+									// Если метро передано
+									if($.isArray(metro) && metro.length){
+										// Создаем пустой массив с метро
+										data[i].metro = [];
+										// Переходим по всему массиву данных
+										metro.forEach(val => data[i].metro.push(val._id));
+										// Сохраняем метро
+										updateDB(data[i], () => getData(i + 1));
+									// Просто продолжаем дальше
+									} else getData(i + 1);
+								// Если происходит ошибка тогда выходим
+								}).catch(err => {
+									// Выводим ошибку метода
+									idObj.log(["getMetroByGPS in updateMetroCity", err], "error");
+									// Выходим
+									getData(i + 1);
+								});
+							// Если все загружено тогда сообщаем об этом
+							} else {
+								// Выводим в консоль сообщение
+								idObj.log("все станции метро в городах установлены!", "info");
+								// Выводим результат
+								resolve(true);
+							}
+						};
+						// Запускаем запрос данных
+						getData();
+					// Сообщаем что такие данные не найдены
+					} else resolve(false);
 				});
 			}));
 		}
@@ -2848,7 +3378,7 @@ const anyks = require("./lib.anyks");
 				).then(getData, err => idObj.log(["parse metro", err], "error"))
 				// Если происходит ошибка тогда выходим
 				.catch(err => {
-					// Ошибка метода getTimezone
+					// Ошибка метода updateMetro
 					idObj.log(["updateMetro", err], "error");
 					// Сообщаем что дальше некуда
 					resolve(false);
@@ -2877,8 +3407,10 @@ const anyks = require("./lib.anyks");
 				 * *updateDB Генератор для получения обновления данных
 				 */
 				const updateDB = function * (){
+					// Выполняем обновление базы данных стран
+					const countries = yield idObj.updateCountries();
 					// Выполняем обновление базы данных регионов
-					const regions = yield idObj.updateRegions();
+					const regions = (countries ? yield idObj.updateRegions() : false);
 					// Выполняем обновление базы районов
 					const districts = (regions ? yield idObj.updateDistricts() : false);
 					// Выполняем обновление базы городов
