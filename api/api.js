@@ -1846,17 +1846,162 @@ const anyks = require("./lib.anyks");
 				});
 			}));
 		}
-
+		/**
+		 * findMetroById Метод поиска станции метро по Id
+		 * @param  {String} options.id  идентификатор станции метро
+		 * @return {Promise}            промис результата
+		 */
 		findMetroById({id}){
-
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключа кеша метро
+				const key = "metro:stations";
+				// Ищем станции в кеше
+				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+					// Если данные есть в кеше
+					if($.isset(cache)){
+						// Преобразуем данные кеша в объект
+						cache = JSON.parse(cache);
+						/**
+						 * searchMetro Функция поиска станции метро
+						 * @return {Object} объект с данными станции метро
+						 */
+						const searchMetro = () => {
+							// Переходим по всему объекту
+							for(let cityId in cache){
+								// Переходим по всем буквам
+								for(let val in cache[cityId]){
+									// Если станция метро найдена
+									if(cache[cityId][val].id === id){
+										// Выводим результат
+										return cache[cityId][val];
+									}
+								}
+							}
+							// Сообщаем что ничего не найдено
+							return false;
+						};
+						// Сообщаем что ничего не найдено
+						resolve(searchMetro());
+					// Если в кеше данные метро не найдены
+					} else {
+						// Запрашиваем все данные из базы
+						idObj.schemes.Metro_stations.findOne({_id: id})
+						.populate('cityId')
+						.populate('lineId')
+						.exec((err, data) => {
+							// Выводим результат поиска по базе
+							idObj.log(["поиск станций метро в базе", data], "info");
+							// Если ошибки нет, выводим результат
+							if(!$.isset(err) && $.isset(data)){
+								// Формируем объект со станцией метро
+								const station = {
+									id:		data._id,
+									name:	data.name,
+									lat:	data.lat,
+									lng:	data.lng,
+									order:	data.order,
+									line:	data.lineId.name,
+									color:	data.lineId.color,
+									city:	data.cityId.name
+								};
+								// Ищем станции в кеше
+								Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+									// Создаем ключ станции
+									const char = data.name[0].toLowerCase();
+									// Если данные есть в кеше
+									if($.isset(cache)) cache = JSON.parse(cache);
+									// Если города такого не существует то создаем его
+									if(!$.isset(cache[data.cityId._id])) cache[data.cityId._id] = {};
+									// Если такой буквы нет то создаем массив
+									if(!$.isArray(cache[data.cityId._id][char])) cache[data.cityId._id][char] = [];
+									// Добавляем в кеш данные
+									cache[data.cityId._id][char].push(station);
+									// Записываем данные в кеш
+									Agl.setRedis(idObj, "set", key, cache).then();
+								});
+								// Выводим результат
+								resolve(station);
+							// Если данные не найдены выводим как есть
+							} else resolve(false);
+						});
+					}
+				});
+			}));
 		}
-
+		/**
+		 * findMetroByStreetId Метод поиска станций метро по Id улицы
+		 * @param  {String} options.id  идентификатор улицы
+		 * @return {Promise}            промис результата
+		 */
 		findMetroByStreetId({id}){
-
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * *getData Генератор для получения данных метро
+				 */
+				const getData = function * (){
+					// Получаем данные улицы
+					const street = yield idObj.getStreetById({id});
+					// Если улицы найдена и в ней есть станции метро
+					if($.isset(street) && $.isArray(street.metro)){
+						// Массив с данными метро
+						const metro_stations = [];
+						// Выполняем поиск метро
+						street.metro.forEach(metroId => {
+							// Запрашиваем данные метро
+							const metro = yield idObj.findMetroById({id: metroId});
+							// Если метро найдено то добавляем его в массив
+							if($.isset(metro)) metro_stations.push(metro);
+						});
+						// Выводим результат
+						resolve(metro_stations);
+					// Сообщаем что такие данные не найдены
+					} else resolve(false);
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
 		}
-
+		/**
+		 * findMetroByHouseId Метод поиска станций метро по Id дома
+		 * @param  {String} options.id  идентификатор дома
+		 * @return {Promise}            промис результата
+		 */
 		findMetroByHouseId({id}){
-
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * *getData Генератор для получения данных метро
+				 */
+				const getData = function * (){
+					// Получаем данные улицы
+					const house = yield idObj.getHouseById({id});
+					// Если дом найден и рядом есть станции метро
+					if($.isset(house) && $.isArray(house.metro)){
+						// Массив с данными метро
+						const metro_stations = [];
+						// Выполняем поиск метро
+						house.metro.forEach(metroId => {
+							// Запрашиваем данные метро
+							const metro = yield idObj.findMetroById({id: metroId});
+							// Если метро найдено то добавляем его в массив
+							if($.isset(metro)) metro_stations.push(metro);
+						});
+						// Выводим результат
+						resolve(metro_stations);
+					// Сообщаем что такие данные не найдены
+					} else resolve(false);
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
 		}
 		/**
 		 * getAddressByGPS Метод получения данных адреса по GPS координатам
