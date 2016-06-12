@@ -2004,6 +2004,116 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * findAddress Метод поиска данных по строковым данным адреса
+		 * @param  {String} options.address адрес для поиска
+		 * @return {Promise}                промис содержащий результат поиска
+		 */
+		findAddress({address}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключ кеша адреса
+				const key = "address:" + idObj.generateKey(address);
+				// Ищем данные в кеше
+				Agl.getRedis(idObj, "get", key, 3600).then(({err, cache}) => {
+					// Если данные в кеше сть тогда выводим их
+					if($.isset(cache)) resolve(JSON.parse(cache));
+					// Если данные в кеше не найдены тогда продолжаем искать
+					else {
+						// Выполняем интерпретацию данных
+						idObj.parseAddress({address}).then(address => {
+							// Если адрес интерпретирован удачно
+							if($.isset(address)){
+								/**
+								 * getDataInMongoDB Функция запроса данных из базы
+								 * @param  {Object} scheme объект схемы базы данных
+								 * @param  {Object} query  объект с параметрами запроса
+								 * @return {Promise}       промис с результатами данных из базы
+								 */
+								const getDataInMongoDB = (scheme, query) => {
+									// Создаем промис для обработки
+									return (new Promise(resolve => {
+										// Преобразуем схему базы
+										scheme = idObj.schemes[scheme];
+										// Запрашиваем все данные из базы
+										scheme.findOne(query).exec((err, data) => {
+											// Выводим результат поиска по базе
+											idObj.log(["поиск данных в базе", data], "info");
+											// Если ошибки нет, выводим результат
+											if(!$.isset(err) && $.isset(data)) resolve(data);
+											// Если данные не найдены выводим как есть
+											else resolve(false);
+										});
+									}));
+								};
+								/**
+								 * *getData Генератор для получения данных адреса
+								 */
+								const getData = function * (){
+									// Формируем параметры запроса
+									let query = ($.isset(address.country) ? {name: address.country.name} : {});
+									// Запрашиваем данные страны
+									const country = ($.isset(address.country) ? yield getDataInMongoDB("Countries", query) : undefined);
+									// Формируем параметры запроса
+									if($.isset(address.region)) query.name = address.region.name;
+									// Если страна найдена тогда ее тоже добавляем в запрос
+									if($.isset(country)) query.code = country.code;
+									// Запрашиваем данные региона
+									const region = ($.isset(address.region) ? yield getDataInMongoDB("Regions", query) : undefined);
+									// Формируем параметры запроса
+									if($.isset(address.district)) query.name = address.district.name;
+									// Если регион найден тогда его тоже добавляем в запрос
+									if($.isset(region)) query.regionId = region._id;
+									// Запрашиваем данные района
+									const district = ($.isset(address.district) ? yield getDataInMongoDB("Districts", query) : undefined);
+									// Формируем параметры запроса
+									if($.isset(address.city)) query.name = address.city.name;
+									// Если район найден тогда его тоже добавляем в запрос
+									if($.isset(district)) query.districtId = district._id;
+									// Запрашиваем данные города
+									const city = ($.isset(address.city) ? yield getDataInMongoDB("Cities", query) : undefined);
+									// Формируем параметры запроса
+									if($.isset(address.street)) query.name = address.street.name;
+									// Если город найден тогда его тоже добавляем в запрос
+									if($.isset(city)) query.cityId = city._id;
+									// Запрашиваем данные улицы
+									const street = ($.isset(address.street) ? yield getDataInMongoDB("Streets", query) : undefined);
+									// Формируем параметры запроса
+									if($.isset(address.house)) query.name = address.house.name;
+									// Если улица найдена тогда её тоже добавляем в запрос
+									if($.isset(street)) query.streetId = street._id;
+									// Запрашиваем данные дома
+									const house = ($.isset(address.house) ? yield getDataInMongoDB("Houses", query) : undefined);
+									// Формируем объект с результатами поиска
+									const result = {country, region, district, city, street, house};
+									// Отправляем в Redis на час
+									Agl.setRedis(idObj, "set", key, result, 3600).then();
+									// Выводим результат
+									resolve(result);
+								};
+								// Запускаем коннект
+								exec(getData());
+							// Сообщаем что ничего не найдено
+							} else resolve(false);
+						// Если происходит ошибка тогда выходим
+						}).catch(err => {
+							// Выводим ошибку метода
+							idObj.log(["parseAddress in findAddress", err], "error");
+							// Выходим
+							resolve(false);
+						});
+					}
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedis in findAddress", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
 		 * getAddressByGPS Метод получения данных адреса по GPS координатам
 		 * @param  {Float}   options.lat    широта
 		 * @param  {Float}   options.lng    долгота
