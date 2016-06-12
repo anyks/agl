@@ -191,7 +191,7 @@ const anyks = require("./lib.anyks");
 		});
 	};
 	/**
-	 * searchAddressInCache Функция поиска данных в кеше
+	 * findAddressInCache Функция поиска данных в кеше
 	 * @param  {String} str        строка запроса
 	 * @param  {String} type       тип запроса
 	 * @param  {String} parentId   идентификатор родительский
@@ -199,7 +199,7 @@ const anyks = require("./lib.anyks");
 	 * @param  {Number} limit      лимит результатов для выдачи
 	 * @return {Promise}           промис содержащий результат
 	 */
-	const searchAddressInCache = function(str, type, parentId, parentType, limit = 1){
+	const findAddressInCache = function(str, type, parentId, parentType, limit = 1){
 		// Получаем идентификатор текущего объекта
 		const idObj = this;
 		// Создаем промис для обработки
@@ -262,7 +262,7 @@ const anyks = require("./lib.anyks");
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
-				idObj.log(["getRedis in searchAddressInCache", err], "error");
+				idObj.log(["getRedis in findAddressInCache", err], "error");
 				// Выходим
 				resolve(false);
 			});
@@ -1155,10 +1155,10 @@ const anyks = require("./lib.anyks");
 				 */
 				const getCountry = () => {
 					/**
-					 * searchCountry Функция поиска страны
+					 * findCountry Функция поиска страны
 					 * @return {String} название страны
 					 */
-					const searchCountry = () => {
+					const findCountry = () => {
 						// Определяем страну
 						const result = (new RegExp("^([А-ЯЁё\\-\\s]+),?\\s*\\{(?:river|zip|region|"
 						+ "district|city|community|street|house|apartment)\\}", "i"))
@@ -1187,7 +1187,7 @@ const anyks = require("./lib.anyks");
 					// Генерируем другую страну
 					else {
 						// Получаем название страны
-						const name = searchCountry();
+						const name = findCountry();
 						// Возвращаем результат
 						return ($.isset(name) ? {
 							name:	name,
@@ -1202,10 +1202,10 @@ const anyks = require("./lib.anyks");
 				 */
 				const getHouse = () => {
 					/**
-					 * searchHouse Функция поиска дома
+					 * findHouse Функция поиска дома
 					 * @return {String} название и номер дома
 					 */
-					const searchHouse = () => {
+					const findHouse = () => {
 						// Разбиваем на массив
 						const arr = addObject.address.split(",").reverse();
 						// Дома
@@ -1242,7 +1242,7 @@ const anyks = require("./lib.anyks");
 					// Генерируем другой номер дома
 					else {
 						// Получаем название дома
-						const name = searchHouse();
+						const name = findHouse();
 						// Возвращаем результат
 						return ($.isset(name) ? {
 							name:	name,
@@ -1352,13 +1352,13 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * searchCountry Метод поиска страны
+		 * findCountry Метод поиска страны
 		 * @param  {String}  options.str      строка запроса
 		 * @param  {Number}  options.limit    количество результатов к выдаче
 		 * @param  {Boolean} options.noCache  отключить кеш
 		 * @return {Promise}                  промис результата
 		 */
-		searchCountry({str, limit = 10, noCache = false}){
+		findCountry({str, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1368,7 +1368,7 @@ const anyks = require("./lib.anyks");
 				const ContentType	= 'country';
 				const Limit			= limit;
 				// Ищем данные адреса сначала в кеше
-				searchAddressInCache.call(idObj, ContentName, ContentType, null, null, Limit).then(result => {
+				findAddressInCache.call(idObj, ContentName, ContentType, null, null, Limit).then(result => {
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Формируем данные страны
@@ -1388,20 +1388,20 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchAddressInCache in searchCountry", err], "error");
+					idObj.log(["findAddressInCache in findCountry", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchRegion Метод поиска региона
+		 * findRegion Метод поиска региона
 		 * @param  {String}  options.str      строка запроса
 		 * @param  {Number}  options.limit    количество результатов к выдаче
 		 * @param  {Boolean} options.noCache  отключить кеш
 		 * @return {Promise}                  промис результата
 		 */
-		searchRegion({str, limit = 10, noCache = false}){
+		findRegion({str, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1412,7 +1412,7 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 0;
 				const Limit			= limit;
 				// Ищем данные адреса сначала в кеше
-				searchAddressInCache.call(idObj, ContentName, ContentType, null, null, Limit).then(result => {
+				findAddressInCache.call(idObj, ContentName, ContentType, null, null, Limit).then(result => {
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -1432,21 +1432,21 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchAddressInCache in searchRegion", err], "error");
+					idObj.log(["findAddressInCache in findRegion", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchDistrict Метод поиска района
+		 * findDistrict Метод поиска района
 		 * @param  {String}  options.str        строка запроса
 		 * @param  {String}  options.regionId   идентификатор региона
 		 * @param  {Number}  options.limit      количество результатов к выдаче
 		 * @param  {Boolean} options.noCache    отключить кеш
 		 * @return {Promise}                    промис результата
 		 */
-		searchDistrict({str, regionId, limit = 10, noCache = false}){
+		findDistrict({str, regionId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1459,7 +1459,7 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 1;
 				const Limit			= limit;
 				// Ищем данные адреса сначала в кеше
-				searchAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
+				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -1481,14 +1481,14 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchAddressInCache in searchDistrict", err], "error");
+					idObj.log(["findAddressInCache in findDistrict", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchCity Метод поиска города
+		 * findCity Метод поиска города
 		 * @param  {String}  options.str        строка запроса
 		 * @param  {String}  options.regionId   идентификатор региона
 		 * @param  {String}  options.districtId идентификатор района
@@ -1496,7 +1496,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Boolean} options.noCache    отключить кеш
 		 * @return {Promise}                    промис результата
 		 */
-		searchCity({str, regionId, districtId, limit = 10, noCache = false}){
+		findCity({str, regionId, districtId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1515,7 +1515,7 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 1;
 				const Limit			= limit;
 				// Ищем данные адреса сначала в кеше
-				searchAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
+				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -1537,20 +1537,20 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["searchAddressInCache in searchCity", err], "error");
+					idObj.log(["findAddressInCache in findCity", err], "error");
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * searchStreet Метод поиска улицы
+		 * findStreet Метод поиска улицы
 		 * @param  {String} options.str    строка запроса
 		 * @param  {String} options.cityId идентификатор города
 		 * @param  {Number} options.limit  количество результатов к выдаче
 		 * @return {Promise}               промис результата
 		 */
-		searchStreet({str, cityId, limit = 10}){
+		findStreet({str, cityId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1579,13 +1579,13 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * searchHouse Метод поиска дома
+		 * findHouse Метод поиска дома
 		 * @param  {String} options.str      строка запроса
 		 * @param  {String} options.streetId идентификатор улицы
 		 * @param  {Number} options.limit    количество результатов к выдаче
 		 * @return {Promise}                 промис результата
 		 */
-		searchHouse({str, streetId, limit = 10}){
+		findHouse({str, streetId, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1612,6 +1612,251 @@ const anyks = require("./lib.anyks");
 					processResultKladr.call(idObj, "Houses", err, res, resolve);
 				});
 			}));
+		}
+		/**
+		 * findMetro Метод поиска станции метро
+		 * @param  {String} options.str       строка запроса
+		 * @param  {String} options.cityId    идентификатор города
+		 * @param  {String} options.lineId    идентификатор линии метро
+		 * @param  {String} options.lineName  название линии метро
+		 * @param  {String} options.lineColor цвет линии метро
+		 * @param  {Number} options.limit     количество результатов к выдаче
+		 * @return {Promise}                  промис результата
+		 */
+		findMetro({str, cityId, lineId, lineName, lineColor, limit = 10}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ключа кеша метро
+				const key = "metro:stations";
+				// Ищем станции в кеше
+				Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+					// Если данные есть в кеше
+					if($.isset(cache)){
+						// Преобразуем данные кеша в объект
+						cache = JSON.parse(cache);
+						// Получаем букву для поиска
+						const char = str[0].toLowerCase();
+						/**
+						 * findMetro Функция поиска в массиве станцию метро
+						 * @param  {String} cityId идентификатор города для поиска
+						 * @return {Object} объект станции метро
+						 */
+						const findMetro = cityId => {
+							// Массив метро
+							const metro_stations = [];
+							// Создаем регулярное выражение для поиска
+							const reg = new RegExp("^" + str, "i");
+							// Итератор перебора массива
+							let i = 0;
+							// Переходим по всему массиву
+							for(let val of cache[cityId][char]){
+								// Если данные найдены
+								if(reg.test(val.name)
+								&& (($.isset(lineName)
+								&& (val.line === lineName))
+								|| ($.isset(lineColor)
+								&& (val.color === lineColor)))) metro_stations.push(val);
+								// Если итератор вышел за границу лимита тогда выходим
+								if(i < limit) i++;
+								// Выходим из цикла
+								else break;
+							}
+							// Выводим массив станций метро
+							return metro_stations;
+						};
+						// Если идентификатор города указан
+						if($.isset(cityId)) resolve(findMetro(cityId));
+						// Если же идентификатор города не указан тогда перебираем все города
+						else {
+							// Устанавливаем счетчик итератора
+							let i = 0;
+							// Массив метро
+							let metro_stations = [];
+							// Выполняем переход по объекту
+							for(let val in cache){
+								// Копируем полученный массив станций
+								metro_stations = metro_stations.concat(findMetro(val));
+								// Запоминаем количество полученных элементов
+								i += metro_stations.length;
+								// Если размер лимита исчерпан тогда выходим
+								if(i > limit){
+									// Уменьшаем количество элементов
+									metro_stations.length = limit;
+									// Выходим
+									break;
+								}
+							}
+							// Выводим результат
+							resolve(metro_stations);
+						}
+					// Если данные в кеше не найдены
+					} else {
+						/**
+						 * getStations Функция поиска станций метро в базе
+						 * @param  {String} str    чать названия станции метро
+						 * @param  {String} cityId идентификатор города
+						 * @param  {String} lineId идентификатор линии
+						 * @return {Promise}       промис содержащий результаты найденных станций метро
+						 */
+						const getStations = (str, cityId, lineId) => {
+							// Создаем промис для обработки
+							return (new Promise(resolve => {
+								// Параметры запроса
+								const query = {"name": new RegExp("^" + str, "i")};
+								// Если идентификатор города передан
+								if($.isset(cityId)) query.cityId = cityId;
+								// Если идентификатор линии передан
+								if($.isset(lineId)) query.lineId = lineId;
+								// Запрашиваем все данные из базы
+								idObj.schemes.Metro_stations.find(query)
+								.populate('cityId')
+								.populate('lineId')
+								.limit(limit)
+								.exec((err, data) => {
+									// Выводим результат поиска по базе
+									idObj.log(["поиск станций метро в базе", data], "info");
+									// Если ошибки нет, выводим результат
+									if(!$.isset(err) && $.isArray(data)) resolve(data);
+									// Если данные не найдены выводим как есть
+									else resolve(false);
+								});
+							}));
+						};
+						/**
+						 * getStation Функция поиска линий метро в базе
+						 * @param  {String} lineId    идентификатор линии
+						 * @param  {String} cityId    идентификатор города
+						 * @param  {String} lineName  название линии метро
+						 * @param  {String} lineColor цвет линии метро
+						 * @return {Promise}          промис содержащий результаты найденных линий метро
+						 */
+						const getLine = (lineId, cityId, lineName, lineColor) => {
+							// Создаем промис для обработки
+							return (new Promise(resolve => {
+								// Параметры запроса
+								const query = {};
+								// Если идентификатор города передан
+								if($.isset(cityId)) query.cityId = cityId;
+								// Если идентификатор линии передан
+								if($.isset(lineId)) query._id = lineId;
+								// Если название линии передано
+								if($.isset(lineName)) query.name = new RegExp("^" + lineName, "i");
+								// Если цвет линии передан
+								if($.isset(lineColor)) query.color = lineColor;
+								// Запрашиваем все данные из базы
+								idObj.schemes.Metro_lines.find(query).exec((err, data) => {
+									// Выводим результат поиска по базе
+									idObj.log(["поиск линий метро в базе", data], "info");
+									// Если ошибки нет, выводим результат
+									if(!$.isset(err) && $.isArray(data)) resolve(data);
+									// Если данные не найдены выводим как есть
+									else resolve(false);
+								});
+							}));
+						};
+						/**
+						 * *getData Генератор для получения данных метро
+						 */
+						const getData = function * (){
+							/**
+							 * parseDataMetro Функция обработки данных метро
+							 * @param  {Array} metro массив станций метро
+							 */
+							const parseDataMetro = metro => {
+								// Ищем станции в кеше
+								Agl.getRedis(idObj, "get", key).then(({err, cache}) => {
+									// Если данные есть в кеше
+									if($.isset(cache)) cache = JSON.parse(cache);
+									// Если не существует тогда создаем его
+									else cache = {};
+									// Массив метро
+									const metro_stations = [];
+									// Переходим по всем полученным станциям метро
+									metro.forEach(val => {
+										// Создаем ключ станции
+										const char = val.name[0].toLowerCase();
+										// Если объект в кеше с идентификатором города не существует тогда создаем его
+										if(!$.isset(cache[val.cityId._id])) cache[val.cityId._id] = {};
+										// Если такой буквы нет то создаем массив
+										if(!$.isArray(cache[val.cityId._id][char])) cache[val.cityId._id][char] = [];
+										// Формируем объект со станцией метро
+										const station = {
+											id:		val._id,
+											name:	val.name,
+											lat:	val.lat,
+											lng:	val.lng,
+											order:	val.order,
+											line:	val.lineId.name,
+											color:	val.lineId.color,
+											city:	val.cityId.name
+										};
+										// Формируем массив станций метро
+										metro_stations.push(station);
+										// Добавляем станцию в кеш
+										cache[val.cityId._id][char].push(station);
+									});
+									// Записываем данные в кеш
+									Agl.setRedis(idObj, "set", key, cache).then();
+									// Выводим полученный массив метро
+									resolve(metro_stations);
+								});
+							};
+							// Если идентификатор города или идентификатор линии найден
+							if($.isset(cityId) || $.isset(lineId)){
+								// Запрашиваем данные станции метро
+								const metro = yield getStations(str, cityId, lineId);
+								// Формируем массив метро
+								if($.isArray(metro)) parseDataMetro(metro);
+								// Сообщаем что станции метро не найдены
+								else resolve(false);
+							// Если же передано название линии или цвет линии
+							} else if($.isset(lineName) || $.isset(lineColor)) {
+								// Запрашиваем данные станции
+								const lines = yield getLine(lineId, cityId, lineName, lineColor);
+								// Если линии найдены
+								if($.isArray(lines)){
+									// Массив метро
+									const metro = [];
+									// Рекурсивная функция получения станций метро
+									const getMetro = (i = 0) => {
+										// Если не все данные загружены тогда продолжаем загрузку
+										if(i < lines.length){
+											// Загружаем станции метро
+											getStations(lines[i].name, lines[i].cityId, lines[i].lineId)
+											.then(data => {
+												// Если данные существуют
+												if($.isArray(data)) metro.push(data[0]);
+												// Продолжаем дальше
+												getMetro(i + 1);
+											}).catch(() => getMetro(i + 1));
+										// Обрабатываем полученные данные
+										} else parseDataMetro(metro);
+									};
+									// Выполняем загрузку станций метро
+									getMetro();
+								// Сообщаем что станции метро не найдены
+								} else resolve(false);
+							}
+						};
+						// Запускаем коннект
+						exec(getData());
+					}
+				});
+			}));
+		}
+
+		findMetroById({id}){
+
+		}
+
+		findMetroByStreetId({id}){
+
+		}
+
+		findMetroByHouseId({id}){
+
 		}
 		/**
 		 * getAddressByGPS Метод получения данных адреса по GPS координатам
@@ -2571,9 +2816,6 @@ const anyks = require("./lib.anyks");
 				});
 			}));
 		}
-
-		/** Добписать метод getMetroByGPS чтобы он содержал также данные о линии и городе */
-
 		/**
 		 * getMetroByGPS Метод поиска метро по GPS координатам
 		 * @param  {Number} options.lat      широта
@@ -2591,13 +2833,7 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				getByGPS.call(idObj, "Metro_stations", key, lat, lng, distance)
 				// Выполняем поиск домов
-				.then(result => {
-					
-					// Выводим результат
-					resolve(result);
-
-				// Если происходит ошибка тогда выходим
-				}).catch(err => {
+				.then(resolve).catch(err => {
 					// Выводим ошибку метода
 					idObj.log(["getByGPS in getMetroByGPS", err], "error");
 					// Выходим
@@ -2773,7 +3009,7 @@ const anyks = require("./lib.anyks");
 							noCache:	true
 						};
 						// Выполняем загрузку данных
-						idObj.searchCountry(query).then(result => {
+						idObj.findCountry(query).then(result => {
 							// Если это массив
 							if($.isArray(result) && result.length){
 								// Переходим по всему массиву
@@ -2790,7 +3026,7 @@ const anyks = require("./lib.anyks");
 						// Если происходит ошибка тогда выходим
 						}).catch(err => {
 							// Выводим ошибку метода
-							idObj.log(["searchCountry in updateCountries", err], "error");
+							idObj.log(["findCountry in updateCountries", err], "error");
 							// Выходим
 							getCountry(i + 1);
 						});
@@ -2849,7 +3085,7 @@ const anyks = require("./lib.anyks");
 							noCache:	true
 						};
 						// Выполняем загрузку данных
-						idObj.searchRegion(query).then(result => {
+						idObj.findRegion(query).then(result => {
 							// Если это массив
 							if($.isArray(result) && result.length){
 								// Переходим по всему массиву
@@ -2866,7 +3102,7 @@ const anyks = require("./lib.anyks");
 						// Если происходит ошибка тогда выходим
 						}).catch(err => {
 							// Выводим ошибку метода
-							idObj.log(["searchRegion in updateRegions", err], "error");
+							idObj.log(["findRegion in updateRegions", err], "error");
 							// Выходим
 							getRegion(i + 1);
 						});
@@ -2938,7 +3174,7 @@ const anyks = require("./lib.anyks");
 											regionId:	data[i]._id
 										};
 										// Выполняем поиск района
-										idObj.searchDistrict(query).then(result => {
+										idObj.findDistrict(query).then(result => {
 											// Если это массив
 											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
@@ -2959,7 +3195,7 @@ const anyks = require("./lib.anyks");
 										// Если происходит ошибка тогда выходим
 										}).catch(err => {
 											// Выводим ошибку метода
-											idObj.log(["searchDistrict in updateDistricts", err], "error");
+											idObj.log(["findDistrict in updateDistricts", err], "error");
 											// Выходим
 											getDistrict(j + 1);
 										});
@@ -3156,7 +3392,7 @@ const anyks = require("./lib.anyks");
 											districtId:	null
 										};
 										// Выполняем поиск городов
-										idObj.searchCity(query).then(result => {
+										idObj.findCity(query).then(result => {
 											// Если это массив
 											if($.isArray(result) && result.length){
 												// Переходим по всему массиву
@@ -3177,7 +3413,7 @@ const anyks = require("./lib.anyks");
 										// Если происходит ошибка тогда выходим
 										}).catch(err => {
 											// Выводим ошибку метода
-											idObj.log(["searchCity in updateCities", err], "error");
+											idObj.log(["findCity in updateCities", err], "error");
 											// Выходим
 											getCity(j + 1);
 										});
@@ -3232,7 +3468,7 @@ const anyks = require("./lib.anyks");
 				 */
 				const getData = arr => {
 					// Объект с данными метро для кеша
-					const cacheObject = {};
+					const cache = {};
 					// Подключаемся к коллекции метро
 					const metro = idObj.clients.mongo.connection.db.collection("metro");
 					// Подключаемся к коллекции метро городов
@@ -3282,7 +3518,7 @@ const anyks = require("./lib.anyks");
 									arr[i]._id		= data._id;
 									arr[i].linesIds	= [];
 									// Запоминаем данные в кеше
-									cacheObject[arr[i]._id] = {};
+									cache[arr[i]._id] = {};
 									// Формируем идентификаторы линий
 									arr[i].lines.forEach(line => {
 										// Формируем линию метро
@@ -3303,11 +3539,11 @@ const anyks = require("./lib.anyks");
 											// Формируем массив станций для линии
 											line.stationsIds.push(station._id);
 											// Создаем ключ станции
-											const keyChar = station.name[0].toLowerCase();
+											const char = station.name[0].toLowerCase();
 											// Создаем объект метро для хранения данных
-											if(!$.isArray(cacheObject[arr[i]._id][keyChar])) cacheObject[arr[i]._id][keyChar] = [];
+											if(!$.isArray(cache[arr[i]._id][char])) cache[arr[i]._id][char] = [];
 											// Добавляем в кеш данные
-											cacheObject[arr[i]._id][keyChar].push({
+											cache[arr[i]._id][char].push({
 												id:		station._id,
 												name:	station.name,
 												lat:	station.lat,
@@ -3358,7 +3594,7 @@ const anyks = require("./lib.anyks");
 							// Ключа кеша метро
 							const key = "metro:stations";
 							// Записываем данные в кеш
-							Agl.setRedis(idObj, "set", key, cacheObject).then();
+							Agl.setRedis(idObj, "set", key, cache).then();
 							// Выводим в консоль сообщение
 							idObj.log("все метро установлены!", "info");
 							// Сообщаем что все удачно выполнено
