@@ -14,8 +14,40 @@
 	 */
 	class Anyks {
 		/* СТАТИЧЕСКИЕ МЕТОДЫ */
-		// http://love.mail.ru/lamaks#/closed
 		// console.log( "При\u0301вет" ); // При́вет
+		/*
+		// Цвета
+		'\x1B[30m' + 'black' + '\x1B[39m'
+		'\x1B[31m' + 'red' + '\x1B[39m'
+		'\x1B[32m' + 'green' + '\x1B[39m'
+		'\x1B[33m' + yellow + '\x1B[39m'
+		'\x1B[34m' + blue + '\x1B[39m'
+		'\x1B[35m' + magenta + '\x1B[39m'
+		'\x1B[36m' + cyan + '\x1B[39m'
+		'\x1B[37m' + white + '\x1B[39m'
+		'\x1B[90m' + gray + '\x1B[39m'
+		// Фон
+		'\x1B[40m' + 'black' + '\x1B[49m'
+		'\x1B[41m' + 'red' + '\x1B[49m'
+		'\x1B[42m' + 'green' + '\x1B[49m'
+		'\x1B[43m' + yellow + '\x1B[49m'
+		'\x1B[44m' + blue + '\x1B[49m'
+		'\x1B[45m' + magenta + '\x1B[49m'
+		'\x1B[46m' + cyan + '\x1B[49m'
+		'\x1B[47m' + white + '\x1B[49m'
+		// Стили
+		'\x1B[0m' + reset + '\x1B[0m'
+		'\x1B[1m' +  'bold' + '\x1B[22m'
+		'\x1B[2m' + dim + '\x1B[22m'
+		'\x1B[3m' + italic + '\x1B[23m'
+		'\x1B[4m' + 'underline' + '\x1B[24m'
+		'\x1B[7m' + inverse + '\x1B[27m'
+		'\x1B[8m' + hidden + '\x1B[28m'
+		'\x1B[9m' + strikethrough + '\x1B[29m'
+		// Наработки
+		'\x1B[31m' + R + '\x1B[39m\x1B[33m' + A + '\x1B[39m\x1B[32m' + N + '\x1B[39m' - rainbow
+		'R' + '\x1B[7m' + A + '\x1B[27m' + N - zebra
+		*/
 		// декоратор скрывает обращение к другому объекту.
 		/**
 		 * parseInt Функция приведения числа к типу Int
@@ -1314,6 +1346,12 @@
 			 */
 			String.method("toInt", function(){
 				return this >> 0;
+			});
+			/**
+			 * String.clearColor Создаем метод для очистки текста от кодов цветов консоли
+			 */
+			String.method("clearColor", function(flag = true){
+				return (flag ? this.replace(/\x1B\[\d+m/ig, "") : this);
 			});
 			/**
 			 * String.trim Создаем метот trim

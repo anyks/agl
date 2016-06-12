@@ -3046,9 +3046,11 @@ const anyks = require("./lib.anyks");
 						console.log("\n***************", "START", "***************\n");
 						// Выводим сообщение об ошибке
 						console.error(
-							'\x1B[0;31m\x1B[1mError\x1B[0m\x1B[0;31m',
+							'\x1B[31m\x1B[1mError\x1B[0m\x1B[31m'
+							.clearColor(this.debug.console),
 							(new Date()).toLocaleString(),
-							this.name, ':\x1B[0m',
+							this.name, ':\x1B[0m'
+							.clearColor(this.debug.console),
 							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
 						);
 						// Выводим экраны
@@ -3063,9 +3065,11 @@ const anyks = require("./lib.anyks");
 						console.log("\n***************", "START", "***************\n");
 						// Выводим информационное сообщение
 						console.info(
-							'\x1B[38;5;148m\x1B[1mInfo\x1B[0m\x1B[38;5;148m',
+							'\x1B[32m\x1B[1mInfo\x1B[0m\x1B[32m'
+							.clearColor(this.debug.console),
 							(new Date()).toLocaleString(),
-							this.name, ':\x1B[0m',
+							this.name, ':\x1B[0m'
+							.clearColor(this.debug.console),
 							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
 						);
 						// Выводим экраны
