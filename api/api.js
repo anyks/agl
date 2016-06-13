@@ -2036,24 +2036,15 @@ const anyks = require("./lib.anyks");
 					if($.isset(street) && $.isArray(street.metro) && street.metro.length){
 						// Массив с данными метро
 						const metro_stations = [];
-						/**
-						 * findMetro Функция поиска метро
-						 * @param  {Number} i итератор обхода массива
-						 */
-						const findMetro = (i = 0) => {
-							// Если метро загружены не все
-							if(i < street.metro.length){
-								// Запрашиваем данные метро
-								const metro = yield idObj.findMetroById({id: street.metro[i]});
-								// Если метро найдено то добавляем его в массив
-								if($.isset(metro)) metro_stations.push(metro);
-								// Продолжаем дальше
-								findMetro(i + 1);
-							// Выводим результат
-							} else resolve(metro_stations);
-						};
-						// Загружаем данные метро
-						findMetro();
+						// Перебираем все станции метро
+						for(let i = 0; i < street.metro.length; i++){
+							// Запрашиваем данные метро
+							const metro = yield idObj.findMetroById({id: street.metro[i]});
+							// Если метро найдено то добавляем его в массив
+							if($.isset(metro)) metro_stations.push(metro);
+						}
+						// Выводим результат
+						resolve(metro_stations);
 					// Сообщаем что такие данные не найдены
 					} else resolve(false);
 				};
@@ -2081,24 +2072,15 @@ const anyks = require("./lib.anyks");
 					if($.isset(house) && $.isArray(house.metro) && street.metro.length){
 						// Массив с данными метро
 						const metro_stations = [];
-						/**
-						 * findMetro Функция поиска метро
-						 * @param  {Number} i итератор обхода массива
-						 */
-						const findMetro = (i = 0) => {
-							// Если метро загружены не все
-							if(i < house.metro.length){
-								// Запрашиваем данные метро
-								const metro = yield idObj.findMetroById({id: house.metro[i]});
-								// Если метро найдено то добавляем его в массив
-								if($.isset(metro)) metro_stations.push(metro);
-								// Продолжаем дальше
-								findMetro(i + 1);
-							// Выводим результат
-							} else resolve(metro_stations);
-						};
-						// Загружаем данные метро
-						findMetro();
+						// Перебираем все станции метро
+						for(let i = 0; i < house.metro.length; i++){
+							// Запрашиваем данные метро
+							const metro = yield idObj.findMetroById({id: house.metro[i]});
+							// Если метро найдено то добавляем его в массив
+							if($.isset(metro)) metro_stations.push(metro);
+						}
+						// Выводим результат
+						resolve(metro_stations);
 					// Сообщаем что такие данные не найдены
 					} else resolve(false);
 				};
