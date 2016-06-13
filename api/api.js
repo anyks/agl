@@ -2203,6 +2203,41 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * findNearStationsMetroByIds Метод поиска ближайших станций метро к каждому из метро
+		 * @param  {Array} options.ids массив идентификаторов станций метро
+		 * @return {Promise}           промис результата
+		 */
+		findNearStationsMetroByIds({ids}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * *getData Генератор для получения данных метро
+				 */
+				const getData = function * (){
+					// Массив с данными метро
+					const metro_stations = [];
+					// Перебираем все станции метро
+					for(let i = 0; i < ids.length; i++){
+						// Запрашиваем данные метро
+						const metro = yield idObj.findMetroById({id: ids[i]});
+						// Получаем ближайшие станции метро
+						const stations = yield idObj.getMetroByGPS({lat: metro.lat, lng: metro.lng});
+						// Добавляем в массив данные метро
+						metro_stations.push({
+							metro,
+							near: stations
+						});
+					}
+					// Выводим результат
+					resolve(metro_stations);
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
+		}
+		/**
 		 * findMetroById Метод поиска станции метро по Id
 		 * @param  {String} options.id  идентификатор станции метро
 		 * @return {Promise}            промис результата
