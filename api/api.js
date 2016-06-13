@@ -200,12 +200,36 @@ const anyks = require("./lib.anyks");
 	 * @param  {String} id         идентификатор записи
 	 * @return {String}            готовый ключ
 	 */
-	const createSubjectKey = function([key, parentType, parentId, type], name = "**", id = "*"){
+	const createSubjectKey = function([key, parentType, parentId, type], name = "*", id = "*"){
 		// Вид ключа: [address:subjects:parentType:parentId:city:char:id]
 		// Создаем массив составного ключа
 		const arrKey = [];
+		// Ключ по умолчанию
+		arguments[0][0] = "address:" + key;
 		// Создаем буквы ключа
-		if($.isset(name)) for(let i = 0; i < 2; i++) arrKey.push(name[i].toLowerCase());
+		if($.isset(name)) for(let i = 0; i < name.length; i++) arrKey.push(name[i].toLowerCase());
+		// Добавляем идентификатор
+		if($.isset(id)) arrKey.push(id);
+		// Формируем первоначальное значение ключа
+		return (arguments[0].join(":") + ":" + arrKey.join(":")).replace(/:{2,7}/g, ":");
+	};
+	/**
+	 * createMetroKey Функция создания ключа для станций метро в Redis
+	 * @param  {String} key     основной ключ
+	 * @param  {String} cityId  родительский тип
+	 * @param  {String} lineId  родительский идентификатор
+	 * @param  {String} name    название записи
+	 * @param  {String} id      идентификатор записи
+	 * @return {String}         готовый ключ
+	 */
+	const createMetroKey = function([key, cityId, lineId], name = "*", id = "*"){
+		// Вид ключа: [address:metro:cityId:lineId:c:h:a:r:id]
+		// Создаем массив составного ключа
+		const arrKey = [];
+		// Ключ по умолчанию
+		arguments[0][0] = "address:" + key;
+		// Создаем буквы ключа
+		if($.isset(name)) for(let i = 0; i < name.length; i++) arrKey.push(name[i].toLowerCase());
 		// Добавляем идентификатор
 		if($.isset(id)) arrKey.push(id);
 		// Формируем первоначальное значение ключа
@@ -244,7 +268,7 @@ const anyks = require("./lib.anyks");
 			}
 		}
 		// Ключ запроса из Redis
-		return createSubjectKey(["address:subjects", parentType, parentId, obj.contentType], obj.name, id);
+		return createSubjectKey(["subjects", parentType, parentId, obj.contentType], obj.name, id);
 	};
 	/**
 	 * getRedisByMaskKey Функция чтения данных из Redis с использованием масок ключей
@@ -320,7 +344,7 @@ const anyks = require("./lib.anyks");
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
 			// Ключ запроса из Redis
-			const key = createSubjectKey(["address:subjects", parentType, parentId, type]);
+			const key = createSubjectKey(["subjects", parentType, parentId, type], str);
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
 				// Если ключи найдены
@@ -345,9 +369,10 @@ const anyks = require("./lib.anyks");
 									// Создаем регулярное выражение для поиска
 									let reg = new RegExp("^" + str, "i");
 									// Если станции метро не найдены то удаляем ключ
-									if($.isset(cache.metro) && !cache.metro.length) delete cache.metro;
+									if($.isset(cache.metro)
+									&& !cache.metro.length) delete cache.metro;
 									// Запоминаем результат
-									if(reg.test(cache.name)) result.push(cache);
+									result.push(cache);
 									// Увеличиваем значение индекса
 									if(i < (limit - 1)) getRedis(i + 1);
 									// Выводим результат
@@ -370,7 +395,7 @@ const anyks = require("./lib.anyks");
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
-				idObj.log(["getRedisKeys in getRedisByMaskKey", err], "error");
+				idObj.log(["getRedisKeys in findAddressInCache", err], "error");
 				// Выходим
 				resolve(false);
 			});
@@ -691,7 +716,7 @@ const anyks = require("./lib.anyks");
 			// Изменяем данные схемы
 			scheme = idObj.schemes[scheme];
 			// Считываем данные из кеша
-			getRedisByMaskKey.call(idObj, key).then((result) => {
+			getRedisByMaskKey.call(idObj, key).then(result => {
 				// Если данные в кеше сть тогда выводим их
 				if($.isArray(result) && result.length) resolve(result[0]);
 				// Если данные в кеше не найдены тогда продолжаем искать
@@ -718,20 +743,20 @@ const anyks = require("./lib.anyks");
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
-				idObj.log(["getRedis in ggetAddressById", err], "error");
+				idObj.log(["getRedisByMaskKey in getAddressById", err], "error");
 				// Выходим
 				resolve(false);
 			});
 		}));
 	};
 	/**
-	 * getDataById Функция поиска данных по id
+	 * getDataMetroById Функция поиска данных метро по id
 	 * @param  {Object} scheme схема базы данных MongoDB
 	 * @param  {String} key    ключ для запроса данных из Redis
 	 * @param  {String} id     идентификатор искомого объекта
 	 * @return {Promise}       промис содержащий найденные данные
 	 */
-	const getDataById = function(scheme, key, id){
+	const getDataMetroById = function(scheme, key, id){
 		// Получаем идентификатор текущего объекта
 		const idObj = this;
 		// Создаем промис для обработки
@@ -739,9 +764,9 @@ const anyks = require("./lib.anyks");
 			// Изменяем данные схемы
 			scheme = idObj.schemes[scheme];
 			// Ищем данные в кеше
-			Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+			getRedisByMaskKey.call(idObj, key).then(result => {
 				// Если данные в кеше сть тогда выводим их
-				if($.isset(cache)) resolve(JSON.parse(cache));
+				if($.isArray(result) && result.length) resolve(result[0]);
 				// Если данные в кеше не найдены тогда продолжаем искать
 				else {
 					// Выполняем поиск идентификатора
@@ -752,8 +777,10 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(err) && $.isset(data)) result = data;
 						// Выводим в консоль сообщение что данные не найдены
 						else idObj.log(["поиск по id не дал результатов:", "id =", id, err, data], "error");
+						// Генерируем ключ метро
+						const key = createMetroKey(["metro", data.cityId, data.lineId], data.name, data._id);
 						// Отправляем в Redis на час
-						Agl.setRedis.call(idObj, "set", key, result, 3600).then();
+						Agl.setRedis.call(idObj, "set", key, result).then();
 						// Выводим результат
 						resolve(result);
 					});
@@ -761,7 +788,7 @@ const anyks = require("./lib.anyks");
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
-				idObj.log(["getRedis in getDataById", err], "error");
+				idObj.log(["getRedisByMaskKey in getDataMetroById", err], "error");
 				// Выходим
 				resolve(false);
 			});
@@ -1630,12 +1657,13 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * findStreet Метод поиска улицы
-		 * @param  {String} options.str    строка запроса
-		 * @param  {String} options.cityId идентификатор города
-		 * @param  {Number} options.limit  количество результатов к выдаче
-		 * @return {Promise}               промис результата
+		 * @param  {String} options.str        строка запроса
+		 * @param  {String} options.cityId     идентификатор города
+		 * @param  {Number} options.limit      количество результатов к выдаче
+		 * @param  {Boolean} options.noCache   отключить кеш
+		 * @return {Promise}                   промис результата
 		 */
-		findStreet({str, cityId, limit = 10}){
+		findStreet({str, cityId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1647,30 +1675,44 @@ const anyks = require("./lib.anyks");
 				const ParentId		= cityId;
 				const WithParent	= 1;
 				const Limit			= limit;
-				// Подключаем модуль кладра
-				const kladr = require("kladrapi").ApiQuery;
-				// Выполняем поиск в кладре
-				kladr(idObj.keyKladr, 'foontick', {
-					Limit,
-					ParentId,
-					ParentType,
-					WithParent,
-					ContentName,
-					ContentType
-				}, (err, res) => {
-					// Выполняем обработку данных
-					processResultKladr.call(idObj, "Streets", err, res, resolve);
+				// Ищем данные адреса сначала в кеше
+				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
+					// Если данные не найдены
+					if(!$.isset(result) || noCache){
+						// Подключаем модуль кладра
+						const kladr = require("kladrapi").ApiQuery;
+						// Выполняем поиск в кладре
+						kladr(idObj.keyKladr, 'foontick', {
+							Limit,
+							ParentId,
+							ParentType,
+							WithParent,
+							ContentName,
+							ContentType
+						}, (err, res) => {
+							// Выполняем обработку данных
+							processResultKladr.call(idObj, "Streets", err, res, resolve);
+						});
+					// Отдаем результат из кеша
+					} else resolve(result);
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in findStreet", err], "error");
+					// Выходим
+					resolve(false);
 				});
 			}));
 		}
 		/**
 		 * findHouse Метод поиска дома
-		 * @param  {String} options.str      строка запроса
-		 * @param  {String} options.streetId идентификатор улицы
-		 * @param  {Number} options.limit    количество результатов к выдаче
-		 * @return {Promise}                 промис результата
+		 * @param  {String} options.str        строка запроса
+		 * @param  {String} options.streetId   идентификатор улицы
+		 * @param  {Number} options.limit      количество результатов к выдаче
+		 * @param  {Boolean} options.noCache   отключить кеш
+		 * @return {Promise}                   промис результата
 		 */
-		findHouse({str, streetId, limit = 10}){
+		findHouse({str, streetId, limit = 10, noCache = false}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1682,19 +1724,32 @@ const anyks = require("./lib.anyks");
 				const ParentId		= streetId;
 				const WithParent	= 1;
 				const Limit			= limit;
-				// Подключаем модуль кладра
-				const kladr = require("kladrapi").ApiQuery;
-				// Выполняем поиск в кладре
-				kladr(idObj.keyKladr, 'foontick', {
-					Limit,
-					ParentId,
-					ParentType,
-					WithParent,
-					ContentName,
-					ContentType
-				}, (err, res) => {
-					// Выполняем обработку данных
-					processResultKladr.call(idObj, "Houses", err, res, resolve);
+				// Ищем данные адреса сначала в кеше
+				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
+					// Если данные не найдены
+					if(!$.isset(result) || noCache){
+						// Подключаем модуль кладра
+						const kladr = require("kladrapi").ApiQuery;
+						// Выполняем поиск в кладре
+						kladr(idObj.keyKladr, 'foontick', {
+							Limit,
+							ParentId,
+							ParentType,
+							WithParent,
+							ContentName,
+							ContentType
+						}, (err, res) => {
+							// Выполняем обработку данных
+							processResultKladr.call(idObj, "Houses", err, res, resolve);
+						});
+					// Отдаем результат из кеша
+					} else resolve(result);
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in findHouse", err], "error");
+					// Выходим
+					resolve(false);
 				});
 			}));
 		}
@@ -1714,68 +1769,15 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключа кеша метро
-				const key = "metro:stations";
+				const key = createMetroKey(["metro", ($.isset(cityId) ? cityId : "*"), ($.isset(lineId) ? lineId : "*")], str);
 				// Ищем станции в кеше
-				Agl.getRedis.call(idObj, "get", key).then(({err, cache}) => {
+				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные есть в кеше
-					if($.isset(cache)){
-						// Преобразуем данные кеша в объект
-						cache = JSON.parse(cache);
-						// Получаем букву для поиска
-						const char = str[0].toLowerCase();
-						/**
-						 * findMetro Функция поиска в массиве станцию метро
-						 * @param  {String} cityId идентификатор города для поиска
-						 * @return {Object} объект станции метро
-						 */
-						const findMetro = cityId => {
-							// Массив метро
-							const metro_stations = [];
-							// Создаем регулярное выражение для поиска
-							const reg = new RegExp("^" + str, "i");
-							// Итератор перебора массива
-							let i = 0;
-							// Переходим по всему массиву
-							for(let val of cache[cityId][char]){
-								// Если данные найдены
-								if(reg.test(val.name)
-								&& (($.isset(lineName)
-								&& (val.line === lineName))
-								|| ($.isset(lineColor)
-								&& (val.color === lineColor)))) metro_stations.push(val);
-								// Если итератор вышел за границу лимита тогда выходим
-								if(i < limit) i++;
-								// Выходим из цикла
-								else break;
-							}
-							// Выводим массив станций метро
-							return metro_stations;
-						};
-						// Если идентификатор города указан
-						if($.isset(cityId)) resolve(findMetro(cityId));
-						// Если же идентификатор города не указан тогда перебираем все города
-						else {
-							// Устанавливаем счетчик итератора
-							let i = 0;
-							// Массив метро
-							let metro_stations = [];
-							// Выполняем переход по объекту
-							for(let val in cache){
-								// Копируем полученный массив станций
-								metro_stations = metro_stations.concat(findMetro(val));
-								// Запоминаем количество полученных элементов
-								i += metro_stations.length;
-								// Если размер лимита исчерпан тогда выходим
-								if(i > limit){
-									// Уменьшаем количество элементов
-									metro_stations.length = limit;
-									// Выходим
-									break;
-								}
-							}
-							// Выводим результат
-							resolve(metro_stations);
-						}
+					if($.isArray(result) && result.length){
+						// Если полученные данные превышают размер лимита тогда уменьшаем размед данных
+						if(result.length > limit) result.length = limit;
+						// Выводим результат
+						resolve(result);
 					// Если данные в кеше не найдены
 					} else {
 						/**
@@ -1850,43 +1852,30 @@ const anyks = require("./lib.anyks");
 							 * @param  {Array} metro массив станций метро
 							 */
 							const parseDataMetro = metro => {
-								// Ищем станции в кеше
-								Agl.getRedis.call(idObj, "get", key).then(({err, cache}) => {
-									// Если данные есть в кеше
-									if($.isset(cache)) cache = JSON.parse(cache);
-									// Если не существует тогда создаем его
-									else cache = {};
-									// Массив метро
-									const metro_stations = [];
-									// Переходим по всем полученным станциям метро
-									metro.forEach(val => {
-										// Создаем ключ станции
-										const char = val.name[0].toLowerCase();
-										// Если объект в кеше с идентификатором города не существует тогда создаем его
-										if(!$.isset(cache[val.cityId._id])) cache[val.cityId._id] = {};
-										// Если такой буквы нет то создаем массив
-										if(!$.isArray(cache[val.cityId._id][char])) cache[val.cityId._id][char] = [];
-										// Формируем объект со станцией метро
-										const station = {
-											id:		val._id,
-											name:	val.name,
-											lat:	val.lat,
-											lng:	val.lng,
-											order:	val.order,
-											line:	val.lineId.name,
-											color:	val.lineId.color,
-											city:	val.cityId.name
-										};
-										// Формируем массив станций метро
-										metro_stations.push(station);
-										// Добавляем станцию в кеш
-										cache[val.cityId._id][char].push(station);
-									});
+								// Массив метро
+								const metro_stations = [];
+								// Переходим по всем полученным станциям метро
+								metro.forEach(val => {
+									// Формируем объект со станцией метро
+									const station = {
+										id:		val._id,
+										name:	val.name,
+										lat:	val.lat,
+										lng:	val.lng,
+										order:	val.order,
+										line:	val.lineId.name,
+										color:	val.lineId.color,
+										city:	val.cityId.name
+									};
+									// Формируем массив станций метро
+									metro_stations.push(station);
+									// Ключа кеша метро
+									const key = createMetroKey(["metro", val.cityId._id, val.lineId._id], val.name, val._id);
 									// Записываем данные в кеш
-									Agl.setRedis.call(idObj, "set", key, cache).then();
-									// Выводим полученный массив метро
-									resolve(metro_stations);
+									Agl.setRedis.call(idObj, "set", key, station).then();
 								});
+								// Выводим полученный массив метро
+								resolve(metro_stations);
 							};
 							// Если идентификатор города или идентификатор линии найден
 							if($.isset(cityId) || $.isset(lineId)){
@@ -1928,6 +1917,12 @@ const anyks = require("./lib.anyks");
 						// Запускаем коннект
 						exec(getData());
 					}
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedisByMaskKey in findMetro", err], "error");
+					// Выходим
+					resolve(false);
 				});
 			}));
 		}
@@ -1942,36 +1937,13 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключа кеша метро
-				const key = "metro:stations";
+				const key = createMetroKey(["metro", "*", "*"], null, id);
 				// Ищем станции в кеше
-				Agl.getRedis.call(idObj, "get", key).then(({err, cache}) => {
+				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные есть в кеше
-					if($.isset(cache)){
-						// Преобразуем данные кеша в объект
-						cache = JSON.parse(cache);
-						/**
-						 * searchMetro Функция поиска станции метро
-						 * @return {Object} объект с данными станции метро
-						 */
-						const searchMetro = () => {
-							// Переходим по всему объекту
-							for(let cityId in cache){
-								// Переходим по всем буквам
-								for(let val in cache[cityId]){
-									// Если станция метро найдена
-									if(cache[cityId][val].id === id){
-										// Выводим результат
-										return cache[cityId][val];
-									}
-								}
-							}
-							// Сообщаем что ничего не найдено
-							return false;
-						};
-						// Сообщаем что ничего не найдено
-						resolve(searchMetro());
+					if($.isArray(result) && result.length) resolve(result[0]);
 					// Если в кеше данные метро не найдены
-					} else {
+					else {
 						// Запрашиваем все данные из базы
 						idObj.schemes.Metro_stations.findOne({_id: id})
 						.populate('cityId')
@@ -1992,27 +1964,22 @@ const anyks = require("./lib.anyks");
 									color:	data.lineId.color,
 									city:	data.cityId.name
 								};
-								// Ищем станции в кеше
-								Agl.getRedis.call(idObj, "get", key).then(({err, cache}) => {
-									// Создаем ключ станции
-									const char = data.name[0].toLowerCase();
-									// Если данные есть в кеше
-									if($.isset(cache)) cache = JSON.parse(cache);
-									// Если города такого не существует то создаем его
-									if(!$.isset(cache[data.cityId._id])) cache[data.cityId._id] = {};
-									// Если такой буквы нет то создаем массив
-									if(!$.isArray(cache[data.cityId._id][char])) cache[data.cityId._id][char] = [];
-									// Добавляем в кеш данные
-									cache[data.cityId._id][char].push(station);
-									// Записываем данные в кеш
-									Agl.setRedis.call(idObj, "set", key, cache).then();
-								});
+								// Ключа кеша метро
+								const key = createMetroKey(["metro", data.cityId._id, data.lineId._id], data.name, data._id);
+								// Записываем данные в кеш
+								Agl.setRedis.call(idObj, "set", key, station).then();
 								// Выводим результат
 								resolve(station);
 							// Если данные не найдены выводим как есть
 							} else resolve(false);
 						});
 					}
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedisByMaskKey in findMetroById", err], "error");
+					// Выходим
+					resolve(false);
 				});
 			}));
 		}
@@ -2174,6 +2141,17 @@ const anyks = require("./lib.anyks");
 									const result = {country, region, district, city, street, house};
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, result, 3600).then();
+									// Формируем объект для генерации ключа
+									const obj = ($.isset(house) ? house : ($.isset(street) ? street :
+									($.isset(city) ? city : ($.isset(district) ? district :
+									($.isset(region) ? region : ($.isset(country) ? country : false))))));
+									// Если объект существует тогда генерируем ключ
+									if($.isset(obj)){
+										// Генерируем ключ
+										const key = getKeyRedisForSubject(obj);
+										// Записываем данные в кеш
+										Agl.setRedis.call(idObj, "set", key, obj).then();
+									}
 									// Выводим результат
 									resolve(result);
 								};
@@ -2353,11 +2331,6 @@ const anyks = require("./lib.anyks");
 							].map(val => val.replace("$address", encodeURI(address)));
 							// Заменяем адрес OSM если он существует
 							if($.isset(osmAddress)) urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
-
-
-							console.log("++++++++++++++++++++ OSM Address ++++++++++++++++++++", osmAddress);
-
-
 							// Получаем объект запроса с геокодера
 							const init = obj => {
 								// Выполняем обработку результата геокодера
@@ -2480,11 +2453,20 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса
-				const key = "address:countries:" + idObj.generateKey(type + ":" + page + ":" + limit);
+				const key = createSubjectKey(["subjects", null, null, "country"]);
 				// Считываем данные из кеша
-				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
-					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cache)){
+				getRedisByMaskKey.call(idObj, key).then(result => {
+					// Если данные пришли, выводим результат
+					if($.isArray(result) && result.length){
+						// Если размер массива больше указанного лимита то уменьшаем размер данных
+						resolve({
+							page,
+							limit,
+							count:	result.length,
+							data:	result.splice(page * limit, limit)
+						});
+					// Если данные не найдены, то ищем их в базе
+					} else {
 						// Запрашиваем все данные из базы
 						idObj.schemes.Countries.find({})
 						.sort({_id: 1})
@@ -2503,24 +2485,16 @@ const anyks = require("./lib.anyks");
 										// Сообщаем что ничего не найдено
 										resolve(false);
 									// Выводим результат
-									} else {
-										// Формируем объект
-										const obj = {data, page, limit, count};
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
-										// Выводим результат
-										resolve(obj);
-									}
+									} else resolve({data, page, limit, count});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
 						});
-					// Если данные пришли, выводим результат
-					} else resolve(JSON.parse(cache));
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getRedis in getCountries", err], "error");
+					idObj.log(["getRedisByMaskKey in getCountries", err], "error");
 					// Выходим
 					resolve(false);
 				});
@@ -2539,11 +2513,31 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса
-				const key = "address:regions:" + idObj.generateKey(type + ":" + page + ":" + limit);
+				const key = createSubjectKey(["subjects", null, null, "region"]);
 				// Считываем данные из кеша
-				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
-					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cache)){
+				getRedisByMaskKey.call(idObj, key).then(data => {
+					// Если данные пришли, выводим результат
+					if($.isArray(data) && data.length){
+						// Результат поиска данных
+						let result = [];
+						// Если тип данных указан
+						if($.isset(type)){
+							// Переходим по всему массиву и ищем в нем тип искомого региона
+							data.forEach(val => {
+								// Если тип найден то добавляем его в массив
+								if(val.typeShort === type[0].toLowerCase()) result.push(val);
+							});
+						// Иначе просто приравниваем массив
+						} else result = data;
+						// Если размер массива больше указанного лимита то уменьшаем размер данных
+						resolve({
+							page,
+							limit,
+							count:	result.length,
+							data:	result.splice(page * limit, limit)
+						});
+					// Если данные не найдены, то ищем их в базе
+					} else {
 						// Формируем параметры запроса
 						const query = {};
 						// Если тип передан
@@ -2566,24 +2560,16 @@ const anyks = require("./lib.anyks");
 										// Сообщаем что ничего не найдено
 										resolve(false);
 									// Выводим результат
-									} else {
-										// Формируем объект
-										const obj = {data, page, limit, count};
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
-										// Выводим результат
-										resolve(obj);
-									}
+									} else resolve({data, page, limit, count});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
 						});
-					// Если данные пришли, выводим результат
-					} else resolve(JSON.parse(cache));
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getRedis in getRegions", err], "error");
+					idObj.log(["getRedisByMaskKey in getRegions", err], "error");
 					// Выходим
 					resolve(false);
 				});
@@ -2603,15 +2589,31 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса
-				const key = "address:districts:" + idObj.generateKey(
-					regionId + ":" +
-					type + ":" +
-					page + ":" + limit
-				);
+				const key = createSubjectKey(["subjects", ($.isset(regionId) ? "region" : null), regionId, "district"]);
 				// Считываем данные из кеша
-				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
-					// Если данные не найдены, сообщаем что в кеше ничего не найдено
-					if(!$.isset(cache)){
+				getRedisByMaskKey.call(idObj, key).then(data => {
+					// Если данные пришли, выводим результат
+					if($.isArray(data) && data.length){
+						// Результат поиска данных
+						let result = [];
+						// Если тип данных указан
+						if($.isset(type)){
+							// Переходим по всему массиву и ищем в нем тип искомого региона
+							data.forEach(val => {
+								// Если тип найден то добавляем его в массив
+								if(val.typeShort === type[0].toLowerCase()) result.push(val);
+							});
+						// Иначе просто приравниваем массив
+						} else result = data;
+						// Если размер массива больше указанного лимита то уменьшаем размер данных
+						resolve({
+							page,
+							limit,
+							count:	result.length,
+							data:	result.splice(page * limit, limit)
+						});
+					// Если данные не найдены, то ищем их в базе
+					} else {
 						// Формируем параметры запроса
 						const query = {};
 						// Если регион или тип переданы
@@ -2635,24 +2637,16 @@ const anyks = require("./lib.anyks");
 										// Сообщаем что ничего не найдено
 										resolve(false);
 									// Выводим результат
-									} else {
-										// Формируем объект
-										const obj = {data, page, limit, count};
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
-										// Выводим результат
-										resolve(obj);
-									}
+									} else resolve({data, page, limit, count});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
 						});
-					// Если данные пришли, выводим результат
-					} else resolve(JSON.parse(cache));
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getRedis in getDistricts", err], "error");
+					idObj.log(["getRedisByMaskKey in getDistricts", err], "error");
 					// Выходим
 					resolve(false);
 				});
@@ -2741,7 +2735,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey(["address:subjects", null, null, "country"], null, id);
+				const key = createSubjectKey(["subjects", null, null, "country"], null, id);
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Countries", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -2764,7 +2758,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey(["address:subjects", null, null, "region"], null, id);
+				const key = createSubjectKey(["subjects", null, null, "region"], null, id);
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Regions", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -2787,7 +2781,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey(["address:subjects", "*", "*", "district"], null, id);
+				const key = createSubjectKey(["subjects", "*", "*", "district"], null, id);
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Districts", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -2810,7 +2804,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey(["address:subjects", "*", "*", "city"], null, id);
+				const key = createSubjectKey(["subjects", "*", "*", "city"], null, id);
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Cities", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -2833,7 +2827,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey(["address:subjects", "*", "*", "street"], null, id);
+				const key = createSubjectKey(["subjects", "*", "*", "street"], null, id);
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Streets", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -2856,7 +2850,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey(["address:subjects", "*", "*", "house"], null, id);
+				const key = createSubjectKey(["subjects", "*", "*", "house"], null, id);
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Houses", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -2878,14 +2872,14 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Ключ кеша метро
-				const key = "address:metro:stations:ids:" + idObj.generateKey(id);
+				// Генерируем ключ метро
+				const key = createMetroKey(["metro", "*", "*"], "*", id);
 				// Ищем станцию метро в базе
-				getDataById.call(idObj, "ModelMetro_stations", key, id)
+				getDataMetroById.call(idObj, "ModelMetro_stations", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getDataById in getMetroStationById", err], "error");
+					idObj.log(["getDataMetroById in getMetroStationById", err], "error");
 					// Выходим
 					resolve(false);
 				});
@@ -2901,14 +2895,14 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Ключ кеша метро
-				const key = "address:metro:lines:ids:" + idObj.generateKey(id);
+				// Генерируем ключ метро
+				const key = createMetroKey(["metro", "*", id]);
 				// Ищем линию метро в базе
-				getDataById.call(idObj, "ModelMetro_lines", key, id)
+				getDataMetroById.call(idObj, "ModelMetro_lines", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getDataById in getMetroLineById", err], "error");
+					idObj.log(["getDataMetroById in getMetroLineById", err], "error");
 					// Выходим
 					resolve(false);
 				});
@@ -2924,14 +2918,14 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Ключ кеша метро
-				const key = "address:metro:cities:ids:" + idObj.generateKey(id);
+				// Генерируем ключ метро
+				const key = createMetroKey(["metro", id, "*"]);
 				// Ищем город в котором есть метро в базе
-				getDataById.call(idObj, "ModelMetro_cities", key, id)
+				getDataMetroById.call(idObj, "ModelMetro_cities", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log(["getDataById in getMetroCityById", err], "error");
+					idObj.log(["getDataMetroById in getMetroCityById", err], "error");
 					// Выходим
 					resolve(false);
 				});
@@ -3555,96 +3549,6 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
-		 * @return {Promise} промис с данными результата обновлений станций метро
-		 */
-		updateMetroCity(){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				/**
-				 * updateDB Функция обновления данных в базе
-				 * @param  {Object}   obj      объект для обновления данных
-				 * @param  {Function} callback функция обратного вызова
-				 */
-				const updateDB = (obj, callback) => {
-					/**
-					 * Функция сохранения данных в кеше saveCache
-					 */
-					const saveCache = () => {
-						// Ключ запроса
-						const key = getKeyRedisForSubject(obj);
-						// Сохраняем данные в кеше
-						Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
-					};
-					// Запрашиваем все данные из базы
-					idObj.schemes.Cities.findOne({_id: obj._id})
-					// Выполняем запрос
-					.exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isset(data)
-						&& $.isObject(data)){
-							// Выполняем обновление
-							idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
-						// Просто добавляем новый объект
-						} else (new idObj.schemes.Cities(obj)).save(saveCache);
-					});
-				};
-				// Запрашиваем все данные городов
-				idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
-				// Запрашиваем данные регионов
-				.exec((err, data) => {
-					// Если ошибки нет
-					if(!$.isset(err) && $.isArray(data) && data.length){
-						/**
-						 * getData Рекурсивная функция перехода по массиву
-						 * @param  {Number} i индекс текущего значения массива
-						 */
-						const getData = (i = 0) => {
-							// Если не все данные пришли тогда продолжаем загружать
-							if(i < data.length){
-								// Параметры запроса
-								const query = {
-									lat:		data[i].lat,
-									lng:		data[i].lng,
-									distance:	150000
-								};
-								// Получаем данные метро
-								idObj.getMetroByGPS(query).then(metro => {
-									// Если метро передано
-									if($.isArray(metro) && metro.length){
-										// Создаем пустой массив с метро
-										data[i].metro = [];
-										// Переходим по всему массиву данных
-										metro.forEach(val => data[i].metro.push(val._id));
-										// Сохраняем метро
-										updateDB(data[i], () => getData(i + 1));
-									// Просто продолжаем дальше
-									} else getData(i + 1);
-								// Если происходит ошибка тогда выходим
-								}).catch(err => {
-									// Выводим ошибку метода
-									idObj.log(["getMetroByGPS in updateMetroCity", err], "error");
-									// Выходим
-									getData(i + 1);
-								});
-							// Если все загружено тогда сообщаем об этом
-							} else {
-								// Выводим в консоль сообщение
-								idObj.log("все станции метро в городах установлены!", "info");
-								// Выводим результат
-								resolve(true);
-							}
-						};
-						// Запускаем запрос данных
-						getData();
-					// Сообщаем что такие данные не найдены
-					} else resolve(false);
-				});
-			}));
-		}
-		/**
 		 * updateCities Метод обновления данных городов
 		 */
 		updateCities(){
@@ -3755,6 +3659,96 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
+		 * @return {Promise} промис с данными результата обновлений станций метро
+		 */
+		updateMetroCity(){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * updateDB Функция обновления данных в базе
+				 * @param  {Object}   obj      объект для обновления данных
+				 * @param  {Function} callback функция обратного вызова
+				 */
+				const updateDB = (obj, callback) => {
+					/**
+					 * Функция сохранения данных в кеше saveCache
+					 */
+					const saveCache = () => {
+						// Ключ запроса
+						const key = getKeyRedisForSubject(obj);
+						// Сохраняем данные в кеше
+						Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
+					};
+					// Запрашиваем все данные из базы
+					idObj.schemes.Cities.findOne({_id: obj._id})
+					// Выполняем запрос
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isset(data)
+						&& $.isObject(data)){
+							// Выполняем обновление
+							idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
+						// Просто добавляем новый объект
+						} else (new idObj.schemes.Cities(obj)).save(saveCache);
+					});
+				};
+				// Запрашиваем все данные городов
+				idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
+				// Запрашиваем данные регионов
+				.exec((err, data) => {
+					// Если ошибки нет
+					if(!$.isset(err) && $.isArray(data) && data.length){
+						/**
+						 * getData Рекурсивная функция перехода по массиву
+						 * @param  {Number} i индекс текущего значения массива
+						 */
+						const getData = (i = 0) => {
+							// Если не все данные пришли тогда продолжаем загружать
+							if(i < data.length){
+								// Параметры запроса
+								const query = {
+									lat:		data[i].lat,
+									lng:		data[i].lng,
+									distance:	150000
+								};
+								// Получаем данные метро
+								idObj.getMetroByGPS(query).then(metro => {
+									// Если метро передано
+									if($.isArray(metro) && metro.length){
+										// Создаем пустой массив с метро
+										data[i].metro = [];
+										// Переходим по всему массиву данных
+										metro.forEach(val => data[i].metro.push(val._id));
+										// Сохраняем метро
+										updateDB(data[i], () => getData(i + 1));
+									// Просто продолжаем дальше
+									} else getData(i + 1);
+								// Если происходит ошибка тогда выходим
+								}).catch(err => {
+									// Выводим ошибку метода
+									idObj.log(["getMetroByGPS in updateMetroCity", err], "error");
+									// Выходим
+									getData(i + 1);
+								});
+							// Если все загружено тогда сообщаем об этом
+							} else {
+								// Выводим в консоль сообщение
+								idObj.log("все станции метро в городах установлены!", "info");
+								// Выводим результат
+								resolve(true);
+							}
+						};
+						// Запускаем запрос данных
+						getData();
+					// Сообщаем что такие данные не найдены
+					} else resolve(false);
+				});
+			}));
+		}
+		/**
 		 * updateMetro Метод обновления данных базы метро
 		 */
 		updateMetro(){
@@ -3769,8 +3763,6 @@ const anyks = require("./lib.anyks");
 				 * @param  {Array} arr объект данными метро
 				 */
 				const getData = arr => {
-					// Объект с данными метро для кеша
-					const cache = {};
 					// Подключаемся к коллекции метро
 					const metro = idObj.clients.mongo.connection.db.collection("metro");
 					// Подключаемся к коллекции метро городов
@@ -3840,12 +3832,8 @@ const anyks = require("./lib.anyks");
 											station.gps = [station.lat, station.lng];
 											// Формируем массив станций для линии
 											line.stationsIds.push(station._id);
-											// Создаем ключ станции
-											const char = station.name[0].toLowerCase();
-											// Создаем объект метро для хранения данных
-											if(!$.isArray(cache[arr[i]._id][char])) cache[arr[i]._id][char] = [];
-											// Добавляем в кеш данные
-											cache[arr[i]._id][char].push({
+											// Формируем объект для сохранения в кеше
+											const obj = {
 												id:		station._id,
 												name:	station.name,
 												lat:	station.lat,
@@ -3854,7 +3842,11 @@ const anyks = require("./lib.anyks");
 												line:	line.name,
 												color:	line.color,
 												city:	arr[i].name
-											});
+											};
+											// Ключа кеша метро
+											const key = createMetroKey(["metro", arr[i]._id, line._id], station.name, station._id);
+											// Записываем данные в кеш
+											Agl.setRedis.call(idObj, "set", key, obj).then();
 											// Сохраняем станцию метро
 											(new idObj.schemes.Metro_stations(station)).save();
 										});
@@ -3893,10 +3885,6 @@ const anyks = require("./lib.anyks");
 							metro_stations.createIndex({order: 1}, {name: "order"});
 							metro_stations.createIndex({lat: 1, lng: 1}, {name: "gps"});
 							metro_stations.createIndex({gps: "2dsphere"}, {name: "locations"});
-							// Ключа кеша метро
-							const key = "metro:stations";
-							// Записываем данные в кеш
-							Agl.setRedis.call(idObj, "set", key, cache).then();
 							// Выводим в консоль сообщение
 							idObj.log("все метро установлены!", "info");
 							// Сообщаем что все удачно выполнено
