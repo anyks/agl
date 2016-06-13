@@ -1131,6 +1131,46 @@ const anyks = require("./lib.anyks");
 							} else return false;
 						};
 						/**
+						 * getSubject Функция извлечения данных с базы
+						 * @param  {String}   str   строка в которой происходит поиск
+						 * @param  {Function} func  функция для запроса данных
+						 * @param  {Object}   obj   объект с параметрами запроса
+						 * @param  {Number}   i     текущий индекс итерации
+						 * @param  {Number}   count максимальное количество страниц
+						 * @return {Promise}        промис содержащий результат поиска
+						 */
+						const getSubject = (str, func, obj, i = 0, count = 1) => {
+							// Создаем промис для обработки
+							return (new Promise(resolve => {
+								// Если данные загружены не полностью, начинаем загрузку
+								if(i < count){
+									// Формируем параметры запроса
+									let query = Object.assign({page: i, limit: 100}, obj);
+									// Закачиваем первую порцию данных
+									func(query).then(result => {
+										// Если данные пришли
+										if($.isset(result)
+										&& $.isArray(result.data)
+										&& result.data.length){
+											// Выполняем поиск субъекта
+											let subject = searchSubject(str, result.data);
+											// Если субъект найден
+											if($.isset(subject)){
+												// Удаляем из строки адреса найденный субъект
+												str = str.replace(subject.name.toLowerCase(), "");
+												// Выводим результат
+												resolve({str, data: subject});
+											// Продолжаем загрузку дальше
+											} else getSubject(str, func, obj, i + 1, result.count).then(resolve);
+										// Если данные не найдены тогда перепрыгиваем этот шаг
+										} else getSubject(str, func, obj, i + 1, count).then(resolve);
+									// Если возникает ошибка то просто перепрыгиваем
+									}).catch(() => getSubject(str, func, obj, i + 1, count).then(resolve));
+								// Сообщаем что ничего не найдено
+								} else resolve(false);
+							}));
+						};
+						/**
 						 * *getData Генератор для получения данных адреса
 						 */
 						const getData = function * (){
@@ -1150,70 +1190,62 @@ const anyks = require("./lib.anyks");
 							let house = false;
 							// Почтовый индекс
 							let zip = false;
-							// Получаем данные стран
-							const countries = yield idObj.getCountries({limit: 100});
-							// Если данные пришли
-							if($.isset(countries)
-							&& $.isArray(countries.data)
-							&& countries.data.length){
-								// Выполняем поиск страны
-								country = searchSubject(str, countries.data);
-								// Удаляем из строки адреса найденную страну
-								str = str.replace(country.name.toLowerCase(), "");
+							// Текущее значение субъекта
+							let subject = false;
+							// Запрашиваем данные стран
+							subject = yield getSubject(str, idObj.getCountries, {});
+							// Если данные существуют
+							if($.isset(subject)){
+								// Запоминаем данные строки
+								str = subject.str;
+								// Запоминаем данные страны
+								country = subject.data;
 							}
-							// Получаем данные регионов
-							const regions = yield idObj.getRegions({limit: 100});
-							// Если данные пришли
-							if($.isset(regions)
-							&& $.isArray(regions.data)
-							&& regions.data.length){
-								// Выполняем поиск региона
-								region = searchSubject(str, regions.data);
-								// Удаляем из строки адреса найденный регион
-								str = str.replace(region.name.toLowerCase(), "");
+							// Запрашиваем данные регионов
+							subject = yield getSubject(str, idObj.getRegions, {});
+							// Если данные существуют
+							if($.isset(subject)){
+								// Запоминаем данные строки
+								str = subject.str;
+								// Запоминаем данные региона
+								region = subject.data;
 							}
-							// Получаем данные районов
-							const districts = yield idObj.getDistricts({
-								limit:		100,
-								regionId:	($.isset(region) ? region.id : undefined)
+							// Запрашиваем данные районов
+							subject = yield getSubject(str, idObj.getDistricts, {
+								// Передаем идентификатор региона
+								regionId: ($.isset(region) ? region.id : undefined)
 							});
-							// Если данные пришли
-							if($.isset(districts)
-							&& $.isArray(districts.data)
-							&& districts.data.length){
-								// Выполняем поиск района
-								district = searchSubject(str, districts.data);
-								// Удаляем из строки адреса найденный район
-								str = str.replace(district.name.toLowerCase(), "");
+							// Если данные существуют
+							if($.isset(subject)){
+								// Запоминаем данные строки
+								str = subject.str;
+								// Запоминаем данные района
+								district = subject.data;
 							}
-							// Получаем данные городов
-							const cities = yield idObj.getCities({
-								regionId:	($.isset(region)	? region.id : undefined),
-								districtId:	($.isset(district)	? district.id : undefined),
-								limit:		100
+							// Запрашиваем данные городов
+							subject = yield getSubject(str, idObj.getCities, {
+								// Передаем идентификаторы
+								regionId:	($.isset(region)	? region.id		: undefined),
+								districtId:	($.isset(district)	? district.id	: undefined)
 							});
-							// Если данные пришли
-							if($.isset(cities)
-							&& $.isArray(cities.data)
-							&& cities.data.length){
-								// Выполняем поиск города
-								city = searchSubject(str, cities.data);
-								// Удаляем из строки адреса найденный город
-								str = str.replace(city.name.toLowerCase(), "");
+							// Если данные существуют
+							if($.isset(subject)){
+								// Запоминаем данные строки
+								str = subject.str;
+								// Запоминаем данные города
+								city = subject.data;
 							}
-							// Получаем данные улиц
-							const streets = yield idObj.getStreets({
-								cityId:	($.isset(city) ? city.id : undefined),
-								limit:	100
+							// Запрашиваем данные улиц
+							subject = yield getSubject(str, idObj.getCities, {
+								// Передаем идентификатор города
+								cityId:	($.isset(city) ? city.id : undefined)
 							});
-							// Если данные пришли
-							if($.isset(streets)
-							&& $.isArray(streets.data)
-							&& streets.data.length){
-								// Выполняем поиск улицы
-								street = searchSubject(str, streets.data);
-								// Удаляем из строки адреса найденную улицу
-								str = str.replace(street.name.toLowerCase(), "");
+							// Если данные существуют
+							if($.isset(subject)){
+								// Запоминаем данные строки
+								str = subject.str;
+								// Запоминаем данные улицы
+								street = subject.data;
 							}
 							// Регулярное выражение для извлечения данных дома
 							const regHouse = new RegExp("(?:(?:№\\s*)?\\d+[А-ЯЁ]*\\s*(?:\\/|-)\\s*\\d+[А-ЯЁ]*)|"
