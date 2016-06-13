@@ -1350,8 +1350,8 @@
 			/**
 			 * String.clearColor Создаем метод для очистки текста от кодов цветов консоли
 			 */
-			String.method("clearColor", function(flag = true){
-				return (flag ? this.replace(/\x1B\[\d+m/ig, "") : this);
+			String.method("clearColor", function(flag = false){
+				return (!flag ? this.replace(/\x1B\[\d+m/ig, "") : this);
 			});
 			/**
 			 * String.trim Создаем метот trim
