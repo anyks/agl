@@ -2033,18 +2033,27 @@ const anyks = require("./lib.anyks");
 					// Получаем данные улицы
 					const street = yield idObj.getStreetById({id});
 					// Если улицы найдена и в ней есть станции метро
-					if($.isset(street) && $.isArray(street.metro)){
+					if($.isset(street) && $.isArray(street.metro) && street.metro.length){
 						// Массив с данными метро
 						const metro_stations = [];
-						// Выполняем поиск метро
-						street.metro.forEach(metroId => {
-							// Запрашиваем данные метро
-							const metro = yield idObj.findMetroById({id: metroId});
-							// Если метро найдено то добавляем его в массив
-							if($.isset(metro)) metro_stations.push(metro);
-						});
-						// Выводим результат
-						resolve(metro_stations);
+						/**
+						 * findMetro Функция поиска метро
+						 * @param  {Number} i итератор обхода массива
+						 */
+						const findMetro = (i = 0) => {
+							// Если метро загружены не все
+							if(i < street.metro.length){
+								// Запрашиваем данные метро
+								const metro = yield idObj.findMetroById({id: street.metro[i]});
+								// Если метро найдено то добавляем его в массив
+								if($.isset(metro)) metro_stations.push(metro);
+								// Продолжаем дальше
+								findMetro(i + 1);
+							// Выводим результат
+							} else resolve(metro_stations);
+						};
+						// Загружаем данные метро
+						findMetro();
 					// Сообщаем что такие данные не найдены
 					} else resolve(false);
 				};
@@ -2069,18 +2078,27 @@ const anyks = require("./lib.anyks");
 					// Получаем данные улицы
 					const house = yield idObj.getHouseById({id});
 					// Если дом найден и рядом есть станции метро
-					if($.isset(house) && $.isArray(house.metro)){
+					if($.isset(house) && $.isArray(house.metro) && street.metro.length){
 						// Массив с данными метро
 						const metro_stations = [];
-						// Выполняем поиск метро
-						house.metro.forEach(metroId => {
-							// Запрашиваем данные метро
-							const metro = yield idObj.findMetroById({id: metroId});
-							// Если метро найдено то добавляем его в массив
-							if($.isset(metro)) metro_stations.push(metro);
-						});
-						// Выводим результат
-						resolve(metro_stations);
+						/**
+						 * findMetro Функция поиска метро
+						 * @param  {Number} i итератор обхода массива
+						 */
+						const findMetro = (i = 0) => {
+							// Если метро загружены не все
+							if(i < house.metro.length){
+								// Запрашиваем данные метро
+								const metro = yield idObj.findMetroById({id: house.metro[i]});
+								// Если метро найдено то добавляем его в массив
+								if($.isset(metro)) metro_stations.push(metro);
+								// Продолжаем дальше
+								findMetro(i + 1);
+							// Выводим результат
+							} else resolve(metro_stations);
+						};
+						// Загружаем данные метро
+						findMetro();
 					// Сообщаем что такие данные не найдены
 					} else resolve(false);
 				};
