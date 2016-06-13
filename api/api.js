@@ -2453,6 +2453,176 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * hintCountries Метод вывода подсказок для стран
+		 * @param  {String} options.str подстрока поиска
+		 * @return {Promise}            промис содержащий список подсказок
+		 */
+		hintCountries({str}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Выполняем поиск подсказок в кеше
+				findAddressInCache.call(idObj, str, "country", "*", "*", 100)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in hintCountries", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * hintRegions Метод вывода подсказок для регионов
+		 * @param  {String} options.str подстрока поиска
+		 * @return {Promise}            промис содержащий список подсказок
+		 */
+		hintRegions({str}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Выполняем поиск подсказок в кеше
+				findAddressInCache.call(idObj, str, "region", "*", "*", 100)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in hintRegions", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * hintDistricts Метод вывода подсказок для районов
+		 * @param  {String} options.str подстрока поиска
+		 * @return {Promise}            промис содержащий список подсказок
+		 */
+		hintDistricts({str, regionId}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Выполняем поиск подсказок в кеше
+				findAddressInCache.call(idObj, str, "district", regionId, "*", 100)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in hintDistricts", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * hintCities Метод вывода подсказок для городов
+		 * @param  {String} options.str подстрока поиска
+		 * @return {Promise}            промис содержащий список подсказок
+		 */
+		hintCities({str, regionId, districtId}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Определяем идентификатор
+				const id = ($.isset(regionId) ? regionId : ($.isset(districtId) ? districtId : undefined));
+				// Выполняем поиск подсказок в кеше
+				findAddressInCache.call(idObj, str, "city", id , "*", 100)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in hintCities", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * hintStreets Метод вывода подсказок для улиц
+		 * @param  {String} options.str подстрока поиска
+		 * @return {Promise}            промис содержащий список подсказок
+		 */
+		hintStreets({str, cityId}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Выполняем поиск подсказок в кеше
+				findAddressInCache.call(idObj, str, "street", cityId , "*", 100)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in hintStreets", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * hintHouses Метод вывода подсказок для домов
+		 * @param  {String} options.str подстрока поиска
+		 * @return {Promise}            промис содержащий список подсказок
+		 */
+		hintHouses({str, streetId}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Выполняем поиск подсказок в кеше
+				findAddressInCache.call(idObj, str, "house", streetId , "*", 100)
+				// Выводим результат а если произошла ошибка то сообщаем об этом
+				.then(resolve).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["findAddressInCache in hintHouses", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * hintMetro Метод вывода подсказок для метро
+		 * @param  {String} options.str подстрока поиска
+		 * @return {Promise}            промис содержащий список подсказок
+		 */
+		hintMetro({str, streetId, houseId}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * *getData Генератор для получения данных адресов
+				 */
+				const getData = function * (){
+					// Запрашиваем данные улицы
+					const street = ($.isset(streetId) ? yield idObj.getStreetById({id: streetId}) : false);
+					// Запрашиваем данные дома
+					const house = ($.isset(houseId) ? yield idObj.getHouseById({id: houseId}) : false);
+					// Определяем субъект
+					const subject = ($.isset(street) ? street : ($.isset(house) ? house : false));
+					// Получаем станции метро
+					if($.isArray(subject.metro) && subject.metro.length){
+						// Массив метро
+						let metro_stations = [];
+						// Переходим по всем станциям метро
+						for(let i = 0; i < subject.metro.length; i++){
+							// Загружаем станцию метро
+							let metro = yield idObj.getMetroStationById({id: subject.metro[i]});
+							// Создаем регулярное выражение для поиска
+							let reg = new RegExp("^" + str, "i");
+							// Добавляем станцию в список
+							if(reg.test(metro.name)) metro_stations.push(metro);
+						}
+						// Выводим результат
+						resolve(metro_stations);
+					// Сообщаем что ничего не найдено
+					} else resolve([]);
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
+		}
+		/**
 		 * getAddressByGPS Метод получения данных адреса по GPS координатам
 		 * @param  {Float}   options.lat    широта
 		 * @param  {Float}   options.lng    долгота
