@@ -343,6 +343,8 @@ const anyks = require("./lib.anyks");
 		const idObj = this;
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
+			// Ограничиваем максимальный лимит
+			if(limit > 100) limit = 100;
 			// Ключ запроса из Redis
 			const key = createSubjectKey(["subjects", parentType, parentId, type], str);
 			// Получаем список ключей
@@ -1095,382 +1097,600 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				/**
+				 * parseNativeAddress Функция парсинга адреса с помощью базы данных
+				 * @param  {String} address строка адреса для парсинга (с любыми знаками препинания)
+				 * @return {Object}         объект содержащий данные адреса
+				 */
+				const parseDBAddress = address => {
+					// Создаем промис для обработки
+					return (new Promise(resolve => {
+						/**
+						 * searchSubject Функция поиска соответствия
+						 * @param  {String} str строка адреса для поиска
+						 * @param  {Array}  arr массив котором производится поиск
+						 * @param  {Number} i   итератор перебора массива
+						 * @return {Object}     найденный объект данных
+						 */
+						const searchSubject = (str, arr, i = 0) => {
+							// Если массив пройден не полностью
+							if(i < arr.length){
+								// Формируем регулярное выражение
+								let reg = new RegExp(arr[i].name, "i");
+								// Проверяем соотстветствие адреса
+								if(reg.test(str)){
+									// Выводим найденный результат
+									return {
+										"id":	arr[i]._id,
+										"name":	arr[i].name,
+										"type":	arr[i].type,
+										"src":	arr[i].name + " " + arr[i].typeShort.toLowerCase()
+									};
+								// Продолжаем дальше
+								} else return searchSubject(str, arr, i + 1);
+							// Сообщаем что ничего не найдено
+							} else return false;
+						};
+						/**
+						 * *getData Генератор для получения данных адреса
+						 */
+						const getData = function * (){
+							// Строка адреса
+							let str = address.toLowerCase();
+							// Страна
+							let country = false;
+							// Регион
+							let region = false;
+							// Район
+							let district = false;
+							// Город
+							let city = false;
+							// Улица
+							let street = false;
+							// Номер дома
+							let house = false;
+							// Почтовый индекс
+							let zip = false;
+							// Получаем данные стран
+							const countries = yield idObj.getCountries({limit: 100});
+							// Если данные пришли
+							if($.isset(countries)
+							&& $.isArray(countries.data)
+							&& countries.data.length){
+								// Выполняем поиск страны
+								country = searchSubject(str, countries.data);
+								// Удаляем из строки адреса найденную страну
+								str = str.replace(country.name.toLowerCase(), "");
+							}
+							// Получаем данные регионов
+							const regions = yield idObj.getRegions({limit: 100});
+							// Если данные пришли
+							if($.isset(regions)
+							&& $.isArray(regions.data)
+							&& regions.data.length){
+								// Выполняем поиск региона
+								region = searchSubject(str, regions.data);
+								// Удаляем из строки адреса найденный регион
+								str = str.replace(region.name.toLowerCase(), "");
+							}
+							// Получаем данные районов
+							const districts = yield idObj.getDistricts({
+								limit:		100,
+								regionId:	($.isset(region) ? region.id : undefined)
+							});
+							// Если данные пришли
+							if($.isset(districts)
+							&& $.isArray(districts.data)
+							&& districts.data.length){
+								// Выполняем поиск района
+								district = searchSubject(str, districts.data);
+								// Удаляем из строки адреса найденный район
+								str = str.replace(district.name.toLowerCase(), "");
+							}
+							// Получаем данные городов
+							const cities = yield idObj.getCities({
+								regionId:	($.isset(region)	? region.id : undefined),
+								districtId:	($.isset(district)	? district.id : undefined),
+								limit:		100
+							});
+							// Если данные пришли
+							if($.isset(cities)
+							&& $.isArray(cities.data)
+							&& cities.data.length){
+								// Выполняем поиск города
+								city = searchSubject(str, cities.data);
+								// Удаляем из строки адреса найденный город
+								str = str.replace(city.name.toLowerCase(), "");
+							}
+							// Получаем данные улиц
+							const streets = yield idObj.getStreets({
+								cityId:	($.isset(city) ? city.id : undefined),
+								limit:	100
+							});
+							// Если данные пришли
+							if($.isset(streets)
+							&& $.isArray(streets.data)
+							&& streets.data.length){
+								// Выполняем поиск улицы
+								street = searchSubject(str, streets.data);
+								// Удаляем из строки адреса найденную улицу
+								str = str.replace(street.name.toLowerCase(), "");
+							}
+							// Регулярное выражение для извлечения данных дома
+							const regHouse = new RegExp("(?:(?:№\\s*)?\\d+[А-ЯЁ]*\\s*(?:\\/|-)\\s*\\d+[А-ЯЁ]*)|"
+							+ "(?:(?:№\\s*)?(?:\\d+)[А-ЯЁ]*\\s*(?:к|с)?\\s*(?:\\d+)?\\s*(?:к|с)?\\s*(?:\\d+)?)$", "i");
+							// Извлекаем номер дома
+							house = regHouse.exec(str);
+							// Если дом найден то запоминаем его
+							if($.isArray(house) && house.length) house = house[0];
+							// Устанавливаем что дом не найден
+							else house = false;
+							// Определяем почтовый индекс
+							zip = /\d{6}/.exec(str);
+							// Если почтовый индекс найден то выводим его
+							if($.isArray(zip) && zip.length) zip = zip[0];
+							// Устанавливаем что индекс не найден
+							else zip = false;
+							// Формируем массив найденных данных
+							const arrAddress = [], addrLightParam = [], addrFullParam = [];
+							// Формируем маску адреса
+							if($.isset(zip))		arrAddress.push("{zip}");
+							if($.isset(district))	arrAddress.push("{district}");
+							// Добавляем в адрес страну
+							if($.isset(country)){
+								arrAddress.push("{country}");
+								addrLightParam.push(country.name);
+								addrFullParam.push(country.name.ucwords() + " " country.type.toLowerCase());
+							}
+							// Добавляем в адрес регион
+							if($.isset(region)){
+								arrAddress.push("{region}");
+								addrLightParam.push(region.name);
+								addrFullParam.push(region.name.ucwords() + " " region.type.toLowerCase());
+							}
+							// Добавляем в адрес город
+							if($.isset(city)){
+								arrAddress.push("{city}");
+								addrLightParam.push(city.name);
+								addrFullParam.push(city.name.ucwords() + " " city.type.toLowerCase());
+							}
+							// Добавляем в адрес улицу
+							if($.isset(street)){
+								arrAddress.push("{street}");
+								addrLightParam.push(street.name);
+								addrFullParam.push(street.name.ucwords() + " " street.type.toLowerCase());
+							}
+							// Добавляем в адрес дом
+							if($.isset(house)){
+								arrAddress.push("{house}");
+								addrLightParam.push(house.name);
+								addrFullParam.push(house.name.ucwords() + " " house.type.toLowerCase());
+							}
+							// Формируем блок результата
+							const result = {
+								"zip":			zip,
+								"city":			city,
+								"house":		house,
+								"apartment":	false,
+								"river":		false,
+								"community":	false,
+								"street":		street,
+								"region":		region,
+								"country":		country,
+								"address":		address,
+								"district":		arrAddress.join(", "),
+								"fullAddress":	addrFullParam.join(", "),
+								"lightAddress":	addrLightParam.join(", ")
+							};
+							// Выводим результат
+							resolve(result);
+						};
+						// Запускаем коннект
+						exec(getData());
+					}));
+				};
+				/**
 				 * parseNativeAddress Функция нативного парсинга строки адреса
 				 * @param  {String} address строка адреса для парсинга (с разделителями в виде запятых)
 				 * @return {Object}         объект содержащий данные адреса
 				 */
 				const parseNativeAddress = address => {
-					// Результат работы функции
-					let result = false;
-					// Регулярное выражение для поиска рек
-					const regRiver = /(река)|(?:^|\s)(р(?:-ка)?)(?:\s|\.|\,|$)/i;
-					// Регулярное выражение для поиска домов
-					const regHouse = /(дом)|(?:\s|\.|\,|^)(дм?)(?:\s|\.|\,|$)/i;
-					// Регулярное выражение для поиска стран
-					const regCountry = /(страна)|(?:\s|\.|\,|^)(стр?-?н?а?)(?:\s|\.|\,|$)/i;
-					// Регулярное выражение для поиска квартир
-					const regApartment = /(квартира|офис|комната)|(?:\s|\.|\,|^)(кв|ко?м|оф)(?:\s|\.|\,|$)/i;
-					// Регулярное выражение для поиска микрорайонов
-					const regCommunity = /(микрорайон|жилой\s+комплекс)|(?:\s|\.|\,|^)(мкр|жкс?)(?:\s|\.|\,|$)/i;
-					// Регулярное выражение для поиска районов
-					const regDistrict = new RegExp("(район|округ|улус|поселение)|(?:\\s|\\.|\\,|^)(р-н|окр|у|п)(?:\\s|\\.|\\,|$)", "i");
-					// Регулярное выражение для поиска регионов
-					const regRegion = new RegExp("(авт(?:ономный|\\.)\\s+окр?(?:уг|-г)?|область|край|республика)|(?:\\s|\\.|\\,|^)(респ?|ао(?:кр?)?|обл|кр)(?:\\s|\\.|\\,|$)", "i");
-					// Регулярное выражение для поиска улицы
-					const regStreet = new RegExp("(улица|площадь|переулок|гора|парк|тупик|канал|шоссе|проезд|набережная|километр|вал|бульвар|квартал|"
-					+ "проспект|авеню|аллея|кольцо)|(?:\\s|\\.|\\,|^)(ул|пл|пр-?к?т?|ав|алл?|б-?р|вл|кнл|кв-л|к(?:м|л)|клц|на?б|пер|пр-зд|туп|ш|гор)(?:\\s|\\.|\\,|$)", "i");
-					// Регулярное выражение для поиска города
-					const regCity = new RegExp("((?:пос[её]л(?:ение|ок|ки)\\s+(?:городского\\s+типа|сельского\\s+типа|и\\(при\\)\\s+станция\\(и\\)|"
-					+ "(?:при|и)\\s+станци(?:и|я)))|(?:(?:рабочий|курортный|дачный)\\s+пос[её]лок)|(?:(?:поселковый|сельский|дачный\\s+поселковый)\\s+совет)|"
-					+ "(?:пром(?:ышленная|\.)?\s*(?:\\s+|-)\s*зона)|(?:сельское\\s+(?:муницип(?:\\.|альное)?\\s*(?:образование|поселение)))|(?:городской\\s+округ)|"
-					+ "(?:насел[её]нный\\s+пункт)|(?:железнодорож(?:ный|ная)\\s+(?:пост|станция|разъезд))|(?:почтовое\\s+отделение)|(?:жилой\\s+район)|"
-					+ "(?:коллективное\\s+хозяйство)|(?:садовое\\s+неком(?:-|мерческо)е\\s+товарищество)|(?:советское\\s+хозяйство)|(?:выселки\\(ок\\))|"
-					+ "ж\\/д\\s+останов\\.?\\s+\\(обгонный\\)\\s+пункт|ж\\/д\\s+(?:останов(?:\\.?|очный)|обгонный)\\s+пункт|(?:выселк(?:и|ок)|заимка|аал|"
-					+ "пос[её]лок|территория|хозяйство|товарищество|зимовье|район|кишлак|поссовет|сельсовет|сомон|волость|село|местечко|аул|станица|остров|"
-					+ "автодорога|квартал|починок|жилрайон|массив|деревня|слобода|станция|хутор|разъезд|колхоз|улус|поселение|микрорайон|город(?:ок)?)|"
-					+ "(?:п\\.г\\.т\\.|р\\.п\\.|к\\.п\\.|д\\.п\\.|н\\.п\\.|п\\.\\s+ст\\.|п\\.ст\\.|ж\\/д\\.\\s+ст\\.|ж\\/д\\s+ст\\.))|"
-					+ "(?:\\s|\\.|\\,|^)(с\\/?с|п\\/(?:о|ст)|ж\\/д(?:ст|(?:\\_|\\.|-)?\s*(?:рзд|пост|оп))|с\\/(?:мо|п)|ст(?:-|\\.)\\s*ц?а|авто-а|кв-л|ма-в|"
-					+ "р-?н|св?-т|за-ка|п(?:ромзона|ос-к|ст|гт|-к|к)|с(?:вх|мн|нт|вт|т|л|в)?|п(?:о?с)?|к(?:лх|п)?|т(?:ов|ер)|р(?:зд|п)|хз?|высел|зим|мкр|"
-					+ "го|нп|вл|дп|м|д|у|г)(?:\\s|\\.|\\,|$)", "i");
-					// Карта объектов
-					const mapSubjects = {
-						"р":		"Река",
-						"оф":		"Офис",
-						"гор":		"Гора",
-						"у":		"Улус",
-						"кр":		"Край",
-						"с":		"Село",
-						"туп":		"Тупик",
-						"ш":		"Шоссе",
-						"смн":		"Сомон",
-						"г":		"Город",
-						"р-н":		"Район",
-						"окр":		"Округ",
-						"ав":		"Авеню",
-						"ал":		"Аллея",
-						"алл":		"Аллея",
-						"кнл":		"Канал",
-						"ул":		"Улица",
-						"х":		"Хутор",
-						"за-ка":	"Заимка",
-						"стр":		"Страна",
-						"пр-зд":	"Проезд",
-						"кл":		"Кольцо",
-						"клц":		"Кольцо",
-						"ма-в":		"Массив",
-						"к":		"Кишлак",
-						"д":		"Деревня",
-						"пл":		"Площадь",
-						"кв-л":		"Квартал",
-						"б-р":		"Бульвар",
-						"бр":		"Бульвар",
-						"ком":		"Комната",
-						"обл":		"Область",
-						"п-к":		"Починок",
-						"пос-к":	"Посёлок",
-						"сл":		"Слобода",
-						"ст":		"Станция",
-						"ст-ца":	"Станица",
-						"рзд":		"Разъезд",
-						"зим":		"Зимовье",
-						"вл":		"Волость",
-						"м":		"Местечко",
-						"км":		"Километр",
-						"кв":		"Квартира",
-						"пер":		"Переулок",
-						"пр":		"Проспект",
-						"пр-т":		"Проспект",
-						"пр-кт":	"Проспект",
-						"пос":		"Поселение",
-						"с/с":		"Сельсовет",
-						"с-т":		"Сельсовет",
-						"св-т":		"Сельсовет",
-						"свт":		"Сельсовет",
-						"св":		"Сельсовет",
-						"хз":		"Хозяйство",
-						"п":		"Поселение",
-						"авто-а":	"Автодорога",
-						"тер":		"Территория",
-						"респ":		"Республика",
-						"наб":		"Набережная",
-						"нб":		"Набережная",
-						"мкр":		"Микрорайон",
-						"рес":		"Республика",
-						"жилрайон":	"Жилой район",
-						"высел":	"Выселки(ок)",
-						"тов":		"Товарищество",
-						"cc":		"Сельский совет",
-						"жк":		"Жилой комплекс",
-						"жкс":		"Жилой комплекс",
-						"дп":		"Дачный посёлок",
-						"р.п.":		"Рабочий посёлок",
-						"рп":		"Рабочий посёлок",
-						"го":		"Городской округ",
-						"пс":		"Поселковый совет",
-						"ао":		"Автономный округ",
-						"аок":		"Автономный округ",
-						"аокр":		"Автономный округ",
-						"н.п.":		"Населенный пункт",
-						"нп":		"Населенный пункт",
-						"к.п.":		"Курортный посёлок",
-						"кп":		"Курортный посёлок",
-						"промзона":	"Промышленная зона",
-						"с/п":		"Сельское поселение",
-						"п/о":		"Почтовое отделение",
-						"свх":		"Советское хозяйство",
-						"п. ст.":	"Посёлок при станции",
-						"п.ст.":	"Посёлок при станции",
-						"пст":		"Посёлок при станции",
-						"ж/д_пост":	"Железнодорожный пост",
-						"клх":		"Коллективное хозяйство",
-						"д.п.":		"Дачный поселковый совет",
-						"ж/д. ст.":	"Железнодорожная станция",
-						"ж/д ст.":	"Железнодорожная станция",
-						"ж/дст":	"Железнодорожная станция",
-						"п.г.т.":	"Посёлок городского типа",
-						"пгт":		"Посёлок городского типа",
-						"ж/д_рзд":	"Железнодорожный разъезд",
-						"п/ст":		"Поселок и(при) станция(и)",
-						"с/мо":		"Сельское муницип.образование",
-						"снт":		"Садовое неком-е товарищество",
-						"ж/д_оп":	"ж/д останов. (обгонный) пункт"
-					};
-					// Создаем объект с адресом
-					const addObject = {address};
-					/**
-					 * fixAddress Функция исправления адреса
-					 */
-					const fixAddress = () => {
-						// Исправляем адрес
-						addObject.address = addObject.address
-						.replace(/\./ig, ". ")
-						.replace(/\s*\,/ig, ", ").anyks_trim();
-					};
-					/**
-					 * getZip Функция поиска почтового индекса
-					 * @return {String}           почтовый индекс
-					 */
-					const getZip = () => {
-						// Определяем почтовый индекс
-						const result = /\d{6}/.exec(addObject.address);
-						// Создаем почтовый индекс
-						let zip = false;
-						// Если почтовый индекс найден то выводим его
-						if($.isset(result)) zip = result[0];
-						// Заменяем в основном адресе параметры
-						if($.isset(zip)){
-							// Заменяем название адреса
-							addObject.address = addObject.address.replace(zip, "{zip}");
-							// Исправляем название адреса
-							fixAddress();
-						}
-						// Выводим результат
-						return zip;
-					};
-					/**
-					 * getCountry Функция извлечения страны
-					 * @return {String}           название страны
-					 */
-					const getCountry = () => {
+					// Создаем промис для обработки
+					return (new Promise(resolve => {
+						// Результат работы функции
+						let result = false;
+						// Регулярное выражение для поиска рек
+						const regRiver = /(река)|(?:^|\s)(р(?:-ка)?)(?:\s|\.|\,|$)/i;
+						// Регулярное выражение для поиска домов
+						const regHouse = /(дом)|(?:\s|\.|\,|^)(дм?)(?:\s|\.|\,|$)/i;
+						// Регулярное выражение для поиска стран
+						const regCountry = /(страна)|(?:\s|\.|\,|^)(стр?-?н?а?)(?:\s|\.|\,|$)/i;
+						// Регулярное выражение для поиска квартир
+						const regApartment = /(квартира|офис|комната)|(?:\s|\.|\,|^)(кв|ко?м|оф)(?:\s|\.|\,|$)/i;
+						// Регулярное выражение для поиска микрорайонов
+						const regCommunity = /(микрорайон|жилой\s+комплекс)|(?:\s|\.|\,|^)(мкр|жкс?)(?:\s|\.|\,|$)/i;
+						// Регулярное выражение для поиска районов
+						const regDistrict = new RegExp("(район|округ|улус|поселение)|(?:\\s|\\.|\\,|^)(р-н|окр|у|п)(?:\\s|\\.|\\,|$)", "i");
+						// Регулярное выражение для поиска регионов
+						const regRegion = new RegExp("(авт(?:ономный|\\.)\\s+окр?(?:уг|-г)?|область|край|республика)|(?:\\s|\\.|\\,|^)(респ?|ао(?:кр?)?|обл|кр)(?:\\s|\\.|\\,|$)", "i");
+						// Регулярное выражение для поиска улицы
+						const regStreet = new RegExp("(улица|площадь|переулок|гора|парк|тупик|канал|шоссе|проезд|набережная|километр|вал|бульвар|квартал|"
+						+ "проспект|авеню|аллея|кольцо)|(?:\\s|\\.|\\,|^)(ул|пл|пр-?к?т?|ав|алл?|б-?р|вл|кнл|кв-л|к(?:м|л)|клц|на?б|пер|пр-зд|туп|ш|гор)(?:\\s|\\.|\\,|$)", "i");
+						// Регулярное выражение для поиска города
+						const regCity = new RegExp("((?:пос[её]л(?:ение|ок|ки)\\s+(?:городского\\s+типа|сельского\\s+типа|и\\(при\\)\\s+станция\\(и\\)|"
+						+ "(?:при|и)\\s+станци(?:и|я)))|(?:(?:рабочий|курортный|дачный)\\s+пос[её]лок)|(?:(?:поселковый|сельский|дачный\\s+поселковый)\\s+совет)|"
+						+ "(?:пром(?:ышленная|\.)?\s*(?:\\s+|-)\s*зона)|(?:сельское\\s+(?:муницип(?:\\.|альное)?\\s*(?:образование|поселение)))|(?:городской\\s+округ)|"
+						+ "(?:насел[её]нный\\s+пункт)|(?:железнодорож(?:ный|ная)\\s+(?:пост|станция|разъезд))|(?:почтовое\\s+отделение)|(?:жилой\\s+район)|"
+						+ "(?:коллективное\\s+хозяйство)|(?:садовое\\s+неком(?:-|мерческо)е\\s+товарищество)|(?:советское\\s+хозяйство)|(?:выселки\\(ок\\))|"
+						+ "ж\\/д\\s+останов\\.?\\s+\\(обгонный\\)\\s+пункт|ж\\/д\\s+(?:останов(?:\\.?|очный)|обгонный)\\s+пункт|(?:выселк(?:и|ок)|заимка|аал|"
+						+ "пос[её]лок|территория|хозяйство|товарищество|зимовье|район|кишлак|поссовет|сельсовет|сомон|волость|село|местечко|аул|станица|остров|"
+						+ "автодорога|квартал|починок|жилрайон|массив|деревня|слобода|станция|хутор|разъезд|колхоз|улус|поселение|микрорайон|город(?:ок)?)|"
+						+ "(?:п\\.г\\.т\\.|р\\.п\\.|к\\.п\\.|д\\.п\\.|н\\.п\\.|п\\.\\s+ст\\.|п\\.ст\\.|ж\\/д\\.\\s+ст\\.|ж\\/д\\s+ст\\.))|"
+						+ "(?:\\s|\\.|\\,|^)(с\\/?с|п\\/(?:о|ст)|ж\\/д(?:ст|(?:\\_|\\.|-)?\s*(?:рзд|пост|оп))|с\\/(?:мо|п)|ст(?:-|\\.)\\s*ц?а|авто-а|кв-л|ма-в|"
+						+ "р-?н|св?-т|за-ка|п(?:ромзона|ос-к|ст|гт|-к|к)|с(?:вх|мн|нт|вт|т|л|в)?|п(?:о?с)?|к(?:лх|п)?|т(?:ов|ер)|р(?:зд|п)|хз?|высел|зим|мкр|"
+						+ "го|нп|вл|дп|м|д|у|г)(?:\\s|\\.|\\,|$)", "i");
+						// Карта объектов
+						const mapSubjects = {
+							"р":		"Река",
+							"оф":		"Офис",
+							"гор":		"Гора",
+							"у":		"Улус",
+							"кр":		"Край",
+							"с":		"Село",
+							"туп":		"Тупик",
+							"ш":		"Шоссе",
+							"смн":		"Сомон",
+							"г":		"Город",
+							"р-н":		"Район",
+							"окр":		"Округ",
+							"ав":		"Авеню",
+							"ал":		"Аллея",
+							"алл":		"Аллея",
+							"кнл":		"Канал",
+							"ул":		"Улица",
+							"х":		"Хутор",
+							"за-ка":	"Заимка",
+							"стр":		"Страна",
+							"пр-зд":	"Проезд",
+							"кл":		"Кольцо",
+							"клц":		"Кольцо",
+							"ма-в":		"Массив",
+							"к":		"Кишлак",
+							"д":		"Деревня",
+							"пл":		"Площадь",
+							"кв-л":		"Квартал",
+							"б-р":		"Бульвар",
+							"бр":		"Бульвар",
+							"ком":		"Комната",
+							"обл":		"Область",
+							"п-к":		"Починок",
+							"пос-к":	"Посёлок",
+							"сл":		"Слобода",
+							"ст":		"Станция",
+							"ст-ца":	"Станица",
+							"рзд":		"Разъезд",
+							"зим":		"Зимовье",
+							"вл":		"Волость",
+							"м":		"Местечко",
+							"км":		"Километр",
+							"кв":		"Квартира",
+							"пер":		"Переулок",
+							"пр":		"Проспект",
+							"пр-т":		"Проспект",
+							"пр-кт":	"Проспект",
+							"пос":		"Поселение",
+							"с/с":		"Сельсовет",
+							"с-т":		"Сельсовет",
+							"св-т":		"Сельсовет",
+							"свт":		"Сельсовет",
+							"св":		"Сельсовет",
+							"хз":		"Хозяйство",
+							"п":		"Поселение",
+							"авто-а":	"Автодорога",
+							"тер":		"Территория",
+							"респ":		"Республика",
+							"наб":		"Набережная",
+							"нб":		"Набережная",
+							"мкр":		"Микрорайон",
+							"рес":		"Республика",
+							"жилрайон":	"Жилой район",
+							"высел":	"Выселки(ок)",
+							"тов":		"Товарищество",
+							"cc":		"Сельский совет",
+							"жк":		"Жилой комплекс",
+							"жкс":		"Жилой комплекс",
+							"дп":		"Дачный посёлок",
+							"р.п.":		"Рабочий посёлок",
+							"рп":		"Рабочий посёлок",
+							"го":		"Городской округ",
+							"пс":		"Поселковый совет",
+							"ао":		"Автономный округ",
+							"аок":		"Автономный округ",
+							"аокр":		"Автономный округ",
+							"н.п.":		"Населенный пункт",
+							"нп":		"Населенный пункт",
+							"к.п.":		"Курортный посёлок",
+							"кп":		"Курортный посёлок",
+							"промзона":	"Промышленная зона",
+							"с/п":		"Сельское поселение",
+							"п/о":		"Почтовое отделение",
+							"свх":		"Советское хозяйство",
+							"п. ст.":	"Посёлок при станции",
+							"п.ст.":	"Посёлок при станции",
+							"пст":		"Посёлок при станции",
+							"ж/д_пост":	"Железнодорожный пост",
+							"клх":		"Коллективное хозяйство",
+							"д.п.":		"Дачный поселковый совет",
+							"ж/д. ст.":	"Железнодорожная станция",
+							"ж/д ст.":	"Железнодорожная станция",
+							"ж/дст":	"Железнодорожная станция",
+							"п.г.т.":	"Посёлок городского типа",
+							"пгт":		"Посёлок городского типа",
+							"ж/д_рзд":	"Железнодорожный разъезд",
+							"п/ст":		"Поселок и(при) станция(и)",
+							"с/мо":		"Сельское муницип.образование",
+							"снт":		"Садовое неком-е товарищество",
+							"ж/д_оп":	"ж/д останов. (обгонный) пункт"
+						};
+						// Создаем объект с адресом
+						const addObject = {address};
 						/**
-						 * findCountry Функция поиска страны
-						 * @return {String} название страны
+						 * fixAddress Функция исправления адреса
 						 */
-						const findCountry = () => {
-							// Определяем страну
-							const result = (new RegExp("^([А-ЯЁё\\-\\s]+),?\\s*\\{(?:river|zip|region|"
-							+ "district|city|community|street|house|apartment)\\}", "i"))
-							// Выполняем поиск страны в адресе
-							.exec(addObject.address);
-							// Создаем название страны
-							let country = false;
-							// Если это массив
-							if($.isset(result) && (result.length === 2))
-								// Выводим название страны
-								country = result[1].anyks_trim().anyks_ucwords();
+						const fixAddress = () => {
+							// Исправляем адрес
+							addObject.address = addObject.address
+							.replace(/\./ig, ". ")
+							.replace(/\s*\,/ig, ", ").anyks_trim();
+						};
+						/**
+						 * getZip Функция поиска почтового индекса
+						 * @return {String}           почтовый индекс
+						 */
+						const getZip = () => {
+							// Определяем почтовый индекс
+							const result = /\d{6}/.exec(addObject.address);
+							// Создаем почтовый индекс
+							let zip = false;
+							// Если почтовый индекс найден то выводим его
+							if($.isset(result)) zip = result[0];
 							// Заменяем в основном адресе параметры
-							if($.isset(country)){
-								// Запоминаем название страны
-								addObject.address = addObject.address.replace(country, "{country}");
+							if($.isset(zip)){
+								// Заменяем название адреса
+								addObject.address = addObject.address.replace(zip, "{zip}");
 								// Исправляем название адреса
 								fixAddress();
 							}
 							// Выводим результат
-							return country;
+							return zip;
 						};
-						// Получаем данные страны
-						const country = getAddress(regCountry, "country");
-						// Если страна найден тогда выводим ее данные
-						if($.isset(country)) return country;
-						// Генерируем другую страну
-						else {
-							// Получаем название страны
-							const name = findCountry();
-							// Возвращаем результат
-							return ($.isset(name) ? {
-								name:	name,
-								type:	"Страна",
-								src:	"Страна " + name
-							} : false);
-						}
-					};
-					/**
-					 * getHouse Функция поиска номера дома
-					 * @return {String}           номер дома
-					 */
-					const getHouse = () => {
 						/**
-						 * findHouse Функция поиска дома
-						 * @return {String} название и номер дома
+						 * getCountry Функция извлечения страны
+						 * @return {String}           название страны
 						 */
-						const findHouse = () => {
+						const getCountry = () => {
+							/**
+							 * findCountry Функция поиска страны
+							 * @return {String} название страны
+							 */
+							const findCountry = () => {
+								// Определяем страну
+								const result = (new RegExp("^([А-ЯЁё\\-\\s]+),?\\s*\\{(?:river|zip|region|"
+								+ "district|city|community|street|house|apartment)\\}", "i"))
+								// Выполняем поиск страны в адресе
+								.exec(addObject.address);
+								// Создаем название страны
+								let country = false;
+								// Если это массив
+								if($.isset(result) && (result.length === 2))
+									// Выводим название страны
+									country = result[1].anyks_trim().anyks_ucwords();
+								// Заменяем в основном адресе параметры
+								if($.isset(country)){
+									// Запоминаем название страны
+									addObject.address = addObject.address.replace(country, "{country}");
+									// Исправляем название адреса
+									fixAddress();
+								}
+								// Выводим результат
+								return country;
+							};
+							// Получаем данные страны
+							const country = getAddress(regCountry, "country");
+							// Если страна найден тогда выводим ее данные
+							if($.isset(country)) return country;
+							// Генерируем другую страну
+							else {
+								// Получаем название страны
+								const name = findCountry();
+								// Возвращаем результат
+								return ($.isset(name) ? {
+									name:	name,
+									type:	"Страна",
+									src:	"Страна " + name
+								} : false);
+							}
+						};
+						/**
+						 * getHouse Функция поиска номера дома
+						 * @return {String}           номер дома
+						 */
+						const getHouse = () => {
+							/**
+							 * findHouse Функция поиска дома
+							 * @return {String} название и номер дома
+							 */
+							const findHouse = () => {
+								// Разбиваем на массив
+								const arr = addObject.address.split(",").reverse();
+								// Дома
+								const regH1 = /(?:дом|строение|корпус|д\.|стр\.|с\.|корп\.|к\.)/i;
+								// Дома второй вариант
+								const regH2 = new RegExp("(?:(?:№\\s*)?\\d+[А-ЯЁ]*\\s*(?:\\/|-)\\s*\\d+[А-ЯЁ]*)|"
+								+ "(?:(?:№\\s*)?(?:\\d+)[А-ЯЁ]*\\s*(?:к|с)?\\s*(?:\\d+)?\\s*(?:к|с)?\\s*(?:\\d+)?)$", "i");
+								// Объект с данными
+								let house = false;
+								// Ищем адрес
+								arr.forEach((val, i) => {
+									// Если дом найден
+									if(regH1.test(val) || regH2.test(val)){
+										// Запоминаем номер дома
+										house = val.anyks_trim();
+										// Выходим
+										arr.length = 0;
+									}
+								});
+								// Заменяем в основном адресе параметры
+								if(house){
+									// Заменяем название дома
+									addObject.address = addObject.address.replace(house, "{house}");
+									// Исправляем название адреса
+									fixAddress();
+								}
+								// Выводим номер дома
+								return house;
+							};
+							// Получаем данные дома
+							const house = getAddress(regHouse, "house");
+							// Если дом найден тогда выводим его данные
+							if($.isset(house)) return house;
+							// Генерируем другой номер дома
+							else {
+								// Получаем название дома
+								const name = findHouse();
+								// Возвращаем результат
+								return ($.isset(name) ? {
+									name:	name,
+									type:	"Дом",
+									src:	"Дом " + name
+								} : false);
+							}
+						};
+						/**
+						 * getAddress Функция поиска области
+						 * @param  {RegExp} reg       регулярное выражение
+						 * @param  {String} name      название поискового элемента
+						 * @return {Object}           объект с адресом
+						 */
+						const getAddress = (reg, name) => {
 							// Разбиваем на массив
-							const arr = addObject.address.split(",").reverse();
-							// Дома
-							const regH1 = /(?:дом|строение|корпус|д\.|стр\.|с\.|корп\.|к\.)/i;
-							// Дома второй вариант
-							const regH2 = new RegExp("(?:(?:№\\s*)?\\d+[А-ЯЁ]*\\s*(?:\\/|-)\\s*\\d+[А-ЯЁ]*)|"
-							+ "(?:(?:№\\s*)?(?:\\d+)[А-ЯЁ]*\\s*(?:к|с)?\\s*(?:\\d+)?\\s*(?:к|с)?\\s*(?:\\d+)?)", "i");
+							const arr = addObject.address.split(",");
 							// Объект с данными
-							let house = false;
+							let data = false;
 							// Ищем адрес
 							arr.forEach((val, i) => {
-								// Если дом найден
-								if(regH1.test(val) || regH2.test(val)){
-									// Запоминаем номер дома
-									house = val.anyks_trim();
-									// Выходим
+								// Удаляем пробелы
+								val = val.anyks_trim();
+								// Если мы нашли адрес
+								if(reg.test(val)){
+									// Создаем объект
+									if(!data) data = {name: "", type: ""};
+									// Получаем массив типов
+									const types = val.match(reg);
+									// Переходим по массиву
+									types.forEach((val, i) => {
+										// Если это не нулевой элемент
+										if($.isset(i) && $.isset(val)){
+											// Запоминаем тип адреса
+											data.type = (name === "house" ? "Дом" : ($.isset(mapSubjects[val]) ? mapSubjects[val] : val));
+											// Останавливаем поиск
+											types.length = 0;
+										}
+									});
+									// Извлекаем название
+									data.name = val.replace(data.type, "");
+									// Исправляем название и тип
+									data.name = data.name.anyks_trim().anyks_ucwords();
+									data.type = data.type.anyks_trim().anyks_ucwords();
+									// Запоминаем значение
+									data.src = val;
+									// Удаляем из массива наш объект
+									arr.splice(i, 1);
+									// Выходим из функции
 									arr.length = 0;
 								}
 							});
 							// Заменяем в основном адресе параметры
-							if(house){
-								// Заменяем название дома
-								addObject.address = addObject.address.replace(house, "{house}");
+							if(data){
+								// Изменяем адрес
+								addObject.address = addObject.address.replace(data.src, "{" + name + "}");
 								// Исправляем название адреса
 								fixAddress();
-							}
-							// Выводим номер дома
-							return house;
-						};
-						// Получаем данные дома
-						const house = getAddress(regHouse, "house");
-						// Если дом найден тогда выводим его данные
-						if($.isset(house)) return house;
-						// Генерируем другой номер дома
-						else {
-							// Получаем название дома
-							const name = findHouse();
-							// Возвращаем результат
-							return ($.isset(name) ? {
-								name:	name,
-								type:	"Дом",
-								src:	"Дом " + name
-							} : false);
-						}
-					};
-					/**
-					 * getAddress Функция поиска области
-					 * @param  {RegExp} reg       регулярное выражение
-					 * @param  {String} name      название поискового элемента
-					 * @return {Object}           объект с адресом
-					 */
-					const getAddress = (reg, name) => {
-						// Разбиваем на массив
-						const arr = addObject.address.split(",");
-						// Объект с данными
-						let data = false;
-						// Ищем адрес
-						arr.forEach((val, i) => {
-							// Удаляем пробелы
-							val = val.anyks_trim();
-							// Если мы нашли адрес
-							if(reg.test(val)){
-								// Создаем объект
-								if(!data) data = {name: "", type: ""};
-								// Получаем массив типов
-								const types = val.match(reg);
-								// Переходим по массиву
-								types.forEach((val, i) => {
-									// Если это не нулевой элемент
-									if($.isset(i) && $.isset(val)){
-										// Запоминаем тип адреса
-										data.type = (name === "house" ? "Дом" : ($.isset(mapSubjects[val]) ? mapSubjects[val] : val));
-										// Останавливаем поиск
-										types.length = 0;
-									}
-								});
-								// Извлекаем название
-								data.name = val.replace(data.type, "");
-								// Исправляем название и тип
-								data.name = data.name.anyks_trim().anyks_ucwords();
-								data.type = data.type.anyks_trim().anyks_ucwords();
 								// Запоминаем значение
-								data.src = val;
-								// Удаляем из массива наш объект
-								arr.splice(i, 1);
-								// Выходим из функции
-								arr.length = 0;
+								data.src = data.src.replace(/\.\s+/ig, ".");
 							}
+							// Выводим результат
+							return data;
+						};
+						// Исправляем название адреса
+						fixAddress();
+						// Формируем блок результата
+						result = {
+							"region":		getAddress(regRegion, "region"),
+							"district":		getAddress(regDistrict, "district"),
+							"city":			getAddress(regCity, "city"),
+							"street":		getAddress(regStreet, "street"),
+							"apartment":	getAddress(regApartment, "apartment"),
+							"river":		getAddress(regRiver, "river"),
+							"community":	getAddress(regCommunity, "community"),
+							"house":		getHouse(),
+							"zip":			getZip(),
+							"country":		getCountry(),
+							"address":		addObject.address.replace(/\./g, "").anyks_trim()
+						};
+						// Формируем массив найденных данных
+						const arrParamAddress = [], addrLightParam = [], addrFullParam = [];
+						// Добавляем в массив найденные данные
+						if($.isset(result.country))		arrParamAddress.push(result.country);
+						if($.isset(result.region))		arrParamAddress.push(result.region);
+						if($.isset(result.city))		arrParamAddress.push(result.city);
+						if($.isset(result.street))		arrParamAddress.push(result.street);
+						if($.isset(result.house))		arrParamAddress.push(result.house);
+						if($.isset(result.apartment))	arrParamAddress.push(result.apartment);
+						// Создаем адреса в строковом виде
+						arrParamAddress.forEach(val => {
+							// Создаем адреса в простом виде
+							addrLightParam.push(val.name);
+							// Создаем адреса в полном виде
+							addrFullParam.push(val.name + " " + val.type.toLowerCase());
 						});
-						// Заменяем в основном адресе параметры
-						if(data){
-							// Изменяем адрес
-							addObject.address = addObject.address.replace(data.src, "{" + name + "}");
-							// Исправляем название адреса
-							fixAddress();
-							// Запоминаем значение
-							data.src = data.src.replace(/\.\s+/ig, ".");
-						}
+						// Добавляем в массив результаты строковых адресов
+						result.lightAddress	= addrLightParam.join(", ");
+						result.fullAddress	= addrFullParam.join(", ");
 						// Выводим результат
-						return data;
-					};
-					// Исправляем название адреса
-					fixAddress();
-					// Формируем блок результата
-					result = {
-						"region":		getAddress(regRegion, "region"),
-						"district":		getAddress(regDistrict, "district"),
-						"city":			getAddress(regCity, "city"),
-						"street":		getAddress(regStreet, "street"),
-						"apartment":	getAddress(regApartment, "apartment"),
-						"river":		getAddress(regRiver, "river"),
-						"community":	getAddress(regCommunity, "community"),
-						"house":		getHouse(),
-						"zip":			getZip(),
-						"country":		getCountry(),
-						"address":		addObject.address.replace(/\./g, "").anyks_trim()
-					};
-					// Формируем массив найденных данных
-					const arrParamAddress = [], addrLightParam = [], addrFullParam = [];
-					// Добавляем в массив найденные данные
-					if($.isset(result.country))		arrParamAddress.push(result.country);
-					if($.isset(result.region))		arrParamAddress.push(result.region);
-					if($.isset(result.city))		arrParamAddress.push(result.city);
-					if($.isset(result.street))		arrParamAddress.push(result.street);
-					if($.isset(result.house))		arrParamAddress.push(result.house);
-					if($.isset(result.apartment))	arrParamAddress.push(result.apartment);
-					// Создаем адреса в строковом виде
-					arrParamAddress.forEach(val => {
-						// Создаем адреса в простом виде
-						addrLightParam.push(val.name);
-						// Создаем адреса в полном виде
-						addrFullParam.push(val.name + " " + val.type.toLowerCase());
-					});
-					// Добавляем в массив результаты строковых адресов
-					result.lightAddress	= addrLightParam.join(", ");
-					result.fullAddress	= addrFullParam.join(", ");
-					// Выводим результат
-					return result;
+						resolve(result);
+					}));
 				};
-				// Результат интерпретации данных
-				let result = false;
 				// Если запятые найдены
-				if(/\,/i.test(address)) result = parseNativeAddress(address);
-				// Выводим в консоль результат
-				idObj.log(["строка адреса интерпретирована", result], "info");
-				// Выводим результат
-				resolve(result);
+				if(/\,/i.test(address)){
+					// Выводим результат
+					parseNativeAddress(address).then(result => {
+						// Выводим в консоль результат
+						idObj.log(["строка адреса интерпретирована", result], "info");
+						// Выводим результат
+						resolve(result);
+					// Если возникает ошибка то просто выходим
+					}).catch(e => {
+						// Выводим в консоль возникшую ошибку
+						idObj.log(["парсинг адреса нативным методом", e, address], "error");
+						// Выходим
+						resolve(false);
+					});
+				// Если запятые в адресе не найдены тогда выполняем интерпретацию с помощью базы
+				} else {
+					// Выводим результат
+					parseDBAddress(address).then(result => {
+						// Выводим в консоль результат
+						idObj.log(["строка адреса интерпретирована", result], "info");
+						// Выводим результат
+						resolve(result);
+					// Если возникает ошибка то просто выходим
+					}).catch(e => {
+						// Выводим в консоль возникшую ошибку
+						idObj.log(["парсинг адреса нативным методом", e, address], "error");
+						// Выходим
+						resolve(false);
+					});
+				}
 			}));
 		}
 		/**
@@ -1485,6 +1705,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Создаем переменные
 				const ContentName	= str;
 				const ContentType	= 'country';
@@ -1528,6 +1750,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Создаем переменные
 				const ContentName	= str;
 				const ContentType	= 'region';
@@ -1573,6 +1797,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Создаем переменные
 				const ContentName	= str;
 				const ContentType	= 'district';
@@ -1623,6 +1849,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Создаем переменные
 				const ContentName	= str;
 				const ContentType	= 'city';
@@ -1678,6 +1906,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Создаем переменные
 				const ContentName	= str;
 				const ContentType	= 'street';
@@ -1727,6 +1957,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Создаем переменные
 				const ContentName	= str;
 				const ContentType	= 'building';
@@ -1778,6 +2010,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Ключа кеша метро
 				const key = createMetroKey(["metro", ($.isset(cityId) ? cityId : "*"), ($.isset(lineId) ? lineId : "*")], str);
 				// Ищем станции в кеше
@@ -2462,6 +2696,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Ключ запроса
 				const key = createSubjectKey(["subjects", null, null, "country"]);
 				// Считываем данные из кеша
@@ -2522,6 +2758,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Ключ запроса
 				const key = createSubjectKey(["subjects", null, null, "region"]);
 				// Считываем данные из кеша
@@ -2535,7 +2773,7 @@ const anyks = require("./lib.anyks");
 							// Переходим по всему массиву и ищем в нем тип искомого региона
 							data.forEach(val => {
 								// Если тип найден то добавляем его в массив
-								if(val.typeShort === type[0].toLowerCase()) result.push(val);
+								if(val.type === type.anyks_ucwords()) result.push(val);
 							});
 						// Иначе просто приравниваем массив
 						} else result = data;
@@ -2551,7 +2789,7 @@ const anyks = require("./lib.anyks");
 						// Формируем параметры запроса
 						const query = {};
 						// Если тип передан
-						if($.isset(type)) query.typeShort = type[0].toLowerCase();
+						if($.isset(type)) query.type = type.anyks_ucwords();
 						// Запрашиваем все данные из базы
 						idObj.schemes.Regions.find(query)
 						.sort({_id: 1})
@@ -2598,6 +2836,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Ключ запроса
 				const key = createSubjectKey(["subjects", ($.isset(regionId) ? "region" : null), regionId, "district"]);
 				// Считываем данные из кеша
@@ -2611,7 +2851,7 @@ const anyks = require("./lib.anyks");
 							// Переходим по всему массиву и ищем в нем тип искомого региона
 							data.forEach(val => {
 								// Если тип найден то добавляем его в массив
-								if(val.typeShort === type[0].toLowerCase()) result.push(val);
+								if(val.type === type.anyks_ucwords()) result.push(val);
 							});
 						// Иначе просто приравниваем массив
 						} else result = data;
@@ -2627,8 +2867,8 @@ const anyks = require("./lib.anyks");
 						// Формируем параметры запроса
 						const query = {};
 						// Если регион или тип переданы
+						if($.isset(type))		query.type		= type.anyks_ucwords();
 						if($.isset(regionId))	query.regionId	= regionId;
-						if($.isset(type))		query.typeShort	= type[0].toLowerCase();
 						// Запрашиваем все данные из базы
 						idObj.schemes.Districts.find(query)
 						.sort({_id: 1})
@@ -2676,6 +2916,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
 				// Ключ запроса
 				const key = "address:cities:" + idObj.generateKey(
 					regionId + ":" +
@@ -2690,9 +2932,9 @@ const anyks = require("./lib.anyks");
 						// Формируем параметры запроса
 						const query = {};
 						// Если регион или район передан
+						if($.isset(type))		query.type			= type.anyks_ucwords();
 						if($.isset(regionId))	query.regionId		= regionId;
 						if($.isset(districtId))	query.districtId	= districtId;
-						if($.isset(type))		query.typeShort		= type[0].toLowerCase();
 						// Запрашиваем все данные из базы
 						idObj.schemes.Cities.find(query)
 						.sort({_id: 1})
@@ -2729,6 +2971,148 @@ const anyks = require("./lib.anyks");
 				}).catch(err => {
 					// Выводим ошибку метода
 					idObj.log(["getRedis in getCities", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getStreets Метод получения списка улиц
+		 * @param  {String}  options.cityId    идентификатор города
+		 * @param  {String}  options.type      тип улицы (улица, площадь, проспект)
+		 * @param  {Number}  options.page      номер страницы для запроса
+		 * @param  {Number}  options.limit     количество результатов к выдаче
+		 * @return {Promise}                   промис результата
+		 */
+		getStreets({cityId, type, page = 0, limit = 10}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
+				// Ключ запроса
+				const key = "address:streets:" + idObj.generateKey(
+					cityId + ":" +
+					type + ":" +
+					page + ":" + limit
+				);
+				// Считываем данные из кеша
+				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+					// Если данные не найдены, сообщаем что в кеше ничего не найдено
+					if(!$.isset(cache)){
+						// Формируем параметры запроса
+						const query = {};
+						// Если город передан
+						if($.isset(type))	query.type		= type.anyks_ucwords();
+						if($.isset(cityId))	query.cityId	= cityId;
+						// Запрашиваем все данные из базы
+						idObj.schemes.Streets.find(query)
+						.sort({_id: 1})
+						.skip(page * limit)
+						.limit(limit)
+						.exec((err, data) => {
+							// Если ошибки нет, выводим результат
+							if(!$.isset(err) && $.isArray(data)
+							&& data.length){
+								// Запрашиваем количество записей
+								idObj.schemes.Streets.count(query, (err, count) => {
+									// Если произошла ошибка то выводим в консоль
+									if($.isset(err)){
+										// Выводим сообщение
+										idObj.log(["чтение из базы данных", err], "error");
+										// Сообщаем что ничего не найдено
+										resolve(false);
+									// Выводим результат
+									} else {
+										// Формируем объект
+										const obj = {data, page, limit, count};
+										// Отправляем в Redis на час
+										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
+										// Выводим результат
+										resolve(obj);
+									}
+								});
+							// Сообщаем что ничего не найдено
+							} else resolve(false);
+						});
+					// Если данные пришли, выводим результат
+					} else resolve(JSON.parse(cache));
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedis in getStreets", err], "error");
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getHouses Метод получения списка домов
+		 * @param  {String}  options.streetId  идентификатор улицы
+		 * @param  {String}  options.type      тип постройки
+		 * @param  {Number}  options.page      номер страницы для запроса
+		 * @param  {Number}  options.limit     количество результатов к выдаче
+		 * @return {Promise}                   промис результата
+		 */
+		getHouses({streetId, type, page = 0, limit = 10}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
+				// Ключ запроса
+				const key = "address:houses:" + idObj.generateKey(
+					streetId + ":" +
+					type + ":" +
+					page + ":" + limit
+				);
+				// Считываем данные из кеша
+				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+					// Если данные не найдены, сообщаем что в кеше ничего не найдено
+					if(!$.isset(cache)){
+						// Формируем параметры запроса
+						const query = {};
+						// Если улица передана
+						if($.isset(type))		query.type		= type.anyks_ucwords();
+						if($.isset(streetId))	query.streetId	= streetId;
+						// Запрашиваем все данные из базы
+						idObj.schemes.Houses.find(query)
+						.sort({_id: 1})
+						.skip(page * limit)
+						.limit(limit)
+						.exec((err, data) => {
+							// Если ошибки нет, выводим результат
+							if(!$.isset(err) && $.isArray(data)
+							&& data.length){
+								// Запрашиваем количество записей
+								idObj.schemes.Houses.count(query, (err, count) => {
+									// Если произошла ошибка то выводим в консоль
+									if($.isset(err)){
+										// Выводим сообщение
+										idObj.log(["чтение из базы данных", err], "error");
+										// Сообщаем что ничего не найдено
+										resolve(false);
+									// Выводим результат
+									} else {
+										// Формируем объект
+										const obj = {data, page, limit, count};
+										// Отправляем в Redis на час
+										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
+										// Выводим результат
+										resolve(obj);
+									}
+								});
+							// Сообщаем что ничего не найдено
+							} else resolve(false);
+						});
+					// Если данные пришли, выводим результат
+					} else resolve(JSON.parse(cache));
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log(["getRedis in getHouses", err], "error");
 					// Выходим
 					resolve(false);
 				});
