@@ -25,7 +25,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "г.Шуя, площадь комсомольская, д.12"}}));
 
 // socket.send(JSON.stringify({"action": "initEmptyDatabases"}));
-//
+
 // socket.send(JSON.stringify({"action": "updateMetroCity"}));
 //
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"limit": 100}}));
