@@ -591,7 +591,7 @@ const anyks = require("./lib.anyks");
 				+ ", " + val.name + " " + val.type;
 			}) : res.result[0].parents[0].name + " " + res.result[0].parents[0].type) + "," : "");
 			// Выполняем поиск GPS координат для текущего адреса
-			getGPSForAddress.call(scheme, idObj, res.result, address)
+			getGPSForAddress.call(idObj, scheme, res.result, address)
 			.then(result => {
 				// Выводим сообщение в консоль
 				idObj.log([
@@ -3196,7 +3196,7 @@ const anyks = require("./lib.anyks");
 				 * @param  {Object} scheme   схема базы данных
 				 * @param  {Function}        callback функция обратного вызова
 				 */
-				const updateDB = (obj, scheme, callback) => {
+				const updateDB = (scheme, obj, callback) => {
 					/**
 					 * Функция сохранения данных в кеше saveCache
 					 */
@@ -3247,7 +3247,7 @@ const anyks = require("./lib.anyks");
 												// Сохраняем временную зону
 												data[i].timezone = timezone;
 												// Сохраняем временную зону
-												updateDB(data[i], scheme, () => getData(i + 1));
+												updateDB(scheme, data[i], () => getData(i + 1));
 											// Просто продолжаем дальше
 											} else getData(i + 1);
 										// Если происходит ошибка тогда выходим
