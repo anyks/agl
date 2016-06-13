@@ -1030,11 +1030,11 @@ const anyks = require("./lib.anyks");
 				// Выводи данные в консоль
 				idObj.log([
 					"\x1B[31m\x1B[1m\u00A9"
-					.clearColor(idObj.debug.console),
+					.anyks_clearColor(idObj.debug.console),
 					idObj.copyright, "ver.",
 					idObj.version,
 					"\x1B[0m"
-					.clearColor(idObj.debug.console)
+					.anyks_clearColor(idObj.debug.console)
 				], "info");
 				// Выводим результат
 				resolve(object);
@@ -4117,10 +4117,10 @@ const anyks = require("./lib.anyks");
 						// Выводим сообщение об ошибке
 						console.error(
 							'\x1B[31m\x1B[1mError\x1B[0m\x1B[31m'
-							.clearColor(this.debug.console),
+							.anyks_clearColor(this.debug.console),
 							(new Date()).toLocaleString(),
 							this.name, ':\x1B[0m'
-							.clearColor(this.debug.console),
+							.anyks_clearColor(this.debug.console),
 							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
 						);
 						// Выводим экраны
@@ -4136,10 +4136,10 @@ const anyks = require("./lib.anyks");
 						// Выводим информационное сообщение
 						console.info(
 							'\x1B[32m\x1B[1mInfo\x1B[0m\x1B[32m'
-							.clearColor(this.debug.console),
+							.anyks_clearColor(this.debug.console),
 							(new Date()).toLocaleString(),
 							this.name, ':\x1B[0m'
-							.clearColor(this.debug.console),
+							.anyks_clearColor(this.debug.console),
 							($.isArray(message) ? message.anyks_toObjString().join(" ") : message)
 						);
 						// Выводим экраны
