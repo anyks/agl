@@ -2212,7 +2212,7 @@ const anyks = require("./lib.anyks");
 										// Если не все данные загружены тогда продолжаем загрузку
 										if(i < lines.length){
 											// Загружаем станции метро
-											getStations(lines[i].name, lines[i].cityId, lines[i]._id)
+											getStations(str, lines[i].cityId, lines[i]._id)
 											.then(data => {
 												// Если данные существуют
 												if($.isArray(data)) metro.push(data[0]);
