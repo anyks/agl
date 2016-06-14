@@ -1370,7 +1370,7 @@ const anyks = require("./lib.anyks");
 						// Регулярное выражение для поиска районов
 						const regDistrict = new RegExp("(район|округ|улус|поселение)|(?:\\s|\\.|\\,|^)(р-н|окр|у|п)(?:\\s|\\.|\\,|$)", "i");
 						// Регулярное выражение для поиска регионов
-						const regRegion = new RegExp("(авт(?:ономный|\\.)\\s+окр?(?:уг|-г)?|область|край|республика)|(?:\\s|\\.|\\,|^)(респ?|ао(?:кр?)?|обл|кр)(?:\\s|\\.|\\,|$)", "i");
+						const regRegion = new RegExp("(авт(?:ономный|\\.)\\s+окр?(?:уг|-г)?|область|край|республика|город)|(?:\\s|\\.|\\,|^)(респ?|ао(?:кр?)?|обл|кр|г)(?:\\s|\\.|\\,|$)", "i");
 						// Регулярное выражение для поиска улицы
 						const regStreet = new RegExp("(улица|площадь|переулок|гора|парк|тупик|канал|шоссе|проезд|набережная|километр|вал|бульвар|квартал|"
 						+ "проспект|авеню|аллея|кольцо)|(?:\\s|\\.|\\,|^)(ул|пл|пр-?к?т?|ав|алл?|б-?р|вл|кнл|кв-л|к(?:м|л)|клц|на?б|пер|пр-зд|туп|ш|гор)(?:\\s|\\.|\\,|$)", "i");
@@ -3961,129 +3961,136 @@ const anyks = require("./lib.anyks");
 		/**
 		 * updateTimeZones Метод обновления временных зон у тех элементов адресов у которых ранее временная зона была не найдена
 		 * @param  {String}  updateKey ключ для обновления базы данных
-		 * @return {Promise} промис содержащий результат обновления временных зон
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис содержащий результат обновления временных зон
 		 */
-		updateTimeZones({updateKey}){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				/**
-				 * updateDB Функция обновления данных в базе
-				 * @param  {Object} obj      объект для обновления данных
-				 * @param  {Object} scheme   схема базы данных
-				 * @param  {Function}        callback функция обратного вызова
-				 */
-				const updateDB = (scheme, obj, callback) => {
-					/**
-					 * Функция сохранения данных в кеше saveCache
-					 */
-					const saveCache = () => {
-						// Ключ запроса
-						const key = getKeyRedisForSubject(obj);
-						// Сохраняем данные в кеше
-						Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
-					};
-					// Запрашиваем все данные из базы
-					scheme.findOne({_id: obj._id})
-					// Выполняем запрос
-					.exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isset(data)
-						&& $.isObject(data)){
-							// Выполняем обновление
-							scheme.update({_id: obj._id}, obj, {upsert: true}, saveCache);
-						// Просто добавляем новый объект
-						} else (new scheme(obj)).save(saveCache);
-					});
-				};
-				/**
-				 * getTimezone Функция запроса временной зоны
-				 * @param  {Object} scheme схема базы данных
-				 * @return {Promise}       промис содержащий результат ответа
-				 */
-				const getTimezone = scheme => {
-					// Создаем промис для обработки
-					return (new Promise(resolve => {
-						// Запрашиваем все данные городов
-						scheme.find({timezone: {$exists: false}})
-						// Запрашиваем данные регионов
-						.exec((err, data) => {
-							// Если ошибки нет
-							if(!$.isset(err) && $.isArray(data) && data.length){
-								/**
-								 * getData Рекурсивная функция перехода по массиву
-								 * @param  {Number} i индекс текущего значения массива
-								 */
-								const getData = (i = 0) => {
-									// Если не все данные пришли тогда продолжаем загружать
-									if(i < data.length){
-										// Получаем данные временной зоны
-										idObj.getTimezoneByGPS({lat: data[i].lat, lng: data[i].lng}).then(timezone => {
-											// Если временная зона пришла
-											if(timezone){
-												// Сохраняем временную зону
-												data[i].timezone = timezone;
-												// Сохраняем временную зону
-												updateDB(scheme, data[i], () => getData(i + 1));
-											// Просто продолжаем дальше
-											} else getData(i + 1);
-										// Если происходит ошибка тогда выходим
-										}).catch(err => {
-											// Выводим ошибку метода
-											idObj.log("getTimezoneByGPS in updateTimeZones", err).error();
-											// Выходим
-											getData(i + 1);
-										});
-									// Если все загружено тогда сообщаем об этом
-									} else {
-										// Выводим в консоль сообщение
-										idObj.log("все временные зоны установлены!").info();
-										// Выводим результат
-										resolve(true);
-									}
-								};
-								// Запускаем запрос данных
-								getData();
-							// Сообщаем что такие данные не найдены
-							} else resolve(false);
-						});
-					}));
-				};
-				/**
-				 * *getData Генератор для получения данных временной зоны
-				 */
-				const getData = function * (){
-					// Выполняем запрос временной зоны для регионов
-					const regions = yield getTimezone(idObj.schemes.Regions);
-					// Выполняем запрос временной зоны для районов
-					const districts = yield getTimezone(idObj.schemes.Districts);
-					// Выполняем запрос временной зоны для городов
-					const cities = yield getTimezone(idObj.schemes.Cities);
-					// Выполняем запрос временной зоны для улиц
-					const streets = yield getTimezone(idObj.schemes.Streets);
-					// Выполняем запрос временной зоны для домов
-					const houses = yield getTimezone(idObj.schemes.Houses);
-					// Выводим в консоль что все данные временной зоны обновлены
-					idObj.log("все временные зоны обновлены удачно!").info();
-					// Сообщаем что все выполнено
-					resolve(true);
-				};
-				// Запускаем коннект
-				exec(getData());
-			}));
-		}
-		/**
-		 * updateCountries Метод обновления данных базы стран
-		 * @param {String} updateKey ключ для обновления базы данных
-		 */
-		updateCountries({updateKey}){
+		updateTimeZones({updateKey}, flag = false){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Проверяем совпадают ли ключи
-				if(idObj.generateKey(updateKey) === idObj.updateKey){
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					/**
+					 * updateDB Функция обновления данных в базе
+					 * @param  {Object} obj      объект для обновления данных
+					 * @param  {Object} scheme   схема базы данных
+					 * @param  {Function}        callback функция обратного вызова
+					 */
+					const updateDB = (scheme, obj, callback) => {
+						/**
+						 * Функция сохранения данных в кеше saveCache
+						 */
+						const saveCache = () => {
+							// Ключ запроса
+							const key = getKeyRedisForSubject(obj);
+							// Сохраняем данные в кеше
+							Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
+						};
+						// Запрашиваем все данные из базы
+						scheme.findOne({_id: obj._id})
+						// Выполняем запрос
+						.exec((err, data) => {
+							// Если ошибки нет
+							if(!$.isset(err) && $.isset(data)
+							&& $.isObject(data)){
+								// Выполняем обновление
+								scheme.update({_id: obj._id}, obj, {upsert: true}, saveCache);
+							// Просто добавляем новый объект
+							} else (new scheme(obj)).save(saveCache);
+						});
+					};
+					/**
+					 * getTimezone Функция запроса временной зоны
+					 * @param  {Object} scheme схема базы данных
+					 * @return {Promise}       промис содержащий результат ответа
+					 */
+					const getTimezone = scheme => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные городов
+							scheme.find({timezone: {$exists: false}})
+							// Запрашиваем данные регионов
+							.exec((err, data) => {
+								// Если ошибки нет
+								if(!$.isset(err) && $.isArray(data) && data.length){
+									/**
+									 * getData Рекурсивная функция перехода по массиву
+									 * @param  {Number} i индекс текущего значения массива
+									 */
+									const getData = (i = 0) => {
+										// Если не все данные пришли тогда продолжаем загружать
+										if(i < data.length){
+											// Получаем данные временной зоны
+											idObj.getTimezoneByGPS({lat: data[i].lat, lng: data[i].lng}).then(timezone => {
+												// Если временная зона пришла
+												if(timezone){
+													// Сохраняем временную зону
+													data[i].timezone = timezone;
+													// Сохраняем временную зону
+													updateDB(scheme, data[i], () => getData(i + 1));
+												// Просто продолжаем дальше
+												} else getData(i + 1);
+											// Если происходит ошибка тогда выходим
+											}).catch(err => {
+												// Выводим ошибку метода
+												idObj.log("getTimezoneByGPS in updateTimeZones", err).error();
+												// Выходим
+												getData(i + 1);
+											});
+										// Если все загружено тогда сообщаем об этом
+										} else {
+											// Выводим в консоль сообщение
+											idObj.log("все временные зоны установлены!").info();
+											// Выводим результат
+											resolve(true);
+										}
+									};
+									// Запускаем запрос данных
+									getData();
+								// Сообщаем что такие данные не найдены
+								} else resolve(false);
+							});
+						}));
+					};
+					/**
+					 * *getData Генератор для получения данных временной зоны
+					 */
+					const getData = function * (){
+						// Выполняем запрос временной зоны для регионов
+						const regions = yield getTimezone(idObj.schemes.Regions);
+						// Выполняем запрос временной зоны для районов
+						const districts = yield getTimezone(idObj.schemes.Districts);
+						// Выполняем запрос временной зоны для городов
+						const cities = yield getTimezone(idObj.schemes.Cities);
+						// Выполняем запрос временной зоны для улиц
+						const streets = yield getTimezone(idObj.schemes.Streets);
+						// Выполняем запрос временной зоны для домов
+						const houses = yield getTimezone(idObj.schemes.Houses);
+						// Выводим в консоль что все данные временной зоны обновлены
+						idObj.log("все временные зоны обновлены удачно!").info();
+						// Сообщаем что все выполнено
+						resolve(true);
+					};
+					// Запускаем коннект
+					exec(getData());
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
+			}));
+		}
+		/**
+		 * updateCountries Метод обновления данных базы стран
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис содержащий результат обновления стран
+		 */
+		updateCountries({updateKey}, flag = false){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
 					// Массив букв для названий стран
 					const countriesChar = [
 						"А", "Б", "В", "Г", "Д", "E", "Ж",
@@ -4158,657 +4165,692 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * updateRegions Метод обновления данных базы регионов
-		 * @param {String} updateKey ключ для обновления базы данных
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис содержащий результат обновления регионов
 		 */
-		updateRegions({updateKey}){
+		updateRegions({updateKey}, flag = false){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Массив букв для названий регионов
-				const regionsChar = [
-					"А", "Б", "В", "Г", "Д", "E", "Ж",
-					"З", "И", "К", "Л", "М", "Н", "О",
-					"П", "Р", "С", "Т", "У", "Ф", "Х",
-					"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
-				];
-				// Подключаемся к коллекции регионов
-				const regions = idObj.clients.mongo.connection.db.collection("regions");
-				// Удаляем колекцию регионов
-				regions.drop();
-				// Создаем ключ для кеша
-				const key = createSubjectKey({key: "subjects", db: "region"});
-				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, key);
-				/**
-				 * getRegion Рекурсивная функция загрузки региона
-				 * @param  {Number} i текущий индекс массива
-				 */
-				const getRegion = (i = 0) => {
-					// Если данные не все загружены то загружаем дальше
-					if(i < regionsChar.length){
-						// Формируем параметры запроса
-						const query = {
-							str:		regionsChar[i],
-							limit:		100,
-							noCache:	true
-						};
-						// Выполняем загрузку данных
-						idObj.findRegion(query).then(result => {
-							// Если это массив
-							if($.isArray(result) && result.length){
-								// Переходим по всему массиву
-								const str = (result.length > 1 ? result.reduce((sum, val) => {
-									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-									+ ", " + val.name + " " + val.type;
-								}) : result[0].name + " " + result[0].type);
-								// Выводим данные в консоль
-								idObj.log("регион(ы) загружен(ы) [", regionsChar[i], "]:", str).info();
-							}
-							// Продолжаем загрузку дальше
-							getRegion(i + 1);
-						// Если происходит ошибка тогда выходим
-						}).catch(err => {
-							// Выводим ошибку метода
-							idObj.log("findRegion in updateRegions", err).error();
-							// Выходим
-							getRegion(i + 1);
-						});
-					// Если все данные загружены тогда создаем индексы
-					} else {
-						// Создаем индексы регионов
-						regions.createIndex({name: 1}, {name: "region"});
-						regions.createIndex({okato: 1}, {name: "okato"});
-						regions.createIndex({type: 1}, {name: "type"});
-						regions.createIndex({typeShort: 1}, {name: "typeShort"});
-						regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
-						regions.createIndex({gps: "2dsphere"}, {name: "locations"});
-						// Выводим в консоль сообщение
-						idObj.log("все регионы установлены!").info();
-						// Сообщаем что все удачно выполнено
-						resolve(true);
-					}
-				};
-				// Выполняем загрузку регионов
-				getRegion();
-			}));
-		}
-		/**
-		 * updateDistricts Метод обновления данных районов
-		 * @param {String} updateKey ключ для обновления базы данных
-		 */
-		updateDistricts({updateKey}){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				// Массив букв для названий районов
-				const districtsChar = [
-					"А", "Б", "В", "Г", "Д", "E", "Ж",
-					"З", "И", "К", "Л", "М", "Н", "О",
-					"П", "Р", "С", "Т", "У", "Ф", "Х",
-					"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
-				];
-				// Подключаемся к коллекции районов
-				const districts = idObj.clients.mongo.connection.db.collection("districts");
-				// Удаляем колекцию районов
-				districts.drop();
-				// Создаем ключ для кеша
-				const key = createSubjectKey({key: "subjects", db: "district"});
-				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, key);
-				// Запрашиваем все данные регионов
-				idObj.schemes.Regions.find({})
-				// Запрашиваем данные регионов
-				.exec((err, data) => {
-					// Если ошибки нет
-					if(!$.isset(err) && $.isArray(data)){
-						/**
-						 * getRegion Рекурсивная функция загрузки региона
-						 * @param  {Number} i текущий индекс массива
-						 */
-						const getRegion = (i = 0) => {
-							// Если регионы загружены не все тогда выполняем загрузку
-							if(i < data.length){
-								/**
-								 * getDistrict Рекурсивная функция загрузки районов
-								 * @param  {Number} j текущий индекс массива
-								 */
-								const getDistrict = (j = 0) => {
-									// Если данные не все загружены то загружаем дальше
-									if(j < districtsChar.length){
-										// Параметры запроса
-										const query = {
-											str:		districtsChar[j],
-											limit:		100,
-											noCache:	true,
-											regionId:	data[i]._id
-										};
-										// Выполняем поиск района
-										idObj.findDistrict(query).then(result => {
-											// Если это массив
-											if($.isArray(result) && result.length){
-												// Переходим по всему массиву
-												const str = (result.length > 1 ? result.reduce((sum, val) => {
-													// Формируем строку отчета
-													return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-													+ ", " + val.name + " " + val.type;
-												}) : result[0].name + " " + result[0].type);
-												// Выводим данные в консоль
-												idObj.log(
-													"район(ы) загружен(ы) [", districtsChar[j], "]:", str,
-													"номер района =", (i + 1),
-													"из", data.length
-												).info();
-											}
-											// Продолжаем загрузку дальше
-											getDistrict(j + 1);
-										// Если происходит ошибка тогда выходим
-										}).catch(err => {
-											// Выводим ошибку метода
-											idObj.log("findDistrict in updateDistricts", err).error();
-											// Выходим
-											getDistrict(j + 1);
-										});
-									// Если все данные загружены, переходим к следующему району
-									} else getRegion(i + 1);
-								};
-								// Выполняем запрос данных районов
-								getDistrict();
-							// Сообщаем что все регионы загружены
-							} else {
-								// Создаем индексы районов
-								districts.createIndex({name: 1}, {name: "district"});
-								districts.createIndex({regionId: 1}, {name: "region"});
-								districts.createIndex({okato: 1}, {name: "okato"});
-								districts.createIndex({zip: 1}, {name: "zip"});
-								districts.createIndex({type: 1}, {name: "type"});
-								districts.createIndex({typeShort: 1}, {name: "typeShort"});
-								districts.createIndex({lat: 1, lng: 1}, {name: "gps"});
-								districts.createIndex({gps: "2dsphere"}, {name: "locations"});
-								// Выводим в консоль сообщение
-								idObj.log("все районы установлены!").info();
-								// Сообщаем что все удачно выполнено
-								resolve(true);
-							}
-						};
-						// Извлекаем данные регионов
-						getRegion();
-					// Выводим сообщение в консоль
-					} else {
-						// Выводим сообщение в консоль
-						idObj.log("ошибка загрузки данных регионов", err).error();
-						// Сообщаем что такие данные не найдены
-						resolve(false);
-					}
-				});
-			}));
-		}
-		/**
-		 * updateCities Метод обновления данных городов
-		 * @param {String} updateKey ключ для обновления базы данных
-		 */
-		updateCities({updateKey}){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				// Массив букв для названий городов
-				const citiesChar = [
-					"А", "Б", "В", "Г", "Д", "E", "Ж",
-					"З", "И", "К", "Л", "М", "Н", "О",
-					"П", "Р", "С", "Т", "У", "Ф", "Х",
-					"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
-				];
-				// Подключаемся к коллекции городов
-				const cities = idObj.clients.mongo.connection.db.collection("cities");
-				// Удаляем колекцию городов
-				cities.drop();
-				// Создаем ключ для кеша
-				const key = createSubjectKey({key: "subjects", db: "city"});
-				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, key);
-				// Запрашиваем все данные регионов
-				idObj.schemes.Regions.find({})
-				// Запрашиваем данные регионов
-				.exec((err, data) => {
-					// Если ошибки нет
-					if(!$.isset(err) && $.isArray(data)){
-						/**
-						 * getRegions Рекурсивная функция загрузки региона
-						 * @param  {Number} i текущий индекс массива
-						 */
-						const getRegions = (i = 0) => {
-							// Если районы загружены не все тогда выполняем загрузку
-							if(i < data.length){
-								/**
-								 * getCity Рекурсивная функция загрузки городов
-								 * @param  {Number} j текущий индекс массива
-								 */
-								const getCity = (j = 0) => {
-									// Если данные не все загружены то загружаем дальше
-									if(j < citiesChar.length){
-										// Параметры запроса
-										const query = {
-											str:		citiesChar[j],
-											limit:		100,
-											noCache:	true,
-											regionId:	data[i]._id,
-											districtId:	null
-										};
-										// Выполняем поиск городов
-										idObj.findCity(query).then(result => {
-											// Если это массив
-											if($.isArray(result) && result.length){
-												// Переходим по всему массиву
-												const str = (result.length > 1 ? result.reduce((sum, val) => {
-													// Формируем строку отчета
-													return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-													+ ", " + val.name + " " + val.type;
-												}) : result[0].name + " " + result[0].type);
-												// Выводим данные в консоль
-												idObj.log(
-													"город(а) загружен(ы) [", citiesChar[j], "]:", str,
-													"номер региона =", (i + 1),
-													"из", data.length
-												).info();
-											}
-											// Продолжаем загрузку дальше
-											getCity(j + 1);
-										// Если происходит ошибка тогда выходим
-										}).catch(err => {
-											// Выводим ошибку метода
-											idObj.log("findCity in updateCities", err).error();
-											// Выходим
-											getCity(j + 1);
-										});
-									// Если все данные загружены, переходим к следующему региону
-									} else getRegions(i + 1);
-								};
-								// Выполняем запрос данных городов
-								getCity();
-							// Сообщаем что все города загружены
-							} else {
-								// Создаем индексы городов
-								cities.createIndex({name: 1}, {name: "city"});
-								cities.createIndex({regionId: 1}, {name: "region"});
-								cities.createIndex({districtId: 1}, {name: "district"});
-								cities.createIndex({okato: 1}, {name: "okato"});
-								cities.createIndex({zip: 1}, {name: "zip"});
-								cities.createIndex({type: 1}, {name: "type"});
-								cities.createIndex({typeShort: 1}, {name: "typeShort"});
-								cities.createIndex({lat: 1, lng: 1}, {name: "gps"});
-								cities.createIndex({gps: "2dsphere"}, {name: "locations"});
-								// Выводим в консоль сообщение
-								idObj.log("все города установлены!").info();
-								// Сообщаем что все удачно выполнено
-								resolve(true);
-							}
-						};
-						// Извлекаем данные регионов
-						getRegions();
-					// Выводим сообщение в консоль
-					} else {
-						// Выводим сообщение в консоль
-						idObj.log("ошибка загрузки данных регионов", err).error();
-						// Сообщаем что такие данные не найдены
-						resolve(false);
-					}
-				});
-			}));
-		}
-		/**
-		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
-		 * @param  {String} updateKey ключ для обновления базы данных
-		 * @return {Promise} промис с данными результата обновлений станций метро
-		 */
-		updateMetroCity({updateKey}){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				/**
-				 * updateDB Функция обновления данных в базе
-				 * @param  {Object}   obj      объект для обновления данных
-				 * @param  {Function} callback функция обратного вызова
-				 */
-				const updateDB = (obj, callback) => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					// Массив букв для названий регионов
+					const regionsChar = [
+						"А", "Б", "В", "Г", "Д", "E", "Ж",
+						"З", "И", "К", "Л", "М", "Н", "О",
+						"П", "Р", "С", "Т", "У", "Ф", "Х",
+						"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+					];
+					// Подключаемся к коллекции регионов
+					const regions = idObj.clients.mongo.connection.db.collection("regions");
+					// Удаляем колекцию регионов
+					regions.drop();
+					// Создаем ключ для кеша
+					const key = createSubjectKey({key: "subjects", db: "region"});
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, key);
 					/**
-					 * Функция сохранения данных в кеше saveCache
-					 */
-					const saveCache = () => {
-						// Ключ запроса
-						const key = getKeyRedisForSubject(obj);
-						// Сохраняем данные в кеше
-						Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
-					};
-					// Запрашиваем все данные из базы
-					idObj.schemes.Cities.findOne({_id: obj._id})
-					// Выполняем запрос
-					.exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isset(data)
-						&& $.isObject(data)){
-							// Выполняем обновление
-							idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
-						// Просто добавляем новый объект
-						} else (new idObj.schemes.Cities(obj)).save(saveCache);
-					});
-				};
-				// Запрашиваем все данные городов
-				idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
-				// Запрашиваем данные регионов
-				.exec((err, data) => {
-					// Если ошибки нет
-					if(!$.isset(err) && $.isArray(data) && data.length){
-						/**
-						 * getData Рекурсивная функция перехода по массиву
-						 * @param  {Number} i индекс текущего значения массива
-						 */
-						const getData = (i = 0) => {
-							// Если не все данные пришли тогда продолжаем загружать
-							if(i < data.length){
-								// Параметры запроса
-								const query = {
-									lat:		data[i].lat,
-									lng:		data[i].lng,
-									distance:	150000
-								};
-								// Получаем данные метро
-								idObj.getMetroByGPS(query).then(metro => {
-									// Если метро передано
-									if($.isArray(metro) && metro.length){
-										// Создаем пустой массив с метро
-										data[i].metro = [];
-										// Переходим по всему массиву данных
-										metro.forEach(val => data[i].metro.push(val._id));
-										// Сохраняем метро
-										updateDB(data[i], () => getData(i + 1));
-									// Просто продолжаем дальше
-									} else getData(i + 1);
-								// Если происходит ошибка тогда выходим
-								}).catch(err => {
-									// Выводим ошибку метода
-									idObj.log("getMetroByGPS in updateMetroCity", err).error();
-									// Выходим
-									getData(i + 1);
-								});
-							// Если все загружено тогда сообщаем об этом
-							} else {
-								// Выводим в консоль сообщение
-								idObj.log("все станции метро в городах установлены!").info();
-								// Выводим результат
-								resolve(true);
-							}
-						};
-						// Запускаем запрос данных
-						getData();
-					// Сообщаем что такие данные не найдены
-					} else resolve(false);
-				});
-			}));
-		}
-		/**
-		 * updateMetro Метод обновления данных базы метро
-		 * @param {String} updateKey ключ для обновления базы данных
-		 */
-		updateMetro({updateKey}){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				// Подключаем модуль закачки данных
-				const fetch = require('node-fetch');
-				// Создаем ключ для кеша
-				const key = createMetroKey({key: "metro"});
-				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, key);
-				/**
-				 * getData Функция обработки полученных данных с интернета
-				 * @param  {Array} arr объект данными метро
-				 */
-				const getData = arr => {
-					// Подключаемся к коллекции метро
-					const metro = idObj.clients.mongo.connection.db.collection("metro");
-					// Подключаемся к коллекции метро городов
-					const metro_cities = idObj.clients.mongo.connection.db.collection("metro_cities");
-					// Подключаемся к коллекции метро линий
-					const metro_lines = idObj.clients.mongo.connection.db.collection("metro_lines");
-					// Подключаемся к коллекции метро станций
-					const metro_stations = idObj.clients.mongo.connection.db.collection("metro_stations");
-					// Удаляем все коллекции метро
-					metro.drop();
-					metro_cities.drop();
-					metro_lines.drop();
-					metro_stations.drop();
-					// Переходим по всему массиву данных
-					arr.forEach(obj => {
-						// Копируем идентификатор метро
-						obj._id = obj.id;
-						// Формируем нужного вида для нас массив
-						obj.lines.forEach(line => {
-							// Переходим по всем станциям метро
-							line.stations.forEach(station => {
-								// Формируемновый ключ gps;
-								station.gps = [station.lat, station.lng];
-								// Выводим результат
-								return station;
-							});
-							// Выводим полученный массив
-							return line;
-						});
-						// Сохраняем результат
-						(new idObj.schemes.Metro(obj)).save();
-					});
-					/**
-					 * getCities Рекурсивная функция запроса городов
+					 * getRegion Рекурсивная функция загрузки региона
 					 * @param  {Number} i текущий индекс массива
 					 */
-					const getCities = (i = 0) => {
-						// Если города не все загружены
-						if(i < arr.length){
-							// Запрашиваем все данные городов
-							idObj.schemes.Cities.findOne({name: arr[i].name, typeShort: "г"})
-							// Запрашиваем данные регионов
-							.exec((err, data) => {
-								// Если ошибки нет
-								if(!$.isset(err) && $.isset(data) && $.isObject(data)){
-									// Изменяем идентификатор записи
-									arr[i]._id		= data._id;
-									arr[i].linesIds	= [];
-									// Формируем идентификаторы линий
-									arr[i].lines.forEach(line => {
-										// Формируем линию метро
-										line._id			= idObj.generateKey(line.id + arr[i]._id + line.name);
-										line.cityId			= arr[i]._id;
-										line.color			= line.hex_color;
-										line.stationsIds	= [];
-										// Формируем массив линий для города
-										arr[i].linesIds.push(line._id);
-										// Переходим по всем станциям метро
-										line.stations.forEach(station => {
-											// Формируем станцию метро
-											station._id		= idObj.generateKey(station.id + line.id + arr[i]._id + station.name);
-											station.cityId	= arr[i]._id;
-											station.lineId	= line._id;
-											// Формируемновый ключ gps;
-											station.gps = [station.lat, station.lng];
-											// Формируем массив станций для линии
-											line.stationsIds.push(station._id);
-											// Формируем объект для сохранения в кеше
-											const obj = {
-												id:		station._id,
-												name:	station.name,
-												lat:	station.lat,
-												lng:	station.lng,
-												order:	station.order,
-												line:	line.name,
-												color:	line.color,
-												city:	arr[i].name
-											};
-											// Ключа кеша метро
-											const key = createMetroKey({
-												id:		station._id,
-												key:	"metro",
-												name:	station.name,
-												lineId:	line._id,
-												cityId:	arr[i]._id
-											});
-											// Записываем данные в кеш
-											Agl.setRedis.call(idObj, "set", key, obj).then();
-											// Сохраняем станцию метро
-											(new idObj.schemes.Metro_stations(station)).save();
-										});
-										// Сохраняем линию метро
-										(new idObj.schemes.Metro_lines(line)).save();
-									});
-									// Сохраняем город метро
-									(new idObj.schemes.Metro_cities(arr[i])).save();
-								// Выводим сообщение в консоль
-								} else idObj.log("ошибка загрузки данных городов", err).error();
-								// Продолжаем дальше
-								getCities(i + 1);
+					const getRegion = (i = 0) => {
+						// Если данные не все загружены то загружаем дальше
+						if(i < regionsChar.length){
+							// Формируем параметры запроса
+							const query = {
+								str:		regionsChar[i],
+								limit:		100,
+								noCache:	true
+							};
+							// Выполняем загрузку данных
+							idObj.findRegion(query).then(result => {
+								// Если это массив
+								if($.isArray(result) && result.length){
+									// Переходим по всему массиву
+									const str = (result.length > 1 ? result.reduce((sum, val) => {
+										// Формируем строку отчета
+										return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+										+ ", " + val.name + " " + val.type;
+									}) : result[0].name + " " + result[0].type);
+									// Выводим данные в консоль
+									idObj.log("регион(ы) загружен(ы) [", regionsChar[i], "]:", str).info();
+								}
+								// Продолжаем загрузку дальше
+								getRegion(i + 1);
+							// Если происходит ошибка тогда выходим
+							}).catch(err => {
+								// Выводим ошибку метода
+								idObj.log("findRegion in updateRegions", err).error();
+								// Выходим
+								getRegion(i + 1);
 							});
-						// Если все города загружены
+						// Если все данные загружены тогда создаем индексы
 						} else {
-							// Создаем индексы метро
-							metro.createIndex({name: 1}, {name: "city"});
-							metro.createIndex({"lines.hex_color": 1}, {name: "color"});
-							metro.createIndex({"lines.name": 1}, {name: "lines"});
-							metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
-							metro.createIndex({"lines.stations.order": 1}, {name: "order"});
-							metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
-							metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
-							// Создаем индексы для метро городов
-							metro_cities.createIndex({name: 1}, {name: "city"});
-							metro_cities.createIndex({linesIds: 1}, {name: "lines"});
-							// Создаем индексы для метро линий
-							metro_lines.createIndex({name: 1}, {name: "line"});
-							metro_lines.createIndex({cityId: 1}, {name: "city"});
-							metro_lines.createIndex({color: 1}, {name: "color"});
-							metro_lines.createIndex({stationsIds: 1}, {name: "stations"});
-							// Создаем индексы для метро станций
-							metro_stations.createIndex({name: 1}, {name: "station"});
-							metro_stations.createIndex({cityId: 1}, {name: "city"});
-							metro_stations.createIndex({lineId: 1}, {name: "line"});
-							metro_stations.createIndex({order: 1}, {name: "order"});
-							metro_stations.createIndex({lat: 1, lng: 1}, {name: "gps"});
-							metro_stations.createIndex({gps: "2dsphere"}, {name: "locations"});
+							// Создаем индексы регионов
+							regions.createIndex({name: 1}, {name: "region"});
+							regions.createIndex({okato: 1}, {name: "okato"});
+							regions.createIndex({type: 1}, {name: "type"});
+							regions.createIndex({typeShort: 1}, {name: "typeShort"});
+							regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
+							regions.createIndex({gps: "2dsphere"}, {name: "locations"});
 							// Выводим в консоль сообщение
-							idObj.log("все метро установлены!").info();
+							idObj.log("все регионы установлены!").info();
 							// Сообщаем что все удачно выполнено
 							resolve(true);
 						}
 					};
-					// Выполняем запрос данных городов
-					getCities();
-				};
-				// Закачиваем данные метро
-				fetch('https://api.hh.ru/metro')
-				// Преобразуем полученный объект
-				.then(
-					res => (res.status === 200 ? res.json() : false),
-					err => idObj.log("get metro", err).error()
-				// Обрабатываем полученные данные
-				).then(getData, err => idObj.log("parse metro", err).error())
-				// Если происходит ошибка тогда выходим
-				.catch(err => {
-					// Ошибка метода updateMetro
-					idObj.log("updateMetro", err).error();
-					// Сообщаем что дальше некуда
-					resolve(false);
-				});
+					// Выполняем загрузку регионов
+					getRegion();
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
 			}));
 		}
 		/**
-		 * initEmptyDatabases Метод инициализации чистой базы данных
-		 * @param {String} updateKey ключ для обновления базы данных
+		 * updateDistricts Метод обновления данных районов
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис содержащий результат обновления районов
 		 */
-		initEmptyDatabases({updateKey}){
+		updateDistricts({updateKey}, flag = false){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Подключаемся к коллекции address
-				const address = idObj.clients.mongo.connection.db.collection("address");
-				// Подключаемся к коллекции streets
-				const streets = idObj.clients.mongo.connection.db.collection("streets");
-				// Подключаемся к коллекции streets
-				const houses = idObj.clients.mongo.connection.db.collection("houses");
-				// Удаляем все колекции
-				address.drop();
-				streets.drop();
-				houses.drop();
-				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, "*");
-				/**
-				 * *updateDB Генератор для получения обновления данных
-				 */
-				const updateDB = function * (){
-					// Выполняем обновление базы данных стран
-					const countries = yield idObj.updateCountries();
-					// Выполняем обновление базы данных регионов
-					const regions = (countries ? yield idObj.updateRegions() : false);
-					// Выполняем обновление базы районов
-					const districts = (regions ? yield idObj.updateDistricts() : false);
-					// Выполняем обновление базы городов
-					const cities = (districts ? yield idObj.updateCities() : false);
-					// Выполняем обновление базы метро
-					const metro = (cities ? yield idObj.updateMetro() : false);
-					// Если метро загружено
-					if(metro){
-						// Выполняем загрузку станций метро для городов
-						const metroCity = yield idObj.updateMetroCity();
-						// Создаем индексы для базы адресов
-						// address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
-						address.createIndex({lat: 1, lng: 1}, {name: "gps"});
-						address.createIndex({"address.zip": 1}, {name: "zip"});
-						address.createIndex({"address.district": 1}, {name: "district"});
-						address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
-						address.createIndex({gps: "2dsphere"}, {name: "locations"});
-						// Создаем индексы для улиц
-						streets.createIndex({name: 1}, {name: "street"});
-						streets.createIndex({regionId: 1}, {name: "region"});
-						streets.createIndex({districtId: 1}, {name: "district"});
-						streets.createIndex({cityId: 1}, {name: "city"});
-						streets.createIndex({okato: 1}, {name: "okato"});
-						streets.createIndex({zip: 1}, {name: "zip"});
-						streets.createIndex({type: 1}, {name: "type"});
-						streets.createIndex({typeShort: 1}, {name: "typeShort"});
-						streets.createIndex({lat: 1, lng: 1}, {name: "gps"});
-						streets.createIndex({gps: "2dsphere"}, {name: "locations"});
-						// Создаем индексы для домов
-						houses.createIndex({name: 1}, {name: "house"});
-						houses.createIndex({regionId: 1}, {name: "region"});
-						houses.createIndex({districtId: 1}, {name: "district"});
-						houses.createIndex({streetId: 1}, {name: "street"});
-						houses.createIndex({cityId: 1}, {name: "city"});
-						houses.createIndex({okato: 1}, {name: "okato"});
-						houses.createIndex({zip: 1}, {name: "zip"});
-						houses.createIndex({type: 1}, {name: "type"});
-						houses.createIndex({typeShort: 1}, {name: "typeShort"});
-						houses.createIndex({lat: 1, lng: 1}, {name: "gps"});
-						houses.createIndex({gps: "2dsphere"}, {name: "locations"});
-						// Выводим в консоль сообщение
-						idObj.log("все работы выполнены!").info();
-						// Сообщаем что работа завершена
-						resolve(true);
-					} else {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					// Массив букв для названий районов
+					const districtsChar = [
+						"А", "Б", "В", "Г", "Д", "E", "Ж",
+						"З", "И", "К", "Л", "М", "Н", "О",
+						"П", "Р", "С", "Т", "У", "Ф", "Х",
+						"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+					];
+					// Подключаемся к коллекции районов
+					const districts = idObj.clients.mongo.connection.db.collection("districts");
+					// Удаляем колекцию районов
+					districts.drop();
+					// Создаем ключ для кеша
+					const key = createSubjectKey({key: "subjects", db: "district"});
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, key);
+					// Запрашиваем все данные регионов
+					idObj.schemes.Regions.find({})
+					// Запрашиваем данные регионов
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isArray(data)){
+							/**
+							 * getRegion Рекурсивная функция загрузки региона
+							 * @param  {Number} i текущий индекс массива
+							 */
+							const getRegion = (i = 0) => {
+								// Если регионы загружены не все тогда выполняем загрузку
+								if(i < data.length){
+									/**
+									 * getDistrict Рекурсивная функция загрузки районов
+									 * @param  {Number} j текущий индекс массива
+									 */
+									const getDistrict = (j = 0) => {
+										// Если данные не все загружены то загружаем дальше
+										if(j < districtsChar.length){
+											// Параметры запроса
+											const query = {
+												str:		districtsChar[j],
+												limit:		100,
+												noCache:	true,
+												regionId:	data[i]._id
+											};
+											// Выполняем поиск района
+											idObj.findDistrict(query).then(result => {
+												// Если это массив
+												if($.isArray(result) && result.length){
+													// Переходим по всему массиву
+													const str = (result.length > 1 ? result.reduce((sum, val) => {
+														// Формируем строку отчета
+														return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+														+ ", " + val.name + " " + val.type;
+													}) : result[0].name + " " + result[0].type);
+													// Выводим данные в консоль
+													idObj.log(
+														"район(ы) загружен(ы) [", districtsChar[j], "]:", str,
+														"номер района =", (i + 1),
+														"из", data.length
+													).info();
+												}
+												// Продолжаем загрузку дальше
+												getDistrict(j + 1);
+											// Если происходит ошибка тогда выходим
+											}).catch(err => {
+												// Выводим ошибку метода
+												idObj.log("findDistrict in updateDistricts", err).error();
+												// Выходим
+												getDistrict(j + 1);
+											});
+										// Если все данные загружены, переходим к следующему району
+										} else getRegion(i + 1);
+									};
+									// Выполняем запрос данных районов
+									getDistrict();
+								// Сообщаем что все регионы загружены
+								} else {
+									// Создаем индексы районов
+									districts.createIndex({name: 1}, {name: "district"});
+									districts.createIndex({regionId: 1}, {name: "region"});
+									districts.createIndex({okato: 1}, {name: "okato"});
+									districts.createIndex({zip: 1}, {name: "zip"});
+									districts.createIndex({type: 1}, {name: "type"});
+									districts.createIndex({typeShort: 1}, {name: "typeShort"});
+									districts.createIndex({lat: 1, lng: 1}, {name: "gps"});
+									districts.createIndex({gps: "2dsphere"}, {name: "locations"});
+									// Выводим в консоль сообщение
+									idObj.log("все районы установлены!").info();
+									// Сообщаем что все удачно выполнено
+									resolve(true);
+								}
+							};
+							// Извлекаем данные регионов
+							getRegion();
 						// Выводим сообщение в консоль
-						idObj.log(
-							"база данных создана не полностью:",
-							"регионы =", regions,
-							"районы =", districts,
-							"города =", cities,
-							"метро =", metro
-						).error();
-						// Сообщаем что работа завершена
+						} else {
+							// Выводим сообщение в консоль
+							idObj.log("ошибка загрузки данных регионов", err).error();
+							// Сообщаем что такие данные не найдены
+							resolve(false);
+						}
+					});
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
+			}));
+		}
+		/**
+		 * updateCities Метод обновления данных городов
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис содержащий результат обновления городов
+		 */
+		updateCities({updateKey}, flag = false){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					// Массив букв для названий городов
+					const citiesChar = [
+						"А", "Б", "В", "Г", "Д", "E", "Ж",
+						"З", "И", "К", "Л", "М", "Н", "О",
+						"П", "Р", "С", "Т", "У", "Ф", "Х",
+						"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+					];
+					// Подключаемся к коллекции городов
+					const cities = idObj.clients.mongo.connection.db.collection("cities");
+					// Удаляем колекцию городов
+					cities.drop();
+					// Создаем ключ для кеша
+					const key = createSubjectKey({key: "subjects", db: "city"});
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, key);
+					// Запрашиваем все данные регионов
+					idObj.schemes.Regions.find({})
+					// Запрашиваем данные регионов
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isArray(data)){
+							/**
+							 * getRegions Рекурсивная функция загрузки региона
+							 * @param  {Number} i текущий индекс массива
+							 */
+							const getRegions = (i = 0) => {
+								// Если районы загружены не все тогда выполняем загрузку
+								if(i < data.length){
+									/**
+									 * getCity Рекурсивная функция загрузки городов
+									 * @param  {Number} j текущий индекс массива
+									 */
+									const getCity = (j = 0) => {
+										// Если данные не все загружены то загружаем дальше
+										if(j < citiesChar.length){
+											// Параметры запроса
+											const query = {
+												str:		citiesChar[j],
+												limit:		100,
+												noCache:	true,
+												regionId:	data[i]._id,
+												districtId:	null
+											};
+											// Выполняем поиск городов
+											idObj.findCity(query).then(result => {
+												// Если это массив
+												if($.isArray(result) && result.length){
+													// Переходим по всему массиву
+													const str = (result.length > 1 ? result.reduce((sum, val) => {
+														// Формируем строку отчета
+														return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+														+ ", " + val.name + " " + val.type;
+													}) : result[0].name + " " + result[0].type);
+													// Выводим данные в консоль
+													idObj.log(
+														"город(а) загружен(ы) [", citiesChar[j], "]:", str,
+														"номер региона =", (i + 1),
+														"из", data.length
+													).info();
+												}
+												// Продолжаем загрузку дальше
+												getCity(j + 1);
+											// Если происходит ошибка тогда выходим
+											}).catch(err => {
+												// Выводим ошибку метода
+												idObj.log("findCity in updateCities", err).error();
+												// Выходим
+												getCity(j + 1);
+											});
+										// Если все данные загружены, переходим к следующему региону
+										} else getRegions(i + 1);
+									};
+									// Выполняем запрос данных городов
+									getCity();
+								// Сообщаем что все города загружены
+								} else {
+									// Создаем индексы городов
+									cities.createIndex({name: 1}, {name: "city"});
+									cities.createIndex({regionId: 1}, {name: "region"});
+									cities.createIndex({districtId: 1}, {name: "district"});
+									cities.createIndex({okato: 1}, {name: "okato"});
+									cities.createIndex({zip: 1}, {name: "zip"});
+									cities.createIndex({type: 1}, {name: "type"});
+									cities.createIndex({typeShort: 1}, {name: "typeShort"});
+									cities.createIndex({lat: 1, lng: 1}, {name: "gps"});
+									cities.createIndex({gps: "2dsphere"}, {name: "locations"});
+									// Выводим в консоль сообщение
+									idObj.log("все города установлены!").info();
+									// Сообщаем что все удачно выполнено
+									resolve(true);
+								}
+							};
+							// Извлекаем данные регионов
+							getRegions();
+						// Выводим сообщение в консоль
+						} else {
+							// Выводим сообщение в консоль
+							idObj.log("ошибка загрузки данных регионов", err).error();
+							// Сообщаем что такие данные не найдены
+							resolve(false);
+						}
+					});
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
+			}));
+		}
+		/**
+		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис с данными результата обновлений станций метро
+		 */
+		updateMetroCity({updateKey}, flag = false){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					/**
+					 * updateDB Функция обновления данных в базе
+					 * @param  {Object}   obj      объект для обновления данных
+					 * @param  {Function} callback функция обратного вызова
+					 */
+					const updateDB = (obj, callback) => {
+						/**
+						 * Функция сохранения данных в кеше saveCache
+						 */
+						const saveCache = () => {
+							// Ключ запроса
+							const key = getKeyRedisForSubject(obj);
+							// Сохраняем данные в кеше
+							Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
+						};
+						// Запрашиваем все данные из базы
+						idObj.schemes.Cities.findOne({_id: obj._id})
+						// Выполняем запрос
+						.exec((err, data) => {
+							// Если ошибки нет
+							if(!$.isset(err) && $.isset(data)
+							&& $.isObject(data)){
+								// Выполняем обновление
+								idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
+							// Просто добавляем новый объект
+							} else (new idObj.schemes.Cities(obj)).save(saveCache);
+						});
+					};
+					// Запрашиваем все данные городов
+					idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
+					// Запрашиваем данные регионов
+					.exec((err, data) => {
+						// Если ошибки нет
+						if(!$.isset(err) && $.isArray(data) && data.length){
+							/**
+							 * getData Рекурсивная функция перехода по массиву
+							 * @param  {Number} i индекс текущего значения массива
+							 */
+							const getData = (i = 0) => {
+								// Если не все данные пришли тогда продолжаем загружать
+								if(i < data.length){
+									// Параметры запроса
+									const query = {
+										lat:		data[i].lat,
+										lng:		data[i].lng,
+										distance:	150000
+									};
+									// Получаем данные метро
+									idObj.getMetroByGPS(query).then(metro => {
+										// Если метро передано
+										if($.isArray(metro) && metro.length){
+											// Создаем пустой массив с метро
+											data[i].metro = [];
+											// Переходим по всему массиву данных
+											metro.forEach(val => data[i].metro.push(val._id));
+											// Сохраняем метро
+											updateDB(data[i], () => getData(i + 1));
+										// Просто продолжаем дальше
+										} else getData(i + 1);
+									// Если происходит ошибка тогда выходим
+									}).catch(err => {
+										// Выводим ошибку метода
+										idObj.log("getMetroByGPS in updateMetroCity", err).error();
+										// Выходим
+										getData(i + 1);
+									});
+								// Если все загружено тогда сообщаем об этом
+								} else {
+									// Выводим в консоль сообщение
+									idObj.log("все станции метро в городах установлены!").info();
+									// Выводим результат
+									resolve(true);
+								}
+							};
+							// Запускаем запрос данных
+							getData();
+						// Сообщаем что такие данные не найдены
+						} else resolve(false);
+					});
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
+			}));
+		}
+		/**
+		 * updateMetro Метод обновления данных базы метро
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис с данными результата обновлений метро
+		 */
+		updateMetro({updateKey}, flag = false){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					// Подключаем модуль закачки данных
+					const fetch = require('node-fetch');
+					// Создаем ключ для кеша
+					const key = createMetroKey({key: "metro"});
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, key);
+					/**
+					 * getData Функция обработки полученных данных с интернета
+					 * @param  {Array} arr объект данными метро
+					 */
+					const getData = arr => {
+						// Подключаемся к коллекции метро
+						const metro = idObj.clients.mongo.connection.db.collection("metro");
+						// Подключаемся к коллекции метро городов
+						const metro_cities = idObj.clients.mongo.connection.db.collection("metro_cities");
+						// Подключаемся к коллекции метро линий
+						const metro_lines = idObj.clients.mongo.connection.db.collection("metro_lines");
+						// Подключаемся к коллекции метро станций
+						const metro_stations = idObj.clients.mongo.connection.db.collection("metro_stations");
+						// Удаляем все коллекции метро
+						metro.drop();
+						metro_cities.drop();
+						metro_lines.drop();
+						metro_stations.drop();
+						// Переходим по всему массиву данных
+						arr.forEach(obj => {
+							// Копируем идентификатор метро
+							obj._id = obj.id;
+							// Формируем нужного вида для нас массив
+							obj.lines.forEach(line => {
+								// Переходим по всем станциям метро
+								line.stations.forEach(station => {
+									// Формируемновый ключ gps;
+									station.gps = [station.lat, station.lng];
+									// Выводим результат
+									return station;
+								});
+								// Выводим полученный массив
+								return line;
+							});
+							// Сохраняем результат
+							(new idObj.schemes.Metro(obj)).save();
+						});
+						/**
+						 * getCities Рекурсивная функция запроса городов
+						 * @param  {Number} i текущий индекс массива
+						 */
+						const getCities = (i = 0) => {
+							// Если города не все загружены
+							if(i < arr.length){
+								// Запрашиваем все данные городов
+								idObj.schemes.Cities.findOne({name: arr[i].name, typeShort: "г"})
+								// Запрашиваем данные регионов
+								.exec((err, data) => {
+									// Если ошибки нет
+									if(!$.isset(err) && $.isset(data) && $.isObject(data)){
+										// Изменяем идентификатор записи
+										arr[i]._id		= data._id;
+										arr[i].linesIds	= [];
+										// Формируем идентификаторы линий
+										arr[i].lines.forEach(line => {
+											// Формируем линию метро
+											line._id			= idObj.generateKey(line.id + arr[i]._id + line.name);
+											line.cityId			= arr[i]._id;
+											line.color			= line.hex_color;
+											line.stationsIds	= [];
+											// Формируем массив линий для города
+											arr[i].linesIds.push(line._id);
+											// Переходим по всем станциям метро
+											line.stations.forEach(station => {
+												// Формируем станцию метро
+												station._id		= idObj.generateKey(station.id + line.id + arr[i]._id + station.name);
+												station.cityId	= arr[i]._id;
+												station.lineId	= line._id;
+												// Формируемновый ключ gps;
+												station.gps = [station.lat, station.lng];
+												// Формируем массив станций для линии
+												line.stationsIds.push(station._id);
+												// Формируем объект для сохранения в кеше
+												const obj = {
+													id:		station._id,
+													name:	station.name,
+													lat:	station.lat,
+													lng:	station.lng,
+													order:	station.order,
+													line:	line.name,
+													color:	line.color,
+													city:	arr[i].name
+												};
+												// Ключа кеша метро
+												const key = createMetroKey({
+													id:		station._id,
+													key:	"metro",
+													name:	station.name,
+													lineId:	line._id,
+													cityId:	arr[i]._id
+												});
+												// Записываем данные в кеш
+												Agl.setRedis.call(idObj, "set", key, obj).then();
+												// Сохраняем станцию метро
+												(new idObj.schemes.Metro_stations(station)).save();
+											});
+											// Сохраняем линию метро
+											(new idObj.schemes.Metro_lines(line)).save();
+										});
+										// Сохраняем город метро
+										(new idObj.schemes.Metro_cities(arr[i])).save();
+									// Выводим сообщение в консоль
+									} else idObj.log("ошибка загрузки данных городов", err).error();
+									// Продолжаем дальше
+									getCities(i + 1);
+								});
+							// Если все города загружены
+							} else {
+								// Создаем индексы метро
+								metro.createIndex({name: 1}, {name: "city"});
+								metro.createIndex({"lines.hex_color": 1}, {name: "color"});
+								metro.createIndex({"lines.name": 1}, {name: "lines"});
+								metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
+								metro.createIndex({"lines.stations.order": 1}, {name: "order"});
+								metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
+								metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
+								// Создаем индексы для метро городов
+								metro_cities.createIndex({name: 1}, {name: "city"});
+								metro_cities.createIndex({linesIds: 1}, {name: "lines"});
+								// Создаем индексы для метро линий
+								metro_lines.createIndex({name: 1}, {name: "line"});
+								metro_lines.createIndex({cityId: 1}, {name: "city"});
+								metro_lines.createIndex({color: 1}, {name: "color"});
+								metro_lines.createIndex({stationsIds: 1}, {name: "stations"});
+								// Создаем индексы для метро станций
+								metro_stations.createIndex({name: 1}, {name: "station"});
+								metro_stations.createIndex({cityId: 1}, {name: "city"});
+								metro_stations.createIndex({lineId: 1}, {name: "line"});
+								metro_stations.createIndex({order: 1}, {name: "order"});
+								metro_stations.createIndex({lat: 1, lng: 1}, {name: "gps"});
+								metro_stations.createIndex({gps: "2dsphere"}, {name: "locations"});
+								// Выводим в консоль сообщение
+								idObj.log("все метро установлены!").info();
+								// Сообщаем что все удачно выполнено
+								resolve(true);
+							}
+						};
+						// Выполняем запрос данных городов
+						getCities();
+					};
+					// Закачиваем данные метро
+					fetch('https://api.hh.ru/metro')
+					// Преобразуем полученный объект
+					.then(
+						res => (res.status === 200 ? res.json() : false),
+						err => idObj.log("get metro", err).error()
+					// Обрабатываем полученные данные
+					).then(getData, err => idObj.log("parse metro", err).error())
+					// Если происходит ошибка тогда выходим
+					.catch(err => {
+						// Ошибка метода updateMetro
+						idObj.log("updateMetro", err).error();
+						// Сообщаем что дальше некуда
 						resolve(false);
-					}
-				};
-				// Запускаем коннект
-				exec(updateDB());
+					});
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
+			}));
+		}
+		/**
+		 * initEmptyDatabases Метод инициализации чистой базы данных
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис с данными результата генерации базы данных
+		 */
+		initEmptyDatabases({updateKey}, flag = false){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					// Подключаемся к коллекции address
+					const address = idObj.clients.mongo.connection.db.collection("address");
+					// Подключаемся к коллекции streets
+					const streets = idObj.clients.mongo.connection.db.collection("streets");
+					// Подключаемся к коллекции streets
+					const houses = idObj.clients.mongo.connection.db.collection("houses");
+					// Удаляем все колекции
+					address.drop();
+					streets.drop();
+					houses.drop();
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, "*");
+					/**
+					 * *updateDB Генератор для получения обновления данных
+					 */
+					const updateDB = function * (){
+						// Выполняем обновление базы данных стран
+						const countries = yield idObj.updateCountries({}, true);
+						// Выполняем обновление базы данных регионов
+						const regions = (countries ? yield idObj.updateRegions({}, true) : false);
+						// Выполняем обновление базы районов
+						const districts = (regions ? yield idObj.updateDistricts({}, true) : false);
+						// Выполняем обновление базы городов
+						const cities = (districts ? yield idObj.updateCities({}, true) : false);
+						// Выполняем обновление базы метро
+						const metro = (cities ? yield idObj.updateMetro({}, true) : false);
+						// Если метро загружено
+						if(metro){
+							// Выполняем загрузку станций метро для городов
+							const metroCity = yield idObj.updateMetroCity({}, true);
+							// Создаем индексы для базы адресов
+							// address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+							address.createIndex({lat: 1, lng: 1}, {name: "gps"});
+							address.createIndex({"address.zip": 1}, {name: "zip"});
+							address.createIndex({"address.district": 1}, {name: "district"});
+							address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
+							address.createIndex({gps: "2dsphere"}, {name: "locations"});
+							// Создаем индексы для улиц
+							streets.createIndex({name: 1}, {name: "street"});
+							streets.createIndex({regionId: 1}, {name: "region"});
+							streets.createIndex({districtId: 1}, {name: "district"});
+							streets.createIndex({cityId: 1}, {name: "city"});
+							streets.createIndex({okato: 1}, {name: "okato"});
+							streets.createIndex({zip: 1}, {name: "zip"});
+							streets.createIndex({type: 1}, {name: "type"});
+							streets.createIndex({typeShort: 1}, {name: "typeShort"});
+							streets.createIndex({lat: 1, lng: 1}, {name: "gps"});
+							streets.createIndex({gps: "2dsphere"}, {name: "locations"});
+							// Создаем индексы для домов
+							houses.createIndex({name: 1}, {name: "house"});
+							houses.createIndex({regionId: 1}, {name: "region"});
+							houses.createIndex({districtId: 1}, {name: "district"});
+							houses.createIndex({streetId: 1}, {name: "street"});
+							houses.createIndex({cityId: 1}, {name: "city"});
+							houses.createIndex({okato: 1}, {name: "okato"});
+							houses.createIndex({zip: 1}, {name: "zip"});
+							houses.createIndex({type: 1}, {name: "type"});
+							houses.createIndex({typeShort: 1}, {name: "typeShort"});
+							houses.createIndex({lat: 1, lng: 1}, {name: "gps"});
+							houses.createIndex({gps: "2dsphere"}, {name: "locations"});
+							// Выводим в консоль сообщение
+							idObj.log("все работы выполнены!").info();
+							// Сообщаем что работа завершена
+							resolve(true);
+						} else {
+							// Выводим сообщение в консоль
+							idObj.log(
+								"база данных создана не полностью:",
+								"регионы =", regions,
+								"районы =", districts,
+								"города =", cities,
+								"метро =", metro
+							).error();
+							// Сообщаем что работа завершена
+							resolve(false);
+						}
+					};
+					// Запускаем коннект
+					exec(updateDB());
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
 			}));
 		}
 		/**

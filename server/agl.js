@@ -267,6 +267,29 @@
 						// Выводим в консоль данные
 						agl.log('форк сервер', agl.name, 'отключился', err).error();
 					});
+					/**
+					 * updateImesZones Функция обновления временных зон
+					 */
+					const updateTimeZones = () => {
+						// Проверяем каждые пол часа
+						setTimeout(() => {
+							// Получаем текущий час
+							const hour = parseInt((new Date()).getHours(), 10);
+							// Если время 3 утра тогда отправляем запрос
+							if(hour === 3){
+								// Формируем случайный индекс воркера
+								let index = ax.getRandomInt(0, workers.length - 1);
+								// Отсылаем воркеру сообщение
+								workers[index].send({action: "internal", data: {"action": "updateTimeZones"}});
+							}
+							// Запускаем следующую проверку
+							updateTimeZones();
+							// Выводим сообщение в консоль
+							agl.log('выполняем попытку обновить временные зоны').info();
+						}, 1800000);
+					};
+					// Запускаем проверку обновления временной зоны
+					updateTimeZones();
 				};
 				// Если сервер существует
 				if(ax.isset(server)) server.close();
@@ -300,80 +323,23 @@
 				} else callback(next.value);
 			};
 			/**
-			 * init Функция инициализации системы
+			 * internal Функция выполнения внутренних методов системы
+			 * @param  {Object} obj входящий запрос
+			 */
+			const internal = obj => {
+				// Если данный метод существует
+				if(ax.isFunction(agl[obj.action])){
+					// Выполняем запрос данных из api
+					agl[obj.action](obj.query, true)
+					// Выполняем внутренний метод системы
+					.then(res => agl.log("выполнение внутреннего метода", obj, res).info());
+				}
+			};
+			/**
+			 * external Функция выполнения внешних методов системы
 			 * @param  {Object} obj входящий запрос с сервера
 			 */
-			const init = obj => {
-				/*
-				** Получить версию системы **
-				**** action = getVersionSystem
-				*
-				** Обновить базу данных метро **
-				**** action = updateMetro
-				*
-				** Найти у всех городов станции метро в этом городе **
-				**** action = updateMetroCity
-				*
-				** Обновить базу регионов **
-				**** action = updateRegions
-				*
-				** Обновить базу районов **
-				**** action = updateDistricts
-				*
-				** Обновить базу городов **
-				**** action = updateCities
-				*
-				** Инициализировать базовую базу данных **
-				**** action = initEmptyDatabases
-				*
-				** Запрос на обновление временных зон у адресов где она не найдена **
-				**** action = updateTimeZones
-				*
-				** Запрос на получение станции метро по GPS координатам **
-				**** action = searchMetroFromGPS
-				****** lat, lng, distance
-				*
-				** Запрос на получение временной зоны по GPS координатам **
-				**** action = getTimezone
-				****** lat, lng
-				*
-				** Запрос данных адреса по GPS координатам **
-				**** action = getAddressFromGPS
-				****** lat, lng
-				*
-				** Запрос данных адреса по названию **
-				**** action = getAddressFromString
-				****** address
-				*
-				** Запрос на поиск региона **
-				**** action = searchRegion
-				****** str, limit
-				*
-				** Запрос на поиск найона **
-				**** action = searchDistrict
-				****** str, regionId, limit
-				*
-				** Запрос на поиск города **
-				**** action = searchCity
-				****** str, regionId, districtId, limit
-				*
-				** Запрос на поиск улицы **
-				**** action = searchStreet
-				****** str, cityId, limit
-				*
-				** Запрос на поиск дома **
-				**** action = searchHouse
-				****** str, streetId, limit
-				** Метод получения списка регионов **
-				***** action = getRegions
-				******* limit
-				** Метод получения списка районов **
-				**** action = getDistricts
-				****** regionId, limit
-				** Метод получения списка городов **
-				**** action = getCities
-				****** regionId, districtId, limit
-				 */
+			const external = obj => {
 				// Функция отправки результата ответа
 				const sendResult = data => {
 					// Присваиваем полученный ответ
@@ -424,7 +390,9 @@
 						exec(connect());
 					break;
 					// Если это экшен входящих данных
-					case "message": init(msg.data); break;
+					case "message": external(msg.data); break;
+					// Если это экшен внутренних запросов
+					case "internal": internal(msg.data); break;
 				}
 			});
 		}

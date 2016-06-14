@@ -284,30 +284,6 @@ const Agl = require("../api/api");
 			// Выводим в консоль данные
 			agl.log('агент веб-сокетов запущен').info();
 		});
-		/**
-		 * updateImesZones Функция обновления временных зон
-		 */
-		const updateTimeZones = () => {
-			// Проверяем каждые пол часа
-			setTimeout(() => {
-				// Получаем текущий час
-				const hour = parseInt((new Date()).getHours(), 10);
-				// Если время 3 утра тогда отправляем запрос
-				if(hour === 3){
-					// Отправляем сообщение серверу
-					sendQuery({
-						key:	"updateTimeZones",
-						data:	{"action": "updateTimeZones"}
-					});
-				}
-				// Запускаем следующую проверку
-				updateTimeZones();
-				// Выводим сообщение в консоль
-				agl.log('выполняем попытку обновить временные зоны').info();
-			}, 1800000);
-		};
-		// Запускаем проверку обновления временной зоны
-		updateTimeZones();
 	};
 	/**
 	 * createServer Функция создания сервера

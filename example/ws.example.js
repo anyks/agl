@@ -29,7 +29,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "initEmptyDatabases"}));
 
 // socket.send(JSON.stringify({"action": "updateMetroCity"}));
-//
+
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"limit": 100}}));
 
 // socket.send(JSON.stringify({"action": "getTimezone", "query": {"lat":"55.870031", "lng":"41.772074"}}));
@@ -47,5 +47,24 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Новосибирск"}}));
 // socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Нижний Новгород"}}));
 
-
-
+// socket.send(JSON.stringify({"action": "findMetro", query: {str: "Румянцево", cityId: "7700000000000"}}));
+// socket.send(JSON.stringify({"action": "findNearStationsMetroByIds", query: {ids: ['975c23bb4d69e2efc343cf11']}}));
+// socket.send(JSON.stringify({"action": "hintRegions", query: {str: "Ив"}}));
+// socket.send(JSON.stringify({"action": "getCities", query: {regionId: "7700000000000"}}));
+// socket.send(JSON.stringify({"action": "getCityById", query: {id: "7700000000000"}}));
+// socket.send(JSON.stringify({"action": "getAddressByGPS", query: {"lat":"55.870031", "lng":"41.772074"}}));
+// socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
+// socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
+// socket.send(JSON.stringify({"action": "parseAddress", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
+// socket.send(JSON.stringify({"action": "getCitiesByGPS", query: {"lat":"55.870031", "lng":"41.772074"}}));
+//
+//socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Москва, Чечерский проезд 126, к.2"}}));
+//
+//
+//
+//
+//
+//
+//
+//
+//
