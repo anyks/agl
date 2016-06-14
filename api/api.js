@@ -1914,9 +1914,10 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 1;
 				const Limit			= limit;
 				// Определяем ключ кеша
-				const cacheParentId = ($.isset(regionId) ? substr(0, 2) + "*" : ParentId);
+				const cacheParentType	= ($.isset(regionId) ? '*'					: ParentType);
+				const cacheParentId		= ($.isset(regionId) ? substr(0, 2) + "*"	: ParentId);
 				// Ищем данные адреса сначала в кеше
-				findAddressInCache.call(idObj, ContentName, ContentType, cacheParentId, ParentType, Limit).then(result => {
+				findAddressInCache.call(idObj, ContentName, ContentType, cacheParentId, cacheParentType, Limit).then(result => {
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
