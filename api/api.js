@@ -75,10 +75,10 @@ const anyks = require("./lib.anyks");
 	 * @param  {String} id         идентификатор записи
 	 * @return {String}            готовый ключ
 	 */
-	const createSubjectKey = ({key, parentType, parentId, type, name = "*", id = "*"}) => {
+	const createSubjectKey = ({key, parentType, parentId, db, name = "*", id = "*"}) => {
 		// Выполняем генерацию ключа
 		return (function(){
-			// Вид ключа: [address:subjects:parentType:parentId:city:char:id]
+			// Вид ключа: [address:subjects:db:parentType:parentId:char:id]
 			// Создаем массив составного ключа
 			const arrKey = [];
 			// Ключ по умолчанию
@@ -89,7 +89,7 @@ const anyks = require("./lib.anyks");
 			if($.isset(id)) arrKey.push(id);
 			// Формируем первоначальное значение ключа
 			return (arguments[0].join(":") + ":" + arrKey.join(":")).replace(/:{2,7}/g, ":");
-		})([key, parentType, parentId, type], name, id);
+		})([key, db, parentType, parentId], name, id);
 	};
 	/**
 	 * createMetroKey Функция создания ключа для станций метро в Redis
@@ -153,9 +153,9 @@ const anyks = require("./lib.anyks");
 			id,
 			parentId,
 			parentType,
+			db:		obj.contentType,
 			key:	"subjects",
-			name:	obj.name,
-			type:	obj.contentType
+			name:	obj.name
 		});
 	};
 	/**
@@ -348,13 +348,13 @@ const anyks = require("./lib.anyks");
 	/**
 	 * findAddressInCache Функция поиска данных в кеше
 	 * @param  {String} str        строка запроса
-	 * @param  {String} type       тип запроса
+	 * @param  {String} db         название базы данных
 	 * @param  {String} parentId   идентификатор родительский
 	 * @param  {String} parentType тип родителя
 	 * @param  {Number} limit      лимит результатов для выдачи
 	 * @return {Promise}           промис содержащий результат
 	 */
-	const findAddressInCache = function(str, type, parentId, parentType, limit = 1){
+	const findAddressInCache = function(str, db, parentId, parentType, limit = 1){
 		// Получаем идентификатор текущего объекта
 		const idObj = this;
 		// Создаем промис для обработки
@@ -363,7 +363,7 @@ const anyks = require("./lib.anyks");
 			if(limit > 100) limit = 100;
 			// Ключ запроса из Redis
 			const key = createSubjectKey({
-				type,
+				db,
 				parentId,
 				parentType,
 				name:	str,
@@ -2986,7 +2986,7 @@ const anyks = require("./lib.anyks");
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
-				const key = createSubjectKey({key: "subjects", type: "country"});
+				const key = createSubjectKey({key: "subjects", db: "country"});
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные пришли, выводим результат
@@ -3048,7 +3048,7 @@ const anyks = require("./lib.anyks");
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
-				const key = createSubjectKey({key: "subjects", type: "region"});
+				const key = createSubjectKey({key: "subjects", db: "region"});
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(data => {
 					// Если данные пришли, выводим результат
@@ -3127,8 +3127,8 @@ const anyks = require("./lib.anyks");
 				if(limit > 100) limit = 100;
 				// Ключ запроса
 				const key = createSubjectKey({
+					db:			"district",
 					key:		"subjects",
-					type:		"district",
 					parentId:	regionId,
 					parentType:	($.isset(regionId) ? "region" : null)
 				});
@@ -3421,7 +3421,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey({key: "subjects", type: "country", id});
+				const key = createSubjectKey({key: "subjects", db: "country", id});
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Countries", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -3444,7 +3444,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Ключ запроса из Redis
-				const key = createSubjectKey({key: "subjects", type: "region", id});
+				const key = createSubjectKey({key: "subjects", db: "region", id});
 				// Выполняем запрос данных в базе по идентификатору объекта
 				getAddressById.call(idObj, "Regions", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -3469,7 +3469,7 @@ const anyks = require("./lib.anyks");
 				// Ключ запроса из Redis
 				const key = createSubjectKey({
 					id,
-					type:		"district",
+					db:			"district",
 					key:		"subjects",
 					parentId:	"*",
 					parentType:	"*"
@@ -3498,7 +3498,7 @@ const anyks = require("./lib.anyks");
 				// Ключ запроса из Redis
 				const key = createSubjectKey({
 					id,
-					type:		"city",
+					db:			"city",
 					key:		"subjects",
 					parentId:	"*",
 					parentType:	"*"
@@ -3527,7 +3527,7 @@ const anyks = require("./lib.anyks");
 				// Ключ запроса из Redis
 				const key = createSubjectKey({
 					id,
-					type:		"street",
+					db:			"street",
 					key:		"subjects",
 					parentId:	"*",
 					parentType:	"*"
@@ -3556,7 +3556,7 @@ const anyks = require("./lib.anyks");
 				// Ключ запроса из Redis
 				const key = createSubjectKey({
 					id,
-					type:		"house",
+					db:			"house",
 					key:		"subjects",
 					parentId:	"*",
 					parentType:	"*"
