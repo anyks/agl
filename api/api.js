@@ -4811,21 +4811,23 @@ const anyks = require("./lib.anyks");
 		 * @param {Variant} messages сообщение
 		 */
 		log(...message){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
 			// Выводим результат
 			return {
 				// Если это информационные сообщения
 				info: () => {
 					// Если вывод информационных сообщений разрешен
-					if(this.debug.message){
+					if(idObj.debug.message){
 						// Выводим экраны
 						console.log("\n***************", "START", "***************\n");
 						// Выводим информационное сообщение
 						console.info(
 							'\x1B[32m\x1B[1mInfo\x1B[0m\x1B[32m'
-							.anyks_clearColor(this.debug.console),
+							.anyks_clearColor(idObj.debug.console),
 							(new Date()).toLocaleString(),
-							this.name, ':\x1B[0m'
-							.anyks_clearColor(this.debug.console),
+							idObj.name, ':\x1B[0m'
+							.anyks_clearColor(idObj.debug.console),
 							message.anyks_toObjString().join(" ")
 						);
 						// Выводим экраны
@@ -4835,16 +4837,16 @@ const anyks = require("./lib.anyks");
 				// Если это вывод ошибок
 				error: () => {
 					// Если вывод ошибок разрешен
-					if(this.debug.errors){
+					if(idObj.debug.errors){
 						// Выводим экраны
 						console.log("\n***************", "START", "***************\n");
 						// Выводим сообщение об ошибке
 						console.error(
 							'\x1B[31m\x1B[1mError\x1B[0m\x1B[31m'
-							.anyks_clearColor(this.debug.console),
+							.anyks_clearColor(idObj.debug.console),
 							(new Date()).toLocaleString(),
-							this.name, ':\x1B[0m'
-							.anyks_clearColor(this.debug.console),
+							idObj.name, ':\x1B[0m'
+							.anyks_clearColor(idObj.debug.console),
 							message.anyks_toObjString().join(" ")
 						);
 						// Выводим экраны
