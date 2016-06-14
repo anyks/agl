@@ -2279,6 +2279,9 @@ const anyks = require("./lib.anyks");
 							// Добавляем станцию в список
 							newStations.push(metro);
 						}
+
+						console.log("+++++++", newStations);
+
 						// Добавляем в массив данные метро
 						metro_stations.push({
 							metro,
