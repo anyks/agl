@@ -2389,9 +2389,9 @@ const anyks = require("./lib.anyks");
 						// Массив с данными метро
 						const metro_stations = [];
 						// Перебираем все станции метро
-						for(let i = 0; i < street.metro.length; i++){
+						for(let id of street.metro){
 							// Запрашиваем данные метро
-							const metro = yield idObj.findMetroById({id: street.metro[i]});
+							const metro = yield idObj.findMetroById({id});
 							// Если метро найдено то добавляем его в массив
 							if($.isset(metro)) metro_stations.push(metro);
 						}
@@ -2420,14 +2420,17 @@ const anyks = require("./lib.anyks");
 				const getData = function * (){
 					// Получаем данные улицы
 					const house = yield idObj.getHouseById({id});
+
+					console.log("+++++++++", house);
+
 					// Если дом найден и рядом есть станции метро
 					if($.isset(house) && $.isArray(house.metro) && street.metro.length){
 						// Массив с данными метро
 						const metro_stations = [];
 						// Перебираем все станции метро
-						for(let i = 0; i < house.metro.length; i++){
+						for(let id of house.metro){
 							// Запрашиваем данные метро
-							const metro = yield idObj.findMetroById({id: house.metro[i]});
+							const metro = yield idObj.findMetroById({id});
 							// Если метро найдено то добавляем его в массив
 							if($.isset(metro)) metro_stations.push(metro);
 						}

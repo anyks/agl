@@ -22,7 +22,7 @@ socket.onerror = function(error){
 };
 
 
-// socket.send(JSON.stringify({"action": "searchCity", "query": {"str": "Москва"}}));
+
 //
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "г.Шуя, площадь комсомольская, д.12"}}));
 
@@ -95,5 +95,19 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "findNearStationsMetroByIds", "query": {"ids": ['966c4073e8d794620124a05c', 'd1a0a852a67883f7a91de489', '0fc0e26892380b075b21d69d']}}));
 //
 // socket.send(JSON.stringify({"action": "findMetroById", "query": {"id": '966c4073e8d794620124a05c'}}));
+//
+// socket.send(JSON.stringify({"action": "findMetroByStreetId", "query": {"id": '77000000000095300'}}));
+// socket.send(JSON.stringify({"action": "findMetroByHouseId", "query": {"id": '7700000000009530046'}}));
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
