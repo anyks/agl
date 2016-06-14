@@ -2071,6 +2071,9 @@ const anyks = require("./lib.anyks");
 					cityId:	($.isset(cityId) ? cityId : "*"),
 					lineId:	($.isset(lineId) ? lineId : "*")
 				});
+
+				console.log("++++++++++", key);
+
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные есть в кеше

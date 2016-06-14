@@ -62,6 +62,9 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "updateCountries", "query": {updateKey: "sekh234khk234hk22"}}));
 // socket.send(JSON.stringify({"action": "updateRegions", "query": {updateKey: "sekh234khk234hk22"}}));
 // socket.send(JSON.stringify({"action": "updateDistricts", "query": {updateKey: "sekh234khk234hk22"}}));
+// socket.send(JSON.stringify({"action": "updateMetro", "query": {updateKey: "sekh234khk234hk22"}}));
+// socket.send(JSON.stringify({"action": "updateMetroCity", "query": {updateKey: "sekh234khk234hk22"}}));
+//
 //
 // socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
 // socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
@@ -73,4 +76,10 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "findDistrict", "query": {"str":"Ш", "regionId": '3700000000000'}}));
 // socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Ш", "regionId": '3700000000000'}}));
 // socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Ш", "districtId": '3701900000000'}}));
+// socket.send(JSON.stringify({"action": "findStreet", "query": {"str":"Ко", "cityId": '3701900100000'}}));
+// socket.send(JSON.stringify({"action": "findHouse", "query": {"str":"32", "streetId": '37019001000011200'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000'}}));
+//
+//findMetro({str, cityId, lineId, lineName, lineColor, limit = 10})
+//
 //
