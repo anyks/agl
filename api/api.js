@@ -2990,13 +2990,12 @@ const anyks = require("./lib.anyks");
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные пришли, выводим результат
 					if($.isArray(result) && result.length){
+						// Определяем количество записей
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : result.length);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
-						resolve({
-							page,
-							limit,
-							count:	Math.ceil(result.length / limit),
-							data:	result.splice(page * limit, limit)
-						});
+						const data = result.splice(page * limit, limit);
+						// Выводим результат
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Запрашиваем все данные из базы
@@ -3065,13 +3064,13 @@ const anyks = require("./lib.anyks");
 							});
 						// Иначе просто приравниваем массив
 						} else result = data;
+
+						// Определяем количество записей
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : result.length);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
-						resolve({
-							page,
-							limit,
-							count:	Math.ceil(result.length / limit),
-							data:	result.splice(page * limit, limit)
-						});
+						data = result.splice(page * limit, limit);
+						// Выводим результат
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3150,13 +3149,12 @@ const anyks = require("./lib.anyks");
 							});
 						// Иначе просто приравниваем массив
 						} else result = data;
+						// Определяем количество записей
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : result.length);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
-						resolve({
-							page,
-							limit,
-							count:	Math.ceil(result.length / limit),
-							data:	result.splice(page * limit, limit)
-						});
+						data = result.splice(page * limit, limit);
+						// Выводим результат
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3433,16 +3431,15 @@ const anyks = require("./lib.anyks");
 				// Ключ запроса
 				const key = createMetroKey({key: "metro", cityId, lineId});
 				// Считываем данные из кеша
-				getRedisByMaskKey.call(idObj, key).then(data => {
+				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные пришли, выводим результат
-					if($.isArray(data) && data.length){
+					if($.isArray(result) && result.length){
+						// Определяем количество записей
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : result.length);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
-						resolve({
-							page,
-							limit,
-							count:	Math.ceil(data.length / limit),
-							data:	data.splice(page * limit, limit)
-						});
+						const data = result.splice(page * limit, limit);
+						// Выводим результат
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
