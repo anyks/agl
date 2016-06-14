@@ -2072,10 +2072,13 @@ const anyks = require("./lib.anyks");
 					lineId:	($.isset(lineId) ? lineId : "*")
 				});
 
-				console.log("++++++++++", key);
+				console.log("++++++++++1", key);
 
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
+					
+					console.log("++++++++++1", result);
+
 					// Если данные есть в кеше
 					if($.isArray(result) && result.length){
 						// Если полученные данные превышают размер лимита тогда уменьшаем размед данных
