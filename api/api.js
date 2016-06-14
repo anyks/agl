@@ -295,6 +295,9 @@ const anyks = require("./lib.anyks");
 		return (new Promise(resolve => {
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
+				
+				console.log("++++++", key, keys);
+
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -3046,9 +3049,6 @@ const anyks = require("./lib.anyks");
 				if(limit > 100) limit = 100;
 				// Ключ запроса
 				const key = createSubjectKey({key: "subjects", type: "region"});
-
-				console.log("++++", key);
-
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(data => {
 					// Если данные пришли, выводим результат
