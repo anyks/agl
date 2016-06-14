@@ -1491,7 +1491,7 @@ const anyks = require("./lib.anyks");
 							"ж/д_оп":	"ж/д останов. (обгонный) пункт"
 						};
 						// Исправляем адрес
-						address = address.replace(/\./ig, ". ").anyks_trim();
+						address = address.toLowerCase().replace(/([\.|\,])/ig, "$1 ").anyks_trim();
 						/**
 						 * getZip Функция поиска почтового индекса
 						 * @return {String}           почтовый индекс
@@ -1604,6 +1604,9 @@ const anyks = require("./lib.anyks");
 						 * @return {Object}           объект с адресом
 						 */
 						const getAddress = (reg, name) => {
+							
+							console.log("++++++++++++1", address);
+
 							// Разбиваем на массив
 							const arr = address.split(",");
 							// Объект с данными
@@ -1645,6 +1648,10 @@ const anyks = require("./lib.anyks");
 							if(data){
 								// Изменяем адрес
 								address = address.replace(data.src, "");
+
+								console.log("+++++++++2", address, data.src);
+
+								
 								// Запоминаем значение
 								data.src = data.src.replace(/\.\s+/ig, ".");
 							}
