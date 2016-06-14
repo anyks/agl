@@ -66,6 +66,29 @@ const anyks = require("./lib.anyks");
 		} else callback(next.value);
 	};
 	/**
+	 * createMetroObject Функция генерации объекта метро
+	 * @param  {Object} city    объект города метро
+	 * @param  {Object} line    объект линии метро
+	 * @param  {Object} station объект станции метро
+	 * @return {Object}         объект метро
+	 */
+	const createMetroObject = (city, line, station) => {
+		// Формируем объект для сохранения в кеше
+		return {
+			id:		station._id,
+			name:	station.name,
+			lat:	station.lat,
+			lng:	station.lng,
+			order:	station.order,
+			line:	line.name,
+			color:	line.color,
+			city:	city.name,
+			lineId:	line._id,
+			cityId:	city._id,
+			gps:	[parseFloat(station.lng), parseFloat(station.lat)]
+		};
+	};
+	/**
 	 * createSubjectKey Функция создания ключа в Redis
 	 * @param  {String} key        основной ключ
 	 * @param  {String} parentType родительский тип
@@ -2173,18 +2196,7 @@ const anyks = require("./lib.anyks");
 								// Переходим по всем полученным станциям метро
 								metro.forEach(val => {
 									// Формируем объект со станцией метро
-									const station = {
-										id:		val._id,
-										name:	val.name,
-										lat:	val.lat,
-										lng:	val.lng,
-										order:	val.order,
-										line:	val.lineId.name,
-										color:	val.lineId.color,
-										city:	val.cityId.name,
-										lineId:	val.lineId._id,
-										cityId:	val.cityId._id
-									};
+									const station = createMetroObject(val.cityId, val.lineId, val);
 									// Формируем массив станций метро
 									metro_stations.push(station);
 									// Ключа кеша метро
@@ -2331,18 +2343,7 @@ const anyks = require("./lib.anyks");
 							// Если ошибки нет, выводим результат
 							if(!$.isset(err) && $.isset(data)){
 								// Формируем объект со станцией метро
-								const station = {
-									id:		data._id,
-									name:	data.name,
-									lat:	data.lat,
-									lng:	data.lng,
-									order:	data.order,
-									line:	data.lineId.name,
-									color:	data.lineId.color,
-									city:	data.cityId.name,
-									lineId:	data.lineId._id,
-									cityId:	data.cityId._id
-								};
+								const station = createMetroObject(data.cityId, data.lineId, data);
 								// Ключа кеша метро
 								const key = createMetroKey({
 									id:		data._id,
@@ -3476,18 +3477,7 @@ const anyks = require("./lib.anyks");
 									// Формируем нужного вида объект
 									data.forEach(station => {
 										// Добавляем в массив наш объект метро
-										metro.push({
-											id:		station._id,
-											name:	station.name,
-											lat:	station.lat,
-											lng:	station.lng,
-											order:	station.order,
-											line:	station.lineId.name,
-											color:	station.lineId.color,
-											city:	station.cityId.name,
-											lineId:	station.lineId._id,
-											cityId:	station.cityId._id
-										});
+										metro.push(createMetroObject(station.cityId, station.lineId, station));
 									});
 									// Выводим результат
 									resolve({data: metro, page, limit, count});
@@ -4701,18 +4691,7 @@ const anyks = require("./lib.anyks");
 												// Формируем массив станций для линии
 												line.stationsIds.push(station._id);
 												// Формируем объект для сохранения в кеше
-												const obj = {
-													id:		station._id,
-													name:	station.name,
-													lat:	station.lat,
-													lng:	station.lng,
-													order:	station.order,
-													line:	line.name,
-													color:	line.color,
-													city:	arr[i].name,
-													lineId:	line._id,
-													cityId:	arr[i]._id
-												};
+												const obj = createMetroObject(arr[i], line, station);
 												// Ключа кеша метро
 												const key = createMetroKey({
 													id:		station._id,
