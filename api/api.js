@@ -1670,15 +1670,15 @@ const anyks = require("./lib.anyks");
 						const country	= getCountry();
 						// Добавляем в массив найденные данные
 						if($.isset(zip))		arr.push({data: zip, type: "zip"});
-						if($.isset(city))		arr.push({data: city, type: "city"});
-						if($.isset(river))		arr.push({data: river, type: "river"});
-						if($.isset(house))		arr.push({data: house, type: "house"});
-						if($.isset(street))		arr.push({data: street, type: "street"});
-						if($.isset(region))		arr.push({data: region, type: "region"});
 						if($.isset(country))	arr.push({data: country, type: "country"});
+						if($.isset(region))		arr.push({data: region, type: "region"});
+						if($.isset(river))		arr.push({data: river, type: "river"});
 						if($.isset(district))	arr.push({data: district, type: "district"});
-						if($.isset(apartment))	arr.push({data: apartment, type: "apartment"});
+						if($.isset(city))		arr.push({data: city, type: "city"});
 						if($.isset(community))	arr.push({data: community, type: "community"});
+						if($.isset(street))		arr.push({data: street, type: "street"});
+						if($.isset(house))		arr.push({data: house, type: "house"});
+						if($.isset(apartment))	arr.push({data: apartment, type: "apartment"});
 						// Создаем адреса в строковом виде
 						arr.forEach(val => {
 							// Создаем адреса в простом виде
