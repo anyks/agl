@@ -78,7 +78,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Ш", "districtId": '3701900000000'}}));
 // socket.send(JSON.stringify({"action": "findStreet", "query": {"str":"Ко", "cityId": '3701900100000'}}));
 // socket.send(JSON.stringify({"action": "findHouse", "query": {"str":"32", "streetId": '37019001000011200'}}));
-// 
+//
 // socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000', "lineId": "31b83c4d182032e41ad85357"}}));
 // socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру"}}));
 // socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Румянцево", "cityId": '7700000000000', "lineName": 'Сокольническая'}}));
@@ -91,7 +91,8 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000', "lineId": "31b83c4d182032e41ad85357"}}));
 // socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000'}}));
 // socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Рум", "cityId": '7700000000000'}}));
-// 
+//
+// socket.send(JSON.stringify({"action": "findNearStationsMetroByIds", "query": {"ids": ['966c4073e8d794620124a05c', 'd1a0a852a67883f7a91de489', '0fc0e26892380b075b21d69d']}}));
 //
 //
 //
