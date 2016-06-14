@@ -366,14 +366,8 @@ const anyks = require("./lib.anyks");
 				name:	str,
 				key:	"subjects"
 			});
-
-			console.log("++++++++1", key);
-
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
-				
-				console.log("++++++++2", keys);
-
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -418,7 +412,12 @@ const anyks = require("./lib.anyks");
 					// Выполняем загрузку данных из Redis
 					getRedis();
 				// Сообщаем что ничего не найдено
-				} else resolve(false);
+				} else {
+					
+					console.log("--------");
+
+					resolve(false);
+				}
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
