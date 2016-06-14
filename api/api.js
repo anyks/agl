@@ -1296,31 +1296,31 @@ const anyks = require("./lib.anyks");
 							if($.isset(country)){
 								arrAddress.push("{country}");
 								addrLightParam.push(country.name);
-								addrFullParam.push(country.name.ucwords() + " " country.type.toLowerCase());
+								addrFullParam.push(country.name.ucwords() + " " + country.type.toLowerCase());
 							}
 							// Добавляем в адрес регион
 							if($.isset(region)){
 								arrAddress.push("{region}");
 								addrLightParam.push(region.name);
-								addrFullParam.push(region.name.ucwords() + " " region.type.toLowerCase());
+								addrFullParam.push(region.name.ucwords() + " " + region.type.toLowerCase());
 							}
 							// Добавляем в адрес город
 							if($.isset(city)){
 								arrAddress.push("{city}");
 								addrLightParam.push(city.name);
-								addrFullParam.push(city.name.ucwords() + " " city.type.toLowerCase());
+								addrFullParam.push(city.name.ucwords() + " " + city.type.toLowerCase());
 							}
 							// Добавляем в адрес улицу
 							if($.isset(street)){
 								arrAddress.push("{street}");
 								addrLightParam.push(street.name);
-								addrFullParam.push(street.name.ucwords() + " " street.type.toLowerCase());
+								addrFullParam.push(street.name.ucwords() + " " + street.type.toLowerCase());
 							}
 							// Добавляем в адрес дом
 							if($.isset(house)){
 								arrAddress.push("{house}");
 								addrLightParam.push(house.name);
-								addrFullParam.push(house.name.ucwords() + " " house.type.toLowerCase());
+								addrFullParam.push(house.name.ucwords() + " " + house.type.toLowerCase());
 							}
 							// Формируем блок результата
 							const result = {
