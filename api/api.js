@@ -1773,7 +1773,7 @@ const anyks = require("./lib.anyks");
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Формируем данные страны
-						const res = [{
+						const result = [{
 							"id":			"7",
 							"name":			"Россия",
 							"type":			"Страна",
@@ -1783,7 +1783,7 @@ const anyks = require("./lib.anyks");
 							"nameShort":	"РФ"
 						}];
 						// Выполняем обработку данных
-						processResultKladr.call(idObj, "Countries", err, res, resolve);
+						processResultKladr.call(idObj, "Countries", err, {result}, resolve);
 					// Отдаем результат из кеша
 					} else resolve(result);
 				// Если происходит ошибка тогда выходим
