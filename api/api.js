@@ -3046,6 +3046,9 @@ const anyks = require("./lib.anyks");
 				if(limit > 100) limit = 100;
 				// Ключ запроса
 				const key = createSubjectKey({key: "subjects", type: "region"});
+
+				console.log("++++", key);
+
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(data => {
 					// Если данные пришли, выводим результат
