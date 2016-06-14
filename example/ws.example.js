@@ -68,4 +68,9 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "parseAddress", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
 // socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"Российская Федерация, г.Москва, посёлок Коммунарка, ул.Липовый парк, 10К2"}}));
 //
+// socket.send(JSON.stringify({"action": "findCountry", "query": {"str":"Рос"}}));
+// socket.send(JSON.stringify({"action": "findRegion", "query": {"str":"Ив"}}));
+// socket.send(JSON.stringify({"action": "findDistrict", "query": {"str":"Ш", "regionId": '3700000000000'}}));
+// socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Ш", "regionId": '3700000000000'}}));
+// socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Ш", "districtId": '3701900000000'}}));
 //

@@ -1465,8 +1465,8 @@ const anyks = require("./lib.anyks");
 							"ао":		"Автономный округ",
 							"аок":		"Автономный округ",
 							"аокр":		"Автономный округ",
-							"н.п.":		"Населенный пункт",
-							"нп":		"Населенный пункт",
+							"н.п.":		"Населённый пункт",
+							"нп":		"Населённый пункт",
 							"к.п.":		"Курортный посёлок",
 							"кп":		"Курортный посёлок",
 							"промзона":	"Промышленная зона",
@@ -1485,7 +1485,7 @@ const anyks = require("./lib.anyks");
 							"п.г.т.":	"Посёлок городского типа",
 							"пгт":		"Посёлок городского типа",
 							"ж/д_рзд":	"Железнодорожный разъезд",
-							"п/ст":		"Поселок и(при) станция(и)",
+							"п/ст":		"Посёлок и(при) станция(и)",
 							"с/мо":		"Сельское муницип.образование",
 							"снт":		"Садовое неком-е товарищество",
 							"ж/д_оп":	"ж/д останов. (обгонный) пункт"
@@ -1913,8 +1913,10 @@ const anyks = require("./lib.anyks");
 				);
 				const WithParent	= 1;
 				const Limit			= limit;
+				// Определяем ключ кеша
+				const cacheParentId = ($.isset(regionId) ? substr(0, 2) + "*" : ParentId);
 				// Ищем данные адреса сначала в кеше
-				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
+				findAddressInCache.call(idObj, ContentName, ContentType, cacheParentId, ParentType, Limit).then(result => {
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
