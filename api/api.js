@@ -1604,9 +1604,6 @@ const anyks = require("./lib.anyks");
 						 * @return {Object}           объект с адресом
 						 */
 						const getAddress = (reg, name) => {
-							
-							console.log("++++++++++++1", address);
-
 							// Разбиваем на массив
 							const arr = address.split(",");
 							// Объект с данными
@@ -1652,10 +1649,6 @@ const anyks = require("./lib.anyks");
 							if(data){
 								// Изменяем адрес
 								address = address.replace(data.src, "");
-
-								console.log("+++++++++2", address, data.src);
-
-								
 								// Запоминаем значение
 								data.src = data.src.replace(/\.\s+/ig, ".");
 							}
@@ -1692,6 +1685,8 @@ const anyks = require("./lib.anyks");
 						if($.isset(apartment))	arr.push({data: apartment, type: "apartment"});
 						// Создаем адреса в строковом виде
 						arr.forEach(val => {
+							// Удаляем параметр src
+							val.data.src = undefined;
 							// Создаем адреса в простом виде
 							if(mapLight.indexOf(val.type) < 0) arrlight.push(val.data.name);
 							// Создаем адреса в полном виде
