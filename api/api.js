@@ -2073,9 +2073,6 @@ const anyks = require("./lib.anyks");
 				});
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
-					
-					try {
-
 					// Если данные есть в кеше
 					if(!$.isArray(result) && result.length){
 						// Станции метро
@@ -2202,16 +2199,8 @@ const anyks = require("./lib.anyks");
 								// Выводим полученный массив метро
 								resolve(metro_stations);
 							};
-							// Если идентификатор города или идентификатор линии найден
-							if($.isset(cityId) || $.isset(lineId)){
-								// Запрашиваем данные станции метро
-								const metro = yield getStations(str, cityId, lineId);
-								// Формируем массив метро
-								if($.isArray(metro)) parseDataMetro(metro);
-								// Сообщаем что станции метро не найдены
-								else resolve(false);
 							// Если же передано название линии или цвет линии
-							} else if($.isset(lineName) || $.isset(lineColor)) {
+							if($.isset(lineName) || $.isset(lineColor)) {
 								// Запрашиваем данные станции
 								const lines = yield getLine(lineId, cityId, lineName, lineColor);
 								// Если линии найдены
@@ -2237,14 +2226,19 @@ const anyks = require("./lib.anyks");
 									getMetro();
 								// Сообщаем что станции метро не найдены
 								} else resolve(false);
+							// Если идентификатор города или идентификатор линии найден
+							} else {
+								// Запрашиваем данные станции метро
+								const metro = yield getStations(str, cityId, lineId);
+								// Формируем массив метро
+								if($.isArray(metro)) parseDataMetro(metro);
+								// Сообщаем что станции метро не найдены
+								else resolve(false);
 							}
 						};
 						// Запускаем коннект
 						exec(getData());
 					}
-
-					} catch(e) {console.log("+++++++++", e);}
-
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
