@@ -3,6 +3,7 @@ version: "1.0"
 copyright: "Lobarev Yuriy - 2016"
 kladr: "57500faf0a69decc7d8b4568"
 password: "8823423977742"
+updateKey: "sekh234khk234hk22"
 debug: { errors: 1, message: 1, console: 1 }
 git_repository: "git@github.com:anyks/agl.git"
 config_dir: "config"

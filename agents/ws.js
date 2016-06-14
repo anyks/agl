@@ -30,14 +30,13 @@ const Agl = require("../api/api");
 	// Получаем аргументы
 	const argv = require('minimist')(process.argv.slice(2));
 	// Параметры подключения
+	const channel	= (argv.c ? argv.c : (argv.channel	? argv.channel	: "aglWs"));
 	const origin	= (argv.o ? argv.o : (argv.origin	? argv.origin	: undefined));
 	const rdb		= (argv.b ? argv.b : (argv.rdb		? argv.rdb		: 0));
 	const rpass		= (argv.p ? argv.p : (argv.rpass	? argv.rpass	: undefined));
 	const rserv		= (argv.r ? argv.r : (argv.redis	? argv.redis	: "127.0.0.1:6379"));
 	const fserv		= (argv.f ? argv.f : (argv.fork		? argv.fork		: "127.0.0.1:4420"));
 	const serv		= (argv.s ? argv.s : (argv.server	? argv.server	: "127.0.0.1:3320"));
-	// Название канала
-	const channel = "aglWs";
 	// Создаем объект Agl
 	const agl = new $();
 	// Получаем api anyks

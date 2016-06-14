@@ -1063,6 +1063,8 @@ const anyks = require("./lib.anyks");
 			this.version = config.version;
 			// Устанавливаем копирайт
 			this.copyright = config.copyright;
+			// Устанавливаем ключ для обновления базы данных
+			this.updateKey = this.generateKey(config.updateKey);
 			// Устанавливаем пароль системы
 			this.password = this.generateKey(config.password);
 		}
@@ -3008,15 +3010,13 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(err) && $.isArray(data)
 							&& data.length){
 								// Запрашиваем количество записей
-								idObj.schemes.Countries.count({}, (err, count) => {
+								idObj.schemes.Countries.count({}, (err, len) => {
+									// Определяем количество записей
+									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
-									if($.isset(err)){
-										// Выводим сообщение
-										idObj.log("чтение из базы данных", err).error();
-										// Сообщаем что ничего не найдено
-										resolve(false);
+									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Выводим результат
-									} else resolve({data, page, limit, count});
+									resolve({data, page, limit, count});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3087,15 +3087,13 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(err) && $.isArray(data)
 							&& data.length){
 								// Запрашиваем количество записей
-								idObj.schemes.Regions.count(query, (err, count) => {
+								idObj.schemes.Regions.count(query, (err, len) => {
+									// Определяем количество записей
+									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
-									if($.isset(err)){
-										// Выводим сообщение
-										idObj.log("чтение из базы данных", err).error();
-										// Сообщаем что ничего не найдено
-										resolve(false);
+									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Выводим результат
-									} else resolve({data, page, limit, count});
+									resolve({data, page, limit, count});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3172,15 +3170,13 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(err) && $.isArray(data)
 							&& data.length){
 								// Запрашиваем количество записей
-								idObj.schemes.Districts.count(query, (err, count) => {
+								idObj.schemes.Districts.count(query, (err, len) => {
+									// Определяем количество записей
+									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
-									if($.isset(err)){
-										// Выводим сообщение
-										idObj.log("чтение из базы данных", err).error();
-										// Сообщаем что ничего не найдено
-										resolve(false);
+									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Выводим результат
-									} else resolve({data, page, limit, count});
+									resolve({data, page, limit, count});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3238,22 +3234,17 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(err) && $.isArray(data)
 							&& data.length){
 								// Запрашиваем количество записей
-								idObj.schemes.Cities.count(query, (err, count) => {
+								idObj.schemes.Cities.count(query, (err, len) => {
+									// Определяем количество записей
+									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
-									if($.isset(err)){
-										// Выводим сообщение
-										idObj.log("чтение из базы данных", err).error();
-										// Сообщаем что ничего не найдено
-										resolve(false);
+									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Формируем объект
+									const obj = {data, page, limit, count};
+									// Отправляем в Redis на час
+									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
-									} else {
-										// Формируем объект
-										const obj = {data, page, limit, count};
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
-										// Выводим результат
-										resolve(obj);
-									}
+									resolve(obj);
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3309,22 +3300,17 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(err) && $.isArray(data)
 							&& data.length){
 								// Запрашиваем количество записей
-								idObj.schemes.Streets.count(query, (err, count) => {
+								idObj.schemes.Streets.count(query, (err, len) => {
+									// Определяем количество записей
+									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
-									if($.isset(err)){
-										// Выводим сообщение
-										idObj.log("чтение из базы данных", err).error();
-										// Сообщаем что ничего не найдено
-										resolve(false);
+									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Формируем объект
+									const obj = {data, page, limit, count};
+									// Отправляем в Redis на час
+									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
-									} else {
-										// Формируем объект
-										const obj = {data, page, limit, count};
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
-										// Выводим результат
-										resolve(obj);
-									}
+									resolve(obj);
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3380,22 +3366,17 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(err) && $.isArray(data)
 							&& data.length){
 								// Запрашиваем количество записей
-								idObj.schemes.Houses.count(query, (err, count) => {
+								idObj.schemes.Houses.count(query, (err, len) => {
+									// Определяем количество записей
+									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
-									if($.isset(err)){
-										// Выводим сообщение
-										idObj.log("чтение из базы данных", err).error();
-										// Сообщаем что ничего не найдено
-										resolve(false);
+									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Формируем объект
+									const obj = {data, page, limit, count};
+									// Отправляем в Redis на час
+									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
-									} else {
-										// Формируем объект
-										const obj = {data, page, limit, count};
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
-										// Выводим результат
-										resolve(obj);
-									}
+									resolve(obj);
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3460,34 +3441,29 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(err) && $.isArray(data)
 							&& data.length){
 								// Запрашиваем количество записей
-								idObj.schemes.Metro_stations.count(query, (err, count) => {
+								idObj.schemes.Metro_stations.count(query, (err, len) => {
+									// Определяем количество записей
+									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
-									if($.isset(err)){
-										// Выводим сообщение
-										idObj.log("чтение из базы данных", err).error();
-										// Сообщаем что ничего не найдено
-										resolve(false);
-									// Выводим результат
-									} else {
-										// Объект с данными метро
-										const metro = [];
-										// Формируем нужного вида объект
-										data.forEach(station => {
-											// Добавляем в массив наш объект метро
-											metro.push({
-												id:		station._id,
-												name:	station.name,
-												lat:	station.lat,
-												lng:	station.lng,
-												order:	station.order,
-												line:	station.lineId.name,
-												color:	station.lineId.color,
-												city:	station.cityId.name
-											});
+									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Объект с данными метро
+									const metro = [];
+									// Формируем нужного вида объект
+									data.forEach(station => {
+										// Добавляем в массив наш объект метро
+										metro.push({
+											id:		station._id,
+											name:	station.name,
+											lat:	station.lat,
+											lng:	station.lng,
+											order:	station.order,
+											line:	station.lineId.name,
+											color:	station.lineId.color,
+											city:	station.cityId.name
 										});
-										// Выводим результат
-										resolve({data: metro, page, limit, count});
-									}
+									});
+									// Выводим результат
+									resolve({data: metro, page, limit, count});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3984,9 +3960,10 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * updateTimeZones Метод обновления временных зон у тех элементов адресов у которых ранее временная зона была не найдена
+		 * @param  {String}  updateKey ключ для обновления базы данных
 		 * @return {Promise} промис содержащий результат обновления временных зон
 		 */
-		updateTimeZones(){
+		updateTimeZones({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -4098,86 +4075,92 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * updateCountries Метод обновления данных базы стран
+		 * @param {String} updateKey ключ для обновления базы данных
 		 */
-		updateCountries(){
+		updateCountries({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Массив букв для названий стран
-				const countriesChar = [
-					"А", "Б", "В", "Г", "Д", "E", "Ж",
-					"З", "И", "К", "Л", "М", "Н", "О",
-					"П", "Р", "С", "Т", "У", "Ф", "Х",
-					"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
-				];
-				// Подключаемся к коллекции стран
-				const countries = idObj.clients.mongo.connection.db.collection("countries");
-				// Удаляем колекцию стран
-				countries.drop();
-				// Создаем ключ для кеша
-				const key = createSubjectKey({key: "subjects", db: "country"});
-				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, key);
-				/**
-				 * getCountry Рекурсивная функция загрузки страны
-				 * @param  {Number} i текущий индекс массива
-				 */
-				const getCountry = (i = 0) => {
-					// Если данные не все загружены то загружаем дальше
-					if(i < countriesChar.length){
-						// Формируем параметры запроса
-						const query = {
-							str:		countriesChar[i],
-							limit:		100,
-							noCache:	true
-						};
-						// Выполняем загрузку данных
-						idObj.findCountry(query).then(result => {
-							// Если это массив
-							if($.isArray(result) && result.length){
-								// Переходим по всему массиву
-								const str = (result.length > 1 ? result.reduce((sum, val) => {
-									// Формируем строку отчета
-									return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-									+ ", " + val.name + " " + val.type;
-								}) : result[0].name + " " + result[0].type);
-								// Выводим данные в консоль
-								idObj.log("страны(ы) загружен(ы) [", countriesChar[i], "]:", str).info();
-							}
-							// Продолжаем загрузку дальше
-							getCountry(i + 1);
-						// Если происходит ошибка тогда выходим
-						}).catch(err => {
-							// Выводим ошибку метода
-							idObj.log("findCountry in updateCountries", err).error();
-							// Выходим
-							getCountry(i + 1);
-						});
-					// Если все данные загружены тогда создаем индексы
-					} else {
-						// Создаем индексы стран
-						countries.createIndex({name: 1}, {name: "country"});
-						countries.createIndex({type: 1}, {name: "type"});
-						countries.createIndex({typeShort: 1}, {name: "typeShort"});
-						countries.createIndex({lat: 1, lng: 1}, {name: "gps"});
-						countries.createIndex({nameShort: 1}, {name: "nameShort"});
-						countries.createIndex({nameFull: 1}, {name: "nameFull"});
-						countries.createIndex({gps: "2dsphere"}, {name: "locations"});
-						// Выводим в консоль сообщение
-						idObj.log("все страны установлены!").info();
-						// Сообщаем что все удачно выполнено
-						resolve(true);
-					}
-				};
-				// Выполняем загрузку стран
-				getCountry();
+				// Проверяем совпадают ли ключи
+				if(idObj.generateKey(updateKey) === idObj.updateKey){
+					// Массив букв для названий стран
+					const countriesChar = [
+						"А", "Б", "В", "Г", "Д", "E", "Ж",
+						"З", "И", "К", "Л", "М", "Н", "О",
+						"П", "Р", "С", "Т", "У", "Ф", "Х",
+						"Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+					];
+					// Подключаемся к коллекции стран
+					const countries = idObj.clients.mongo.connection.db.collection("countries");
+					// Удаляем колекцию стран
+					countries.drop();
+					// Создаем ключ для кеша
+					const key = createSubjectKey({key: "subjects", db: "country"});
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, key);
+					/**
+					 * getCountry Рекурсивная функция загрузки страны
+					 * @param  {Number} i текущий индекс массива
+					 */
+					const getCountry = (i = 0) => {
+						// Если данные не все загружены то загружаем дальше
+						if(i < countriesChar.length){
+							// Формируем параметры запроса
+							const query = {
+								str:		countriesChar[i],
+								limit:		100,
+								noCache:	true
+							};
+							// Выполняем загрузку данных
+							idObj.findCountry(query).then(result => {
+								// Если это массив
+								if($.isArray(result) && result.length){
+									// Переходим по всему массиву
+									const str = (result.length > 1 ? result.reduce((sum, val) => {
+										// Формируем строку отчета
+										return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+										+ ", " + val.name + " " + val.type;
+									}) : result[0].name + " " + result[0].type);
+									// Выводим данные в консоль
+									idObj.log("страны(ы) загружен(ы) [", countriesChar[i], "]:", str).info();
+								}
+								// Продолжаем загрузку дальше
+								getCountry(i + 1);
+							// Если происходит ошибка тогда выходим
+							}).catch(err => {
+								// Выводим ошибку метода
+								idObj.log("findCountry in updateCountries", err).error();
+								// Выходим
+								getCountry(i + 1);
+							});
+						// Если все данные загружены тогда создаем индексы
+						} else {
+							// Создаем индексы стран
+							countries.createIndex({name: 1}, {name: "country"});
+							countries.createIndex({type: 1}, {name: "type"});
+							countries.createIndex({typeShort: 1}, {name: "typeShort"});
+							countries.createIndex({lat: 1, lng: 1}, {name: "gps"});
+							countries.createIndex({nameShort: 1}, {name: "nameShort"});
+							countries.createIndex({nameFull: 1}, {name: "nameFull"});
+							countries.createIndex({gps: "2dsphere"}, {name: "locations"});
+							// Выводим в консоль сообщение
+							idObj.log("все страны установлены!").info();
+							// Сообщаем что все удачно выполнено
+							resolve(true);
+						}
+					};
+					// Выполняем загрузку стран
+					getCountry();
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
 			}));
 		}
 		/**
 		 * updateRegions Метод обновления данных базы регионов
+		 * @param {String} updateKey ключ для обновления базы данных
 		 */
-		updateRegions(){
+		updateRegions({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -4253,8 +4236,9 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * updateDistricts Метод обновления данных районов
+		 * @param {String} updateKey ключ для обновления базы данных
 		 */
-		updateDistricts(){
+		updateDistricts({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -4363,8 +4347,9 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * updateCities Метод обновления данных городов
+		 * @param {String} updateKey ключ для обновления базы данных
 		 */
-		updateCities(){
+		updateCities({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -4475,9 +4460,10 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
+		 * @param  {String} updateKey ключ для обновления базы данных
 		 * @return {Promise} промис с данными результата обновлений станций метро
 		 */
-		updateMetroCity(){
+		updateMetroCity({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -4565,8 +4551,9 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * updateMetro Метод обновления данных базы метро
+		 * @param {String} updateKey ключ для обновления базы данных
 		 */
-		updateMetro(){
+		updateMetro({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -4738,8 +4725,9 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * initEmptyDatabases Метод инициализации чистой базы данных
+		 * @param {String} updateKey ключ для обновления базы данных
 		 */
-		initEmptyDatabases(){
+		initEmptyDatabases({updateKey}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
