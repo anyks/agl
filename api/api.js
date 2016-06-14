@@ -2420,11 +2420,8 @@ const anyks = require("./lib.anyks");
 				const getData = function * (){
 					// Получаем данные улицы
 					const house = yield idObj.getHouseById({id});
-
-					console.log("+++++++++", house);
-
 					// Если дом найден и рядом есть станции метро
-					if($.isset(house) && $.isArray(house.metro) && street.metro.length){
+					if($.isset(house) && $.isArray(house.metro) && house.metro.length){
 						// Массив с данными метро
 						const metro_stations = [];
 						// Перебираем все станции метро
