@@ -293,8 +293,14 @@ const anyks = require("./lib.anyks");
 		const idObj = this;
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
+
+			console.log("+++++++++++1", key);
+
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
+				
+				console.log("+++++++++++2", keys);
+
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -2071,14 +2077,8 @@ const anyks = require("./lib.anyks");
 					cityId:	($.isset(cityId) ? cityId : "*"),
 					lineId:	($.isset(lineId) ? lineId : "*")
 				});
-
-				console.log("++++++++++1", key);
-
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
-					
-					console.log("++++++++++1", result);
-
 					// Если данные есть в кеше
 					if($.isArray(result) && result.length){
 						// Если полученные данные превышают размер лимита тогда уменьшаем размед данных
