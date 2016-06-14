@@ -368,16 +368,10 @@ const anyks = require("./lib.anyks");
 			});
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
-				
-				console.log("+++++++++0", typeof(keys), keys);
-
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
 					const result = [];
-
-					console.log("----------1");
-
 					/**
 					 * getRedis Функция поиска данных в базе
 					 * @param  {Number} i индекс итераций
@@ -418,12 +412,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем загрузку данных из Redis
 					getRedis();
 				// Сообщаем что ничего не найдено
-				} else {
-					
-					console.log("--------");
-
-					resolve(false);
-				}
+				} else resolve(false);
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
@@ -1794,7 +1783,7 @@ const anyks = require("./lib.anyks");
 							"nameShort":	"РФ"
 						}];
 						// Выполняем обработку данных
-						processResultKladr.call(idObj, "Countries", err, {result}, resolve);
+						processResultKladr.call(idObj, "Countries", null, {result}, resolve);
 					// Отдаем результат из кеша
 					} else resolve(result);
 				// Если происходит ошибка тогда выходим
