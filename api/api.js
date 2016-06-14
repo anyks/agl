@@ -293,14 +293,8 @@ const anyks = require("./lib.anyks");
 		const idObj = this;
 		// Создаем промис для обработки
 		return (new Promise(resolve => {
-
-			console.log("+++++++++++1", key);
-
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
-				
-				console.log("+++++++++++2", keys);
-
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -2081,10 +2075,25 @@ const anyks = require("./lib.anyks");
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные есть в кеше
 					if($.isArray(result) && result.length){
-						// Если полученные данные превышают размер лимита тогда уменьшаем размед данных
-						if(result.length > limit) result.length = limit;
+						// Станции метро
+						let metro_stations = [];
+						// Если название линии или цвет указаны
+						if($.isset(lineName) || $.isset(lineColor)){
+							// Индекс итератора
+							let i = 0;
+							// Перебираем все станции метро
+							for(let metro of result){
+								// Если метро найдено, добавляем станцию метро в список
+								if(($.isset(lineName) && (metro.line === lineName))
+								|| ($.isset(lineColor) && (metro.color.toLowerCase()
+								=== lineColor.toLowerCase()))) metro_stations.push(metro);
+								// Если итератор перешел за границы тогда выходим
+								if(i < limit) i++; else break;
+							}
+						// Копируем просто нужное количество найденных станций
+						} else metro_stations = result.splice(0, limit);
 						// Выводим результат
-						resolve(result);
+						resolve(metro_stations);
 					// Если данные в кеше не найдены
 					} else {
 						/**
