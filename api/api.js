@@ -295,9 +295,6 @@ const anyks = require("./lib.anyks");
 		return (new Promise(resolve => {
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
-				
-				console.log("++++++", key, keys);
-
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -4023,8 +4020,10 @@ const anyks = require("./lib.anyks");
 				const countries = idObj.clients.mongo.connection.db.collection("countries");
 				// Удаляем колекцию стран
 				countries.drop();
+				// Создаем ключ для кеша
+				const key = createSubjectKey({key: "subjects", db: "country"});
 				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, "address:subjects:*:*:country:*");
+				Agl.rmRedis.call(idObj, key);
 				/**
 				 * getCountry Рекурсивная функция загрузки страны
 				 * @param  {Number} i текущий индекс массива
@@ -4099,8 +4098,10 @@ const anyks = require("./lib.anyks");
 				const regions = idObj.clients.mongo.connection.db.collection("regions");
 				// Удаляем колекцию регионов
 				regions.drop();
+				// Создаем ключ для кеша
+				const key = createSubjectKey({key: "subjects", db: "region"});
 				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, "address:subjects:*:*:region:*");
+				Agl.rmRedis.call(idObj, key);
 				/**
 				 * getRegion Рекурсивная функция загрузки региона
 				 * @param  {Number} i текущий индекс массива
@@ -4174,8 +4175,10 @@ const anyks = require("./lib.anyks");
 				const districts = idObj.clients.mongo.connection.db.collection("districts");
 				// Удаляем колекцию районов
 				districts.drop();
+				// Создаем ключ для кеша
+				const key = createSubjectKey({key: "subjects", db: "district"});
 				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, "address:subjects:*:*:district:*");
+				Agl.rmRedis.call(idObj, key);
 				// Запрашиваем все данные регионов
 				idObj.schemes.Regions.find({})
 				// Запрашиваем данные регионов
@@ -4282,8 +4285,10 @@ const anyks = require("./lib.anyks");
 				const cities = idObj.clients.mongo.connection.db.collection("cities");
 				// Удаляем колекцию городов
 				cities.drop();
+				// Создаем ключ для кеша
+				const key = createSubjectKey({key: "subjects", db: "city"});
 				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, "address:subjects:*:*:city:*");
+				Agl.rmRedis.call(idObj, key);
 				// Запрашиваем все данные регионов
 				idObj.schemes.Regions.find({})
 				// Запрашиваем данные регионов
@@ -4473,6 +4478,10 @@ const anyks = require("./lib.anyks");
 			return (new Promise(resolve => {
 				// Подключаем модуль закачки данных
 				const fetch = require('node-fetch');
+				// Создаем ключ для кеша
+				const key = createMetroKey({key: "metro"});
+				// Удаляем данные из кеша
+				Agl.rmRedis.call(idObj, key);
 				/**
 				 * getData Функция обработки полученных данных с интернета
 				 * @param  {Array} arr объект данными метро
@@ -4650,6 +4659,8 @@ const anyks = require("./lib.anyks");
 				address.drop();
 				streets.drop();
 				houses.drop();
+				// Удаляем данные из кеша
+				Agl.rmRedis.call(idObj, "*");
 				/**
 				 * *updateDB Генератор для получения обновления данных
 				 */
