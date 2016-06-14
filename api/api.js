@@ -1632,7 +1632,7 @@ const anyks = require("./lib.anyks");
 										}
 									});
 									// Извлекаем название
-									data.name = val.replace(data.type, "");
+									data.name = val.replace(data.type, "").replace(/[\.\,]/ig, "");
 									// Если мы ищем дом тогда подставляем тип по умолчанию
 									if(name === "house") data.type = "Дом";
 									// Переименовываем тип объекта
