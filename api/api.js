@@ -2181,7 +2181,9 @@ const anyks = require("./lib.anyks");
 										order:	val.order,
 										line:	val.lineId.name,
 										color:	val.lineId.color,
-										city:	val.cityId.name
+										city:	val.cityId.name,
+										lineId:	val.lineId._id,
+										cityId:	val.cityId._id
 									};
 									// Формируем массив станций метро
 									metro_stations.push(station);
@@ -2337,7 +2339,9 @@ const anyks = require("./lib.anyks");
 									order:	data.order,
 									line:	data.lineId.name,
 									color:	data.lineId.color,
-									city:	data.cityId.name
+									city:	data.cityId.name,
+									lineId:	data.lineId._id,
+									cityId:	data.cityId._id
 								};
 								// Ключа кеша метро
 								const key = createMetroKey({
@@ -3480,7 +3484,9 @@ const anyks = require("./lib.anyks");
 											order:	station.order,
 											line:	station.lineId.name,
 											color:	station.lineId.color,
-											city:	station.cityId.name
+											city:	station.cityId.name,
+											lineId:	station.lineId._id,
+											cityId:	station.cityId._id
 										});
 									});
 									// Выводим результат
@@ -4700,7 +4706,9 @@ const anyks = require("./lib.anyks");
 													order:	station.order,
 													line:	line.name,
 													color:	line.color,
-													city:	arr[i].name
+													city:	arr[i].name,
+													lineId:	line._id,
+													cityId:	arr[i]._id
 												};
 												// Ключа кеша метро
 												const key = createMetroKey({
