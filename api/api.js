@@ -2282,7 +2282,7 @@ const anyks = require("./lib.anyks");
 						// Добавляем в массив данные метро
 						metro_stations.push({
 							metro,
-							near: newStations.filter(val => val.id !== metro.id);
+							near: newStations.filter(val => val.id !== metro.id)
 						});
 
 						console.log("+++++++", metro_stations[i].near);
