@@ -2980,6 +2980,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Преобразуем размер лимита
+				limit = Math.ceil(limit);
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
@@ -2992,7 +2994,7 @@ const anyks = require("./lib.anyks");
 						resolve({
 							page,
 							limit,
-							count:	result.length,
+							count:	Math.ceil(result.length / limit),
 							data:	result.splice(page * limit, limit)
 						});
 					// Если данные не найдены, то ищем их в базе
@@ -3042,6 +3044,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Преобразуем размер лимита
+				limit = Math.ceil(limit);
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
@@ -3065,7 +3069,7 @@ const anyks = require("./lib.anyks");
 						resolve({
 							page,
 							limit,
-							count:	result.length,
+							count:	Math.ceil(result.length / limit),
 							data:	result.splice(page * limit, limit)
 						});
 					// Если данные не найдены, то ищем их в базе
@@ -3120,6 +3124,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Преобразуем размер лимита
+				limit = Math.ceil(limit);
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
@@ -3148,7 +3154,7 @@ const anyks = require("./lib.anyks");
 						resolve({
 							page,
 							limit,
-							count:	result.length,
+							count:	Math.ceil(result.length / limit),
 							data:	result.splice(page * limit, limit)
 						});
 					// Если данные не найдены, то ищем их в базе
@@ -3402,6 +3408,98 @@ const anyks = require("./lib.anyks");
 				}).catch(err => {
 					// Выводим ошибку метода
 					idObj.log("getRedis in getHouses", err).error();
+					// Выходим
+					resolve(false);
+				});
+			}));
+		}
+		/**
+		 * getMetro Метод получения списка метро
+		 * @param  {String}  options.cityId  идентификатор города метро
+		 * @param  {String}  options.lineId  идентификатор станции метро
+		 * @param  {Number}  options.page    номер страницы для запроса
+		 * @param  {Number}  options.limit   количество результатов к выдаче
+		 * @return {Promise}                 промис результата
+		 */
+		getMetro({cityId, lineId, page = 0, limit = 10}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Преобразуем размер лимита
+				limit = Math.ceil(limit);
+				// Ограничиваем максимальный лимит
+				if(limit > 100) limit = 100;
+				// Ключ запроса
+				const key = createMetroKey({key: "metro", cityId, lineId});
+				// Считываем данные из кеша
+				getRedisByMaskKey.call(idObj, key).then(data => {
+					// Если данные пришли, выводим результат
+					if($.isArray(data) && data.length){
+						// Если размер массива больше указанного лимита то уменьшаем размер данных
+						resolve({
+							page,
+							limit,
+							count:	Math.ceil(data.length / limit),
+							data:	data.splice(page * limit, limit)
+						});
+					// Если данные не найдены, то ищем их в базе
+					} else {
+						// Формируем параметры запроса
+						const query = {};
+						// Если идентификатор города передан
+						if($.isset(cityId)) query.cityId = cityId;
+						// Если станция метро передана
+						if($.isset(lineId)) query.lineId = lineId;
+						// Запрашиваем все данные из базы
+						idObj.schemes.Metro_stations.find(query)
+						.sort({_id: 1})
+						.skip(page * limit)
+						.limit(limit)
+						.populate('cityId')
+						.populate('lineId')
+						.exec((err, data) => {
+							// Если ошибки нет, выводим результат
+							if(!$.isset(err) && $.isArray(data)
+							&& data.length){
+								// Запрашиваем количество записей
+								idObj.schemes.Metro_stations.count(query, (err, count) => {
+									// Если произошла ошибка то выводим в консоль
+									if($.isset(err)){
+										// Выводим сообщение
+										idObj.log("чтение из базы данных", err).error();
+										// Сообщаем что ничего не найдено
+										resolve(false);
+									// Выводим результат
+									} else {
+										// Объект с данными метро
+										const metro = [];
+										// Формируем нужного вида объект
+										data.forEach(station => {
+											// Добавляем в массив наш объект метро
+											metro.push({
+												id:		station._id,
+												name:	station.name,
+												lat:	station.lat,
+												lng:	station.lng,
+												order:	station.order,
+												line:	station.lineId.name,
+												color:	station.lineId.color,
+												city:	station.cityId.name
+											});
+										});
+										// Выводим результат
+										resolve({data: metro, page, limit, count});
+									}
+								});
+							// Сообщаем что ничего не найдено
+							} else resolve(false);
+						});
+					}
+				// Если происходит ошибка тогда выходим
+				}).catch(err => {
+					// Выводим ошибку метода
+					idObj.log("getRedisByMaskKey in getMetro", err).error();
 					// Выходим
 					resolve(false);
 				});

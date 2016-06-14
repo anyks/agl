@@ -1,3 +1,5 @@
+var WebSocket = require('ws');
+
 var socket = new WebSocket("ws://dev.agl.anyks.net");
 
 socket.onopen = function(){
@@ -12,7 +14,7 @@ socket.onclose = function(event){
 };
 
 socket.onmessage = function(event){
-	console.log("Получены данные", JSON.parse(event.data));
+	console.log("Получены данные", JSON.parse(event.data).query);
 };
 
 socket.onerror = function(error){
@@ -31,7 +33,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"limit": 100}}));
 
 // socket.send(JSON.stringify({"action": "getTimezone", "query": {"lat":"55.870031", "lng":"41.772074"}}));
-// 
+
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
 
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
