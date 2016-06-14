@@ -2279,14 +2279,13 @@ const anyks = require("./lib.anyks");
 							// Добавляем станцию в список
 							newStations.push(metro);
 						}
-
-						console.log("+++++++", newStations);
-
 						// Добавляем в массив данные метро
 						metro_stations.push({
 							metro,
-							near: newStations
+							near: newStations.filter(val => val.id !== metro.id);
 						});
+
+						console.log("+++++++", metro_stations[i].near);
 					}
 					// Выводим результат
 					resolve(metro_stations);
