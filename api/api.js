@@ -366,9 +366,6 @@ const anyks = require("./lib.anyks");
 				name:	str,
 				key:	"subjects"
 			});
-
-			console.log("++++++++++", key);
-
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
 				// Если ключи найдены
@@ -1917,8 +1914,8 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 1;
 				const Limit			= limit;
 				// Определяем ключ кеша
-				const cacheParentType	= ($.isset(regionId) ? '*'					: ParentType);
-				const cacheParentId		= ($.isset(regionId) ? substr(0, 2) + "*"	: ParentId);
+				const cacheParentType	= ($.isset(regionId) ? '*'							: ParentType);
+				const cacheParentId		= ($.isset(regionId) ? regionId.substr(0, 2) + "*"	: ParentId);
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, cacheParentId, cacheParentType, Limit).then(result => {
 					// Если данные не найдены
