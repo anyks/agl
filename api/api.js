@@ -2315,11 +2315,8 @@ const anyks = require("./lib.anyks");
 				});
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
-					
-					console.log("+++++++++++", result[0]);
-
 					// Если данные есть в кеше
-					if($.isArray(result) && result.length) resolve(result[0]);
+					if(!$.isArray(result) && result.length) resolve(result[0]);
 					// Если в кеше данные метро не найдены
 					else {
 						// Запрашиваем все данные из базы

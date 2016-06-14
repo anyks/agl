@@ -94,5 +94,6 @@ socket.onerror = function(error){
 //
 // socket.send(JSON.stringify({"action": "findNearStationsMetroByIds", "query": {"ids": ['966c4073e8d794620124a05c', 'd1a0a852a67883f7a91de489', '0fc0e26892380b075b21d69d']}}));
 //
+// socket.send(JSON.stringify({"action": "findMetroById", "query": {"id": '966c4073e8d794620124a05c'}}));
 //
 //
