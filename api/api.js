@@ -368,10 +368,16 @@ const anyks = require("./lib.anyks");
 			});
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
+				
+				console.log("+++++++++0", typeof(keys), keys);
+
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
 					const result = [];
+
+					console.log("----------1");
+
 					/**
 					 * getRedis Функция поиска данных в базе
 					 * @param  {Number} i индекс итераций
