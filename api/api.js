@@ -2073,6 +2073,9 @@ const anyks = require("./lib.anyks");
 				});
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
+					
+					try {
+
 					// Если данные есть в кеше
 					if(!$.isArray(result) && result.length){
 						// Станции метро
@@ -2239,6 +2242,9 @@ const anyks = require("./lib.anyks");
 						// Запускаем коннект
 						exec(getData());
 					}
+
+					} catch(e) {console.log("+++++++++", e);}
+
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода

@@ -78,8 +78,20 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Ш", "districtId": '3701900000000'}}));
 // socket.send(JSON.stringify({"action": "findStreet", "query": {"str":"Ко", "cityId": '3701900100000'}}));
 // socket.send(JSON.stringify({"action": "findHouse", "query": {"str":"32", "streetId": '37019001000011200'}}));
+// 
 // socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000', "lineId": "31b83c4d182032e41ad85357"}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру"}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Румянцево", "cityId": '7700000000000', "lineName": 'Сокольническая'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Рум", "cityId": '7700000000000', "lineName": 'Сокольническая'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000', "lineName": 'Сокольническая'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Р", "cityId": '7700000000000', "lineName": 'Сокольническая'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "lineName": 'Сокольническая'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000', "lineName": 'Сокольническая'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000', "lineColor": "E42313"}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000', "lineId": "31b83c4d182032e41ad85357"}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Ру", "cityId": '7700000000000'}}));
+// socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Рум", "cityId": '7700000000000'}}));
+// 
 //
-//findMetro({str, cityId, lineId, lineName, lineColor, limit = 10})
 //
 //
