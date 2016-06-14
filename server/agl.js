@@ -53,12 +53,12 @@
 					// Обрабатываем ошибку
 					if(e.code === "ENOENT"){
 						// Выводим в консоль сообщение что файл не найден
-						agl.log("file does not exist.", "error");
+						agl.log("file does not exist.").error();
 						// Сообщаем что файл не найден
 						return false;
 					}
 					// Выводим в консоль сообщение об ошибке
-					agl.log(["exception fs.statSync (", path, "): ", e], "error");
+					agl.log("exception fs.statSync (", path, "): ", e).error();
 					// Генерируем ошибку
 					throw e;
 				}
@@ -127,21 +127,21 @@
 			// Событие создания форка
 			cluster.on('fork', worker =>{
 				// Выводим в консоль что воркер создан
-				agl.log([
+				agl.log(
 					'воркер создан',
 					'id =', worker.id,
 					'pid =', worker.process.pid
-				], "info");
+				).info();
 			});
 			// Событие подключения к воркера
 			cluster.on('listening', (worker, address) => {
 				// Выводим в консоль что воркер активирован
-				agl.log([
+				agl.log(
 					'воркер активирован',
 					'id =', worker.id,
 					'pid =', worker.process.pid,
 					address
-				], "info");
+				).info();
 			});
 			// Событие подключение онлайн воркера
 			cluster.on('online', worker => {
@@ -150,32 +150,32 @@
 				// Отсылаем воркеру сообщение
 				worker.send({action: "config", data: config});
 				// Выводим в консоль что воркер онлайн
-				agl.log([
+				agl.log(
 					'воркер онлайн',
 					'id =', worker.id,
 					'pid =', worker.process.pid
-				], "info");
+				).info();
 			});
 			// Событие воркер отключился
 			cluster.on('disconnect', worker => {
 				// Удаляем воркер из списка
 				workers.splice(parseInt(worker.id, 10) - 1, 1);
 				// Выводим в консоль что воркер отключился
-				agl.log([
+				agl.log(
 					'воркер отключился',
 					'id =', worker.id,
 					'pid =', worker.process.pid
-				], "info");
+				).error();
 			});
 			// Если воркер упал
 			cluster.on('exit', (worker, code, signal) => {
 				// Выводим в консоль что воркер вышел
-				agl.log([
+				agl.log(
 					'воркер вышел',
 					'id =', worker.id,
 					'pid =', worker.process.pid,
 					code, signal
-				], "info");
+				).error();
 			});
 			// Функция инициализации работы сервера
 			const init = res => {
@@ -201,9 +201,9 @@
 								// Отсылаем воркеру сообщение
 								workers[index].send({action: "message", data: mess});
 								// Пришел ответ с агента
-								agl.log(['пришел запрос с агента', mess.data], "info");
+								agl.log('пришел запрос с агента', mess.data).info();
 							// Если пароли сервера не совпадают то сообщаем об этом
-							} else agl.log(['пароли сервера не совпадают', mess.data], "error");
+							} else agl.log('пароли сервера не совпадают', mess.data).error();
 							// Разрешаем прием данных
 							res.resume();
 							// Уничтожаем сокет так как ответ через него все равно передавать не будем
@@ -211,7 +211,7 @@
 						// Закрываем соденинение
 						} catch(e) {
 							// Выводим в консоль данные
-							agl.log(['произошла ошибка обработки данных', e, mess], "error");
+							agl.log('произошла ошибка обработки данных', e, mess).error();
 							// Уничтожаем сокет
 							res.destroy();
 						}
@@ -220,23 +220,23 @@
 				// События завершения передачи
 				res.on('end', () => {
 					// Выводим в консоль данные
-					agl.log(['клиент отключился от форка сервера', agl.name], "info");
+					agl.log('клиент отключился от форка сервера', agl.name).info();
 				});
 				// Если происходит ошибка выводим результат
 				res.on('error', e => {
 					// Выводим в консоль данные
 					if(JSON.stringify(e) !== "{}"){
 						// Если данные об ошибке существуют тогда выводим их в консоль
-						agl.log(['произошла ошибка форка сервера', agl.name, e, mess], "error");
+						agl.log('произошла ошибка форка сервера', agl.name, e, mess).error();
 					}
 				});
 				// Если происходит физическое отключение сокета
 				res.on('close', () => {
 					// Выводим в консоль данные
-					agl.log(['клиент закрыл соединение с форком сервера', agl.name], "info");
+					agl.log('клиент закрыл соединение с форком сервера', agl.name).info();
 				});
 				// Выводим в консоль данные
-				agl.log(['клиент подключился к форку сервера', agl.name], "info");
+				agl.log('клиент подключился к форку сервера', agl.name).info();
 				// Подключаем сервер
 				res.pipe(res);
 			};
@@ -251,21 +251,21 @@
 				 */
 				let connectToServer = () => {
 					// Выводим в консоль данные
-					agl.log(['форк сервера', agl.name, 'запущен'], "info");
+					agl.log('форк сервера', agl.name, 'запущен').info();
 					// Если подключится не удалось
 					server.on('error', e => {
 						if(e.code === 'EADDRINUSE'){
 							// Выводим в консоль данные
-							agl.log(['адрес форка сервера', agl.name, 'занят, перезапуск...'], "error");
+							agl.log('адрес форка сервера', agl.name, 'занят, перезапуск...').error();
 							// Через секунду пытаемся подключится вновь
 							setTimeout(createServer, 1000);
 						// Выводим в консоль данные
-						} else agl.log(['произошла ошибка в форке сервера', agl.name, e], "error");
+						} else agl.log('произошла ошибка в форке сервера', agl.name, e).error();
 					});
 					// Если сервер отключился
 					server.on('close', err => {
 						// Выводим в консоль данные
-						agl.log(['форк сервер', agl.name, 'отключился', err], "error");
+						agl.log('форк сервер', agl.name, 'отключился', err).error();
 					});
 				};
 				// Если сервер существует
@@ -394,7 +394,7 @@
 					.then(sendResult)
 					.catch(err => {
 						// Выводим ошибку метода
-						agl.log(["экшен", obj.data.action, "параметры запроса", obj.data.query, err], "error");
+						agl.log("экшен", obj.data.action, "параметры запроса", obj.data.query, err).error();
 						// Выводим сообщение по умолчанию
 						sendResult(false);
 					});

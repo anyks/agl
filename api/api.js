@@ -4811,7 +4811,6 @@ const anyks = require("./lib.anyks");
 		 * @param {Variant} messages сообщение
 		 */
 		log(...message){
-			console.log("++++++", message);
 			// Выводим результат
 			return {
 				// Если это информационные сообщения

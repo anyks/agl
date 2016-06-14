@@ -60,12 +60,12 @@ const Agl = require("../api/api");
 			// Обрабатываем ошибку
 			if(e.code === "ENOENT"){
 				// Выводим в консоль сообщение что файл не найден
-				agl.log("file does not exist.", "error");
+				agl.log("file does not exist.").error();
 				// Сообщаем что файл не найден
 				return false;
 			}
 			// Выводим в консоль сообщение об ошибке
-			agl.log(["exception fs.statSync (", path, "): ", e], "error");
+			agl.log("exception fs.statSync (", path, "): ", e).error();
 			// Генерируем ошибку
 			throw e;
 		}
@@ -143,7 +143,7 @@ const Agl = require("../api/api");
 		var client = net.connect({
 			port: config.fork.port,
 			host: config.fork.host
-		}, () => agl.log(['подключились к форку сервера'], "info"));
+		}, () => agl.log('подключились к форку сервера').info());
 		try {
 			// Устанавливаем кодировку utf-8
 			client.setEncoding('utf8');
@@ -154,7 +154,7 @@ const Agl = require("../api/api");
 			// Если возникает ошибка соединения
 			client.on('error', err => {
 				// Выводим в консоль данные
-				agl.log(['ошибка форка сервера', err], "error");
+				agl.log('ошибка форка сервера', err).error();
 				// Если сервер не найден тогда пробуем еще раз
 				if(ax.isset(err)
 				&& ax.isset(err.code)
@@ -165,7 +165,7 @@ const Agl = require("../api/api");
 			});
 		} catch(e) {
 			// Выводим в консоль данные
-			agl.log(['не определенная ошибка форка сервера', e], "error");
+			agl.log('не определенная ошибка форка сервера', e).error();
 			// Уничтожаем сокет
 			if(ax.isset(client)) client.destroy();
 		}
@@ -202,11 +202,11 @@ const Agl = require("../api/api");
 		const rejectUser = (error, log, obj) => {
 			try {
 				// Выводим в консоль данные
-				agl.log([log, obj], "error");
+				agl.log(log, obj).error();
 				// Отключаем пользователя
 				req.socket.end();
 			// Если произошла ошибка тогда выводим в консоль
-			} catch(e) {agl.log([log, e], "error");}
+			} catch(e) {agl.log(log, e).error();}
 			// Выводим сообщение
 			sendGeneralMessage(client, {"error": error});
 		};
@@ -215,14 +215,14 @@ const Agl = require("../api/api");
 		// Устанавливаем событие на ошибку подключения от клиента
 		client.on('error', error => {
 			// Выводим в консоль данные
-			agl.log(['клиент', error, 'подключился с ошибкой.'], "info");
+			agl.log('клиент', error, 'подключился с ошибкой.').error();
 			// Удаляем пользователя из списка
 			delete onlineUsers[req.key];
 		});
 		// Устанавливаем событие на отключение от сервера клиента
 		client.on('close', (reasonCode, description) => {
 			// Выводим в консоль данные
-			agl.log(['клиент отключился', client.remoteAddress, description], "info");
+			agl.log('клиент отключился', client.remoteAddress, description).info();
 			// Удаляем пользователя из списка
 			delete onlineUsers[req.key];
 		});
@@ -238,9 +238,9 @@ const Agl = require("../api/api");
 						// Отправляем сообщение серверу
 						sendQuery({key: req.key, data, channel});
 						// Пришли данные от клиента
-						agl.log(['полученны данные с клиента', data], "info");
+						agl.log('полученны данные с клиента', data).info();
 					// Если возникает ошибка то выводим ее
-					} catch(e) {agl.log(['ошибка получения данных веб-сокетов', e], "error");}
+					} catch(e) {agl.log('ошибка получения данных веб-сокетов', e).error();}
 				break;
 				// Если это бинарные данные
 				case 'binary':
@@ -259,7 +259,7 @@ const Agl = require("../api/api");
 			// Отлавливаем подписку
 			redis.on("subscribe", (channel, count) => {
 				// Выводим в консоль данные
-				agl.log(['подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count], "info");
+				agl.log('подписка на канал сообщений в Redis,', 'channel =', channel + ',', 'count =', count).info();
 			});
 			// Получаем входящие сообщение
 			redis.on("message", (ch, mess) => {
@@ -275,15 +275,15 @@ const Agl = require("../api/api");
 							.sendUTF(JSON.stringify(mess.data));
 						}
 						// Пришел ответ с сервера
-						agl.log(['пришел ответ с сервера', mess.data], "info");
+						agl.log('пришел ответ с сервера', mess.data).info();
 					// Если возникает ошибка то выводим ее
-					} catch(e) {agl.log(['ошибка получения данных подписки из Redis', e], "error");}
+					} catch(e) {agl.log('ошибка получения данных подписки из Redis', e).error();}
 				}
 			});
 			// Подписываемся на канал
 			redis.subscribe(config.channel);
 			// Выводим в консоль данные
-			agl.log(['агент веб-сокетов запущен'], "info");
+			agl.log('агент веб-сокетов запущен').info();
 		});
 		/**
 		 * updateImesZones Функция обновления временных зон
@@ -304,7 +304,7 @@ const Agl = require("../api/api");
 				// Запускаем следующую проверку
 				updateTimeZones();
 				// Выводим сообщение в консоль
-				agl.log('выполняем попытку обновить временные зоны', "info");
+				agl.log('выполняем попытку обновить временные зоны').info();
 			}, 1800000);
 		};
 		// Запускаем проверку обновления временной зоны
@@ -334,7 +334,7 @@ const Agl = require("../api/api");
 		// Создаем сервер
 		else server = http.createServer((req, res) => {
 			// Выводим в консоль данные
-			agl.log(['сервер получил запрос от', req.url], "error");
+			agl.log('сервер получил запрос от', req.url).error();
 			// Сообщаем что страница не найдена
 			res.writeHead(404);
 			// Закрываем соединение
@@ -346,12 +346,12 @@ const Agl = require("../api/api");
 		server.on('error', error => {
 			if(error.code === 'EADDRINUSE'){
 				// Выводим в консоль данные
-				agl.log(['адрес занят, перезапуск...', error], "error");
+				agl.log('адрес занят, перезапуск...', error).error();
 				// Через секунду пытаемся подключится вновь
 				setTimeout(createServer, 1000);
 			} else {
 				// Выводим в консоль данные
-				agl.log(['ошибка запуска агента веб-сокетов', error], "error");
+				agl.log('ошибка запуска агента веб-сокетов', error).error();
 				// Создаем сервер
 				createServer();
 			}
@@ -359,7 +359,7 @@ const Agl = require("../api/api");
 		// Если сервер отключился
 		server.on('close', function(){
 			// Выводим в консоль данные
-			agl.log(['агент веб-сокетов отключился'], "error");
+			agl.log('агент веб-сокетов отключился').error();
 			// Выходим из приложения
 			process.exit(1);
 		});
@@ -378,7 +378,7 @@ const Agl = require("../api/api");
 			// Проверяем разрешено ли подключение с данного клиента
 			if(!originIsAllowed(req.origin)){
 				// Выводим в консоль данные
-				agl.log(['соединение с клиента', req.origin, 'запрещено.'], "error");
+				agl.log('соединение с клиента', req.origin, 'запрещено.').error();
 				// Make sure we only accept requests from an allowed origin
 				req.socket.end();
 				// Выходим из функции
@@ -389,12 +389,12 @@ const Agl = require("../api/api");
 				// Разрешаем подключится только с протокола ws
 				const connection = req.accept(null, req.origin);
 				// Выводим в консоль данные
-				agl.log(['подключение к веб-сокет серверу разрешено.', connection.remoteAddress], "info");
+				agl.log('подключение к веб-сокет серверу разрешено.', connection.remoteAddress).info();
 				// Вызываем функцию инициализации данных сервера
 				init.call(connection, req);
 			} catch(e) {
 				// Выводим в консоль данные
-				agl.log(['соединение с клиента', req.origin, 'запрещено.', e], "error");
+				agl.log('соединение с клиента', req.origin, 'запрещено.', e).error();
 				// Make sure we only accept requests from an allowed origin
 				req.socket.end();
 				// Выходим из функции
