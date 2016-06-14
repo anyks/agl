@@ -4695,6 +4695,9 @@ const anyks = require("./lib.anyks");
 												station.lineId	= line._id;
 												// Формируемновый ключ gps;
 												station.gps = [station.lat, station.lng];
+												// Преобразуем gps координаты
+												station.lat = station.lat.toString();
+												station.lng = station.lng.toString();
 												// Формируем массив станций для линии
 												line.stationsIds.push(station._id);
 												// Формируем объект для сохранения в кеше
