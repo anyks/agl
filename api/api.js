@@ -1626,13 +1626,17 @@ const anyks = require("./lib.anyks");
 										// Если это не нулевой элемент
 										if($.isset(i) && $.isset(val)){
 											// Запоминаем тип адреса
-											data.type = (name === "house" ? "Дом" : ($.isset(mapSubjects[val]) ? mapSubjects[val] : val));
+											data.type = val;
 											// Останавливаем поиск
 											types.length = 0;
 										}
 									});
 									// Извлекаем название
 									data.name = val.replace(data.type, "");
+									// Если мы ищем дом тогда подставляем тип по умолчанию
+									if(name === "house") data.type = "Дом";
+									// Переименовываем тип объекта
+									else data.type = ($.isset(mapSubjects[data.type]) ? mapSubjects[data.type] : data.type);
 									// Исправляем название и тип
 									data.name = data.name.anyks_trim().anyks_ucwords();
 									data.type = data.type.anyks_trim().anyks_ucwords();
