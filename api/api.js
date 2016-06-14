@@ -2464,65 +2464,75 @@ const anyks = require("./lib.anyks");
 							// Если адрес интерпретирован удачно
 							if($.isset(address)){
 								/**
-								 * getDataInMongoDB Функция запроса данных из базы
-								 * @param  {Object} scheme объект схемы базы данных
+								 * findSubject Функция запроса данных из базы
+								 * @param  {Object} func   функция выполняющая поиск
 								 * @param  {Object} query  объект с параметрами запроса
-								 * @return {Promise}       промис с результатами данных из базы
+								 * @return {Promise}       промис с результатами поиска
 								 */
-								const getDataInMongoDB = (scheme, query) => {
-									// Создаем промис для обработки
-									return (new Promise(resolve => {
-										// Преобразуем схему базы
-										scheme = idObj.schemes[scheme];
-										// Запрашиваем все данные из базы
-										scheme.findOne(query).exec((err, data) => {
-											// Выводим результат поиска по базе
-											idObj.log("поиск данных в базе", data).info();
-											// Если ошибки нет, выводим результат
-											if(!$.isset(err) && $.isset(data)) resolve(data);
-											// Если данные не найдены выводим как есть
-											else resolve(false);
-										});
-									}));
+								const findSubject = (func, query) => {
+									// Устанавливаем лимит записей в 1 штуку
+									query.limit = 1;
+									// Выполняем поиск данных
+									return idObj[func](query);
 								};
 								/**
 								 * *getData Генератор для получения данных адреса
 								 */
 								const getData = function * (){
 									// Формируем параметры запроса
-									let query = ($.isset(address.country) ? {name: address.country.name} : {});
-									// Запрашиваем данные страны
-									const country = ($.isset(address.country) ? yield getDataInMongoDB("Countries", query) : undefined);
-									// Формируем параметры запроса
-									if($.isset(address.region)) query.name = address.region.name;
-									// Если страна найдена тогда ее тоже добавляем в запрос
-									if($.isset(country)) query.code = country.code;
-									// Запрашиваем данные региона
-									const region = ($.isset(address.region) ? yield getDataInMongoDB("Regions", query) : undefined);
-									// Формируем параметры запроса
-									if($.isset(address.district)) query.name = address.district.name;
-									// Если регион найден тогда его тоже добавляем в запрос
-									if($.isset(region)) query.regionId = region._id;
-									// Запрашиваем данные района
-									const district = ($.isset(address.district) ? yield getDataInMongoDB("Districts", query) : undefined);
-									// Формируем параметры запроса
-									if($.isset(address.city)) query.name = address.city.name;
-									// Если район найден тогда его тоже добавляем в запрос
-									if($.isset(district)) query.districtId = district._id;
-									// Запрашиваем данные города
-									const city = ($.isset(address.city) ? yield getDataInMongoDB("Cities", query) : undefined);
-									// Формируем параметры запроса
-									if($.isset(address.street)) query.name = address.street.name;
-									// Если город найден тогда его тоже добавляем в запрос
-									if($.isset(city)) query.cityId = city._id;
-									// Запрашиваем данные улицы
-									const street = ($.isset(address.street) ? yield getDataInMongoDB("Streets", query) : undefined);
-									// Формируем параметры запроса
-									if($.isset(address.house)) query.name = address.house.name;
-									// Если улица найдена тогда её тоже добавляем в запрос
-									if($.isset(street)) query.streetId = street._id;
-									// Запрашиваем данные дома
-									const house = ($.isset(address.house) ? yield getDataInMongoDB("Houses", query) : undefined);
+									let str, country, region, district, city, street, house;
+									// Если страна найдена
+									if($.isset(address.country)){
+										// Присваиваем параметр поиска
+										str = address.country.name;
+										// Запрашиваем данные страны
+										country = yield findSubject("findCountry", {str});
+									}
+									// Если регион найден
+									if($.isset(address.region)){
+										// Присваиваем параметр поиска
+										str = address.region.name;
+										// Запрашиваем данные региона
+										region = yield findSubject("findRegion", {str});
+									}
+									// Если район найден
+									if($.isset(address.district)){
+										// Присваиваем параметр поиска
+										str = address.district.name;
+										// Получаем идентификатор региона
+										const regionId = ($.isset(region) ? region._id : undefined);
+										// Запрашиваем данные района
+										district = yield findSubject("findDistrict", {str, regionId});
+									}
+									// Если город найден
+									if($.isset(address.city)){
+										// Присваиваем параметр поиска
+										str = address.city.name;
+										// Получаем идентификатор региона
+										const regionId = ($.isset(region) ? region._id : undefined);
+										// Получаем идентификатор района
+										const districtId = ($.isset(district) ? district._id : undefined);
+										// Запрашиваем данные города
+										city = yield findSubject("findCity", {str, regionId, districtId});
+									}
+									// Если улица найдена
+									if($.isset(address.street) && $.isset(city)){
+										// Присваиваем параметр поиска
+										str = address.street.name;
+										// Получаем идентификатор города
+										const cityId = city._id;
+										// Запрашиваем данные улицы
+										street = yield findSubject("findStreet", {str, cityId});
+									}
+									// Если дом найден
+									if($.isset(address.house) && $.isset(street)){
+										// Присваиваем параметр поиска
+										str = address.house.name;
+										// Получаем идентификатор улицы
+										const streetId = street._id;
+										// Запрашиваем данные дома
+										house = yield findSubject("findHouse", {str, streetId});
+									}
 									// Формируем объект с результатами поиска
 									const result = {country, region, district, city, street, house};
 									// Отправляем в Redis на час
