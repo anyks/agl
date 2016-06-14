@@ -2991,7 +2991,7 @@ const anyks = require("./lib.anyks");
 					// Если данные пришли, выводим результат
 					if($.isArray(result) && result.length){
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						const data = result.splice(page * limit, limit);
 						// Выводим результат
@@ -3066,7 +3066,7 @@ const anyks = require("./lib.anyks");
 						} else result = data;
 
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						data = result.splice(page * limit, limit);
 						// Выводим результат
@@ -3150,7 +3150,7 @@ const anyks = require("./lib.anyks");
 						// Иначе просто приравниваем массив
 						} else result = data;
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						data = result.splice(page * limit, limit);
 						// Выводим результат
@@ -3435,7 +3435,7 @@ const anyks = require("./lib.anyks");
 					// Если данные пришли, выводим результат
 					if($.isArray(result) && result.length){
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						const data = result.splice(page * limit, limit);
 						// Выводим результат
