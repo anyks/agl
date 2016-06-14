@@ -39,3 +39,13 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
 
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
+
+// socket.send(JSON.stringify({"action": "updateMetro"}));
+// socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Москва"}}));
+// socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Санкт-Петербург"}}));
+// socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Самара"}}));
+// socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Новосибирск"}}));
+// socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Нижний Новгород"}}));
+
+
+

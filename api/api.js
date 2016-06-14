@@ -4617,8 +4617,6 @@ const anyks = require("./lib.anyks");
 									// Изменяем идентификатор записи
 									arr[i]._id		= data._id;
 									arr[i].linesIds	= [];
-									// Запоминаем данные в кеше
-									cache[arr[i]._id] = {};
 									// Формируем идентификаторы линий
 									arr[i].lines.forEach(line => {
 										// Формируем линию метро
