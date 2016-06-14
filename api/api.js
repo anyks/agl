@@ -1604,6 +1604,9 @@ const anyks = require("./lib.anyks");
 						 * @return {Object}           объект с адресом
 						 */
 						const getAddress = (reg, name) => {
+							
+							console.log("+++++++++++0", address);
+
 							// Разбиваем на массив
 							const arr = address.split(",");
 							// Объект с данными
@@ -1634,6 +1637,9 @@ const anyks = require("./lib.anyks");
 									if(name === "house") data.type = "Дом";
 									// Переименовываем тип объекта
 									else data.type = ($.isset(mapSubjects[data.type]) ? mapSubjects[data.type] : data.type);
+
+									console.log("+++++++++++1", data.name, data.type);
+
 									// Исправляем название и тип
 									data.name = data.name.anyks_trim().anyks_ucwords();
 									data.type = data.type.anyks_trim().anyks_ucwords();
@@ -1649,6 +1655,9 @@ const anyks = require("./lib.anyks");
 							if(data){
 								// Изменяем адрес
 								address = address.replace(data.src, "");
+
+								console.log("+++++++++++2", data.name, address);
+
 								// Запоминаем значение
 								data.src = data.src.replace(/\.\s+/ig, ".");
 							}

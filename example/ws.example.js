@@ -66,6 +66,6 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
 // socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
 // socket.send(JSON.stringify({"action": "parseAddress", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
-//
+// socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"Российская Федерация, г.Москва, посёлок Коммунарка, ул.Липовый парк, 10К2"}}));
 //
 //
