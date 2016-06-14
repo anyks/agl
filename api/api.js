@@ -2270,13 +2270,19 @@ const anyks = require("./lib.anyks");
 						const metro = yield idObj.findMetroById({id: ids[i]});
 						// Получаем ближайшие станции метро
 						const stations = yield idObj.getMetroByGPS({lat: metro.lat, lng: metro.lng});
-						
-						console.log("++++++++", stations);
-
+						// Список ближайших станций метро
+						const newStations = [];
+						// Переходим по всем станциям место
+						for(let station of stations){
+							// Запрашиваем данные метро
+							const metro = yield idObj.findMetroById({id: station._id});
+							// Добавляем станцию в список
+							newStations.push(metro);
+						}
 						// Добавляем в массив данные метро
 						metro_stations.push({
 							metro,
-							near: stations
+							near: newStations
 						});
 					}
 					// Выводим результат
