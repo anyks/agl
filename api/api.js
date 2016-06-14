@@ -2269,7 +2269,11 @@ const anyks = require("./lib.anyks");
 						// Запрашиваем данные метро
 						const metro = yield idObj.findMetroById({id: ids[i]});
 						// Получаем ближайшие станции метро
-						const stations = yield idObj.getMetroByGPS({lat: metro.lat, lng: metro.lng});
+						const stations = yield idObj.getMetroByGPS({
+							lat:		metro.lat,
+							lng:		metro.lng,
+							distance:	5000
+						});
 						// Список ближайших станций метро
 						const newStations = [];
 						// Переходим по всем станциям место
