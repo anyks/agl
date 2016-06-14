@@ -2265,9 +2265,9 @@ const anyks = require("./lib.anyks");
 					// Массив с данными метро
 					const metro_stations = [];
 					// Перебираем все станции метро
-					for(let i = 0; i < ids.length; i++){
+					for(let id of ids){
 						// Запрашиваем данные метро
-						const metro = yield idObj.findMetroById({id: ids[i]});
+						const metro = yield idObj.findMetroById({id});
 						// Получаем ближайшие станции метро
 						const stations = yield idObj.getMetroByGPS({
 							lat:		metro.lat,
@@ -2288,8 +2288,6 @@ const anyks = require("./lib.anyks");
 							metro,
 							near: newStations.filter(val => val.id !== metro.id)
 						});
-
-						console.log("+++++++", metro_stations[i].near);
 					}
 					// Выводим результат
 					resolve(metro_stations);
