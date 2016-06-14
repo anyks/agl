@@ -61,9 +61,9 @@ socket.onerror = function(error){
 //socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Москва, Чечерский проезд 126, к.2"}}));
 //
 //
-//
-//
-//
+// socket.send(JSON.stringify({"action": "updateCountries", "query": {updateKey: "sekh234khk234hk22"}}));
+// socket.send(JSON.stringify({"action": "updateRegions", "query": {updateKey: "sekh234khk234hk22"}}));
+// socket.send(JSON.stringify({"action": "updateDistricts", "query": {updateKey: "sekh234khk234hk22"}}));
 //
 //
 //
