@@ -2074,7 +2074,7 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные есть в кеше
-					if(!$.isArray(result) && result.length){
+					if($.isArray(result) && result.length){
 						// Станции метро
 						let metro_stations = [];
 						// Если название линии или цвет указаны
