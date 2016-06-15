@@ -811,12 +811,13 @@ const anyks = require("./lib.anyks");
 		return (new Promise(resolve => {
 			// Изменяем данные схемы
 			scheme = idObj.schemes[scheme];
-			// Ищем данные в кеше
-			getRedisByMaskKey.call(idObj, key).then(result => {
-				// Если данные в кеше сть тогда выводим их
-				if($.isArray(result) && result.length) resolve(result[0]);
-				// Если данные в кеше не найдены тогда продолжаем искать
-				else {
+			// Считываем данные из кеша
+			Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+				// Если данные не найдены, сообщаем что в кеше ничего не найдено
+				if(!$.isset(cache)){
+					// Формируем параметры запроса
+					const query = {};
+
 					
 					console.log("++++++");
 
@@ -828,20 +829,25 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(err) && $.isset(data)) result = data;
 						// Выводим в консоль сообщение что данные не найдены
 						else idObj.log("поиск по id не дал результатов:", "id =", id, err, data).error();
-						// Генерируем ключ метро
-						const key = createMetroKey({
-							id:		data._id,
-							key:	"metro",
-							name:	data.name,
-							cityId:	data.cityId,
-							lineId:	data.lineId
-						});
+						{
+							// Генерируем ключ метро
+							const key = createMetroKey({
+								id:		data._id,
+								key:	"metro",
+								name:	data.name,
+								cityId:	data.cityId,
+								lineId:	data.lineId
+							});
+							// Отправляем в Redis на час
+							Agl.setRedis.call(idObj, "set", key, result).then();
+						}
 						// Отправляем в Redis на час
-						Agl.setRedis.call(idObj, "set", key, result).then();
+						Agl.setRedis.call(idObj, "set", key, result, 3600).then();
 						// Выводим результат
 						resolve(result);
 					});
-				}
+				// Выводим результат
+				} else resolve(JSON.parse(cache));
 			// Если происходит ошибка тогда выходим
 			}).catch(err => {
 				// Выводим ошибку метода
@@ -3761,12 +3767,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Генерируем ключ метро
-				const key = createMetroKey({
-					id,
-					key:	"metro",
-					cityId:	"*",
-					lineId:	"*"
-				});
+				const key = "metro:stations:" + idObj.generateKey(id);
 				// Ищем станцию метро в базе
 				getDataMetroById.call(idObj, "Metro_stations", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -3789,7 +3790,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Генерируем ключ метро
-				const key = createMetroKey({key: "metro", cityId: "*", lineId: id});
+				const key = "metro:lines:" + idObj.generateKey(id);
 				// Ищем линию метро в базе
 				getDataMetroById.call(idObj, "Metro_lines", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
@@ -3812,7 +3813,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Генерируем ключ метро
-				const key = createMetroKey({key: "metro", cityId: id, lineId: "*"});
+				const key = "metro:cities:" + idObj.generateKey(id);
 				// Ищем город в котором есть метро в базе
 				getDataMetroById.call(idObj, "Metro_cities", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
