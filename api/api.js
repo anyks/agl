@@ -1115,7 +1115,8 @@ const anyks = require("./lib.anyks");
 				const object = {
 					version:	idObj.version,
 					copyright:	idObj.copyright,
-					text:		"\u00A9 " + idObj.copyright + " ver." + idObj.version
+					text:		idObj.name.anyks_ucwords() + " v"
+								+ idObj.version + " \u00A9 " + idObj.copyright
 				};
 				// Выводи данные в консоль
 				idObj.log(
