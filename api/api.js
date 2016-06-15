@@ -3526,7 +3526,10 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные пришли, выводим результат
-					if(!$.isArray(result) && result.length){
+					if($.isArray(result) && result.length){
+						
+						console.log("+++++++");
+
 						// Определяем количество записей
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
@@ -3537,9 +3540,6 @@ const anyks = require("./lib.anyks");
 						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
-						
-						console.log("+++++++");
-
 						// Формируем параметры запроса
 						const query = {};
 						// Если идентификатор города передан
