@@ -117,7 +117,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getMetro", "query": {"page": 1, "limit": 10, cityId: '7700000000000', lineId: '097c6f41dd3c5880cd3cc38b'}}));
 //
 // socket.send(JSON.stringify({"action": "getCountryById", "query": {"id": 7}}));
-//
+// socket.send(JSON.stringify({"action": "getRegionById", "query": {"id": '3700000000000'}}));
 //
 //
 //
