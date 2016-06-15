@@ -3768,7 +3768,7 @@ const anyks = require("./lib.anyks");
 					lineId:	"*"
 				});
 				// Ищем станцию метро в базе
-				getDataMetroById.call(idObj, "ModelMetro_stations", key, id)
+				getDataMetroById.call(idObj, "Metro_stations", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
@@ -3791,7 +3791,7 @@ const anyks = require("./lib.anyks");
 				// Генерируем ключ метро
 				const key = createMetroKey({key: "metro", cityId: "*", lineId: id});
 				// Ищем линию метро в базе
-				getDataMetroById.call(idObj, "ModelMetro_lines", key, id)
+				getDataMetroById.call(idObj, "Metro_lines", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
@@ -3814,7 +3814,7 @@ const anyks = require("./lib.anyks");
 				// Генерируем ключ метро
 				const key = createMetroKey({key: "metro", cityId: id, lineId: "*"});
 				// Ищем город в котором есть метро в базе
-				getDataMetroById.call(idObj, "ModelMetro_cities", key, id)
+				getDataMetroById.call(idObj, "Metro_cities", key, id)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
