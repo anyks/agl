@@ -2837,17 +2837,19 @@ const anyks = require("./lib.anyks");
 								// Выводим сообщение что выполняем запрос с геокодера
 								idObj.log("выполняем запрос с геокодера,", "lat =", lat + ",", "lng =", lng).info();
 								// Выполняем запрос с геокодера Yandex
-								const yandex = yield fetch(urlsGeo[0]).then(
+								let yandex = yield fetch(urlsGeo[0]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с yandex api', err).error()
 								);
 								// Выполняем запрос с геокодера Google
-								const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+								let google = (!yandex ? yield fetch(urlsGeo[1]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с google api', err).error()
 								) : false);
+								// Если лимит запросов у гугла исчерпан тогда запоминаем это
+								if($.isset(google) && (google.status === "OVER_QUERY_LIMIT")) google = false;
 								// Выполняем запрос с геокодера OpenStreet Maps
-								const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
+								let osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm api', err).error()
 								) : false);
@@ -2961,20 +2963,19 @@ const anyks = require("./lib.anyks");
 								// Выводим сообщение что выполняем запрос с геокодера
 								idObj.log("выполняем запрос с геокодера,", "address =", address).info();
 								// Выполняем запрос с геокодера Yandex
-								const yandex = yield fetch(urlsGeo[0]).then(
+								let yandex = yield fetch(urlsGeo[0]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с yandex api', err).error()
 								);
 								// Выполняем запрос с геокодера Google
-								const google = (!yandex ? yield fetch(urlsGeo[1]).then(
+								let google = (!yandex ? yield fetch(urlsGeo[1]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с google api', err).error()
 								) : false);
-
-								console.log("+++++++++++++++", yandex, google.status);
-
+								// Если лимит запросов у гугла исчерпан тогда запоминаем это
+								if($.isset(google) && (google.status === "OVER_QUERY_LIMIT")) google = false;
 								// Выполняем запрос с геокодера OpenStreet Maps
-								const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
+								let osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm api', err).error()
 								) : false);
