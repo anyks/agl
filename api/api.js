@@ -817,10 +817,6 @@ const anyks = require("./lib.anyks");
 				if(!$.isset(cache)){
 					// Формируем параметры запроса
 					const query = {};
-
-					
-					console.log("++++++");
-
 					// Выполняем поиск идентификатора
 					scheme.findOne({"_id": id}).exec((err, data) => {
 						// Результат ответа
@@ -829,7 +825,8 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(err) && $.isset(data)) result = data;
 						// Выводим в консоль сообщение что данные не найдены
 						else idObj.log("поиск по id не дал результатов:", "id =", id, err, data).error();
-						{
+						// Если данные существуют
+						if($.isset(data)){
 							// Генерируем ключ метро
 							const key = createMetroKey({
 								id:		data._id,
@@ -838,7 +835,7 @@ const anyks = require("./lib.anyks");
 								cityId:	data.cityId,
 								lineId:	data.lineId
 							});
-							// Отправляем в Redis на час
+							// Сохраняем данные в кеше
 							Agl.setRedis.call(idObj, "set", key, result).then();
 						}
 						// Отправляем в Redis на час
