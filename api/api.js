@@ -1830,7 +1830,7 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 0;
 				const Limit			= limit;
 
-				console.log("+++++++++++Region1", ContentName, ContentType, cacheParentId, cacheParentType);
+				console.log("+++++++++++Region1", ContentName, ContentType);
 
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, null, null, Limit).then(result => {
@@ -1885,7 +1885,7 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 1;
 				const Limit			= limit;
 
-				console.log("+++++++++++District1", ContentName, ContentType, cacheParentId, cacheParentType);
+				console.log("+++++++++++District1", ContentName, ContentType, ParentId, ParentType);
 
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
