@@ -542,6 +542,9 @@ const anyks = require("./lib.anyks");
 					arr[i].id = undefined;
 					// Получаем данные из кеша
 					getAddressCache.call(idObj, arr[i]).then(cache => {
+						
+						console.log("++++++++++++-1", cache);
+
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
 						if(!cache || (!$.isArray(cache.gps) || !$.isArray(cache.metro) || !$.isset(cache.timezone))){
 							// Выполняем запрос данных
@@ -550,6 +553,9 @@ const anyks = require("./lib.anyks");
 								arr[i].name + " " +
 								arr[i].type
 							}).then(res => {
+								
+								console.log("++++++++++++0", res);
+
 								// Если результат найден
 								if($.isset(res)){
 									// Выполняем сохранение данных
