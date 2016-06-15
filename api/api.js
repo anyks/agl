@@ -2979,6 +2979,9 @@ const anyks = require("./lib.anyks");
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm api', err).error()
 								) : false);
+
+								console.log("++++++++++++", osmAddress, osm);
+
 								// Создаем объект ответа
 								const obj = (
 									yandex ? {data: yandex, status: "yandex"} :
