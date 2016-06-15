@@ -2975,7 +2975,7 @@ const anyks = require("./lib.anyks");
 								// Если лимит запросов у гугла исчерпан тогда запоминаем это
 								if($.isset(google) && (google.status === "OVER_QUERY_LIMIT")) google = false;
 								// Выполняем запрос с геокодера OpenStreet Maps
-								let osm = (!google && !yandex ? yield fetch('http://nominatim.openstreetmap.org/search?q=' + osmAddress.replace(/\s/ig, "+") + '&format=json&addressdetails=1&limit=1').then( // urlsGeo[2]
+								let osm = (!google && !yandex ? yield fetch('http://nominatim.openstreetmap.org/search?q=' + encodeURI(osmAddress) + '&format=json&addressdetails=1&limit=1').then( // urlsGeo[2]
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm api', err).error()
 								) : false);
