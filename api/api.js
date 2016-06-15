@@ -1122,8 +1122,9 @@ const anyks = require("./lib.anyks");
 				idObj.log(
 					"\x1B[31m\x1B[1m\u00A9"
 					.anyks_clearColor(idObj.debug.console),
-					idObj.copyright, "ver.",
+					"ver.",
 					idObj.version,
+					idObj.copyright,
 					"\x1B[0m"
 					.anyks_clearColor(idObj.debug.console)
 				).info();
