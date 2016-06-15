@@ -2976,7 +2976,7 @@ const anyks = require("./lib.anyks");
 								if($.isset(google) && (google.status === "OVER_QUERY_LIMIT")) google = false;
 								// Выполняем запрос с геокодера OpenStreet Maps
 								let osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
-									res => (res.status === 200 ? console.log(res.json()) : false),
+									res => (res.status === 200 ? res.json().then(res => console.log(res)) : false),
 									err => idObj.log('получения данных с osm api', err).error()
 								) : false);
 
