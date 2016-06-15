@@ -110,14 +110,13 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getCountries", "query": {"page": 1, "limit": 10}}));
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"page": 1, "limit": 10}}));
 // socket.send(JSON.stringify({"action": "getDistricts", "query": {"page": 1, "limit": 10, regionId: '4100000000000', type: 'Край'}}));
-//
 // socket.send(JSON.stringify({"action": "getCities", "query": {"page": 1, "limit": 10, regionId: "3700000000000"}}));
 // socket.send(JSON.stringify({"action": "getCities", "query": {"page": 1, "limit": 10, districtId: "3701900000000"}}));
 // socket.send(JSON.stringify({"action": "getStreets", "query": {"page": 1, "limit": 10, cityId: '3701900100000'}}));
+// socket.send(JSON.stringify({"action": "getHouses", "query": {"page": 1, "limit": 10, streetId: '37019001000027900'}}));
+// socket.send(JSON.stringify({"action": "getMetro", "query": {"page": 1, "limit": 10, cityId: '7700000000000', lineId: '097c6f41dd3c5880cd3cc38b'}}));
 //
 //
-//
-//getStreets({cityId, type, page = 1, limit = 10})
 //
 //
 //

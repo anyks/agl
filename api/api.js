@@ -1200,17 +1200,17 @@ const anyks = require("./lib.anyks");
 						 * @param  {String}   str   строка в которой происходит поиск
 						 * @param  {Function} func  функция для запроса данных
 						 * @param  {Object}   obj   объект с параметрами запроса
-						 * @param  {Number}   i     текущий индекс итерации
+						 * @param  {Number}   page  текущий индекс итерации
 						 * @param  {Number}   count максимальное количество страниц
 						 * @return {Promise}        промис содержащий результат поиска
 						 */
-						const getSubject = (str, func, obj, i = 0, count = 1) => {
+						const getSubject = (str, func, obj, page = 1, count = 1) => {
 							// Создаем промис для обработки
 							return (new Promise(resolve => {
 								// Если данные загружены не полностью, начинаем загрузку
-								if(i < count){
+								if(i < (count + 1)){
 									// Формируем параметры запроса
-									let query = Object.assign({page: i, limit: 100}, obj);
+									let query = Object.assign({page, limit: 100}, obj);
 									// Закачиваем первую порцию данных
 									func(query).then(result => {
 										// Если данные пришли
@@ -1226,11 +1226,11 @@ const anyks = require("./lib.anyks");
 												// Выводим результат
 												resolve({str, data: subject});
 											// Продолжаем загрузку дальше
-											} else getSubject(str, func, obj, i + 1, result.count).then(resolve);
+											} else getSubject(str, func, obj, page + 1, result.count).then(resolve);
 										// Если данные не найдены тогда перепрыгиваем этот шаг
-										} else getSubject(str, func, obj, i + 1, count).then(resolve);
+										} else getSubject(str, func, obj, page + 1, count).then(resolve);
 									// Если возникает ошибка то просто перепрыгиваем
-									}).catch(() => getSubject(str, func, obj, i + 1, count).then(resolve));
+									}).catch(() => getSubject(str, func, obj, page + 1, count).then(resolve));
 								// Сообщаем что ничего не найдено
 								} else resolve(false);
 							}));
@@ -3074,7 +3074,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные пришли, выводим результат
-					if($.isArray(result) && result.length){
+					if(!$.isArray(result) && result.length){
 						// Определяем количество записей
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
