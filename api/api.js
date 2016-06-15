@@ -390,7 +390,7 @@ const anyks = require("./lib.anyks");
 				key:	"subjects"
 			});
 
-
+			key = "address:subjects:house:*"; // address:subjects:house:street:*:9:*
 			console.log("++++++++", key);
 
 			// Получаем список ключей
