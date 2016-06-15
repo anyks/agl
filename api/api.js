@@ -769,6 +769,9 @@ const anyks = require("./lib.anyks");
 				if($.isArray(result) && result.length) resolve(result[0]);
 				// Если данные в кеше не найдены тогда продолжаем искать
 				else {
+					
+					console.log("+++++++");
+
 					// Выполняем поиск идентификатора
 					scheme.findOne({"_id": id}).exec((err, data) => {
 						// Если ошибки нет
@@ -3527,9 +3530,6 @@ const anyks = require("./lib.anyks");
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные пришли, выводим результат
 					if($.isArray(result) && result.length){
-						
-						console.log("+++++++");
-
 						// Определяем количество записей
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
