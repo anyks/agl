@@ -382,22 +382,15 @@ const anyks = require("./lib.anyks");
 			// Ограничиваем максимальный лимит
 			if(limit > 100) limit = 100;
 			// Ключ запроса из Redis
-			let key = createSubjectKey({
+			const key = createSubjectKey({
 				db,
 				parentId,
 				parentType,
 				name:	str,
 				key:	"subjects"
 			});
-
-			key = "address:subjects:house:*"; // address:subjects:house:street:*:9:*
-			console.log("++++++++", key);
-
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
-				
-				console.log("++++++++1", keys);
-
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -2718,7 +2711,7 @@ const anyks = require("./lib.anyks");
 				// Если идентификатор дома не передан то создаем маску
 				if(!$.isset(streetId)) streetId = "*";
 				// Выполняем поиск подсказок в кеше
-				findAddressInCache.call(idObj, str, "house", streetId , "street", 100)
+				findAddressInCache.call(idObj, str, "building", streetId , "street", 100)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
