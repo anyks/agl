@@ -3024,7 +3024,7 @@ const anyks = require("./lib.anyks");
 										if(!$.isset(err) && $.isset(data)
 										&& $.isObject(data)) resolve(data);
 										// Продолжаем дальше если данные не найдены
-										else getDataFromGeocoder(address, result.lightAddress);
+										else getDataFromGeocoder(result.fullAddress, result.lightAddress);
 									});
 								// Продолжаем дальше если данные не найдены
 								} else getDataFromGeocoder(address, result.lightAddress);
