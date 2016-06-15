@@ -465,25 +465,16 @@ const anyks = require("./lib.anyks");
 			 * @param  {Object} callback функция обратного вызова
 			 */
 			const updateDB = (obj, callback) => {
-				
-				console.log("++++++++++++2", obj);
-
 				// Запрашиваем все данные из базы
 				scheme.findOne({_id: obj._id})
 				// Выполняем запрос
 				.exec((err, data) => {
-					
-					console.log("++++++++++++3", data);
-
 					/**
 					 * saveCache Функция сохранения данных в кеше
 					 */
 					const saveCache = () => {
 						// Ключ запроса из Redis
 						const key = getKeyRedisForSubject(obj);
-
-						console.log("++++++++++++4", key, obj);
-
 						// Сохраняем данные в кеше
 						Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
 					};
@@ -542,20 +533,14 @@ const anyks = require("./lib.anyks");
 					arr[i].id = undefined;
 					// Получаем данные из кеша
 					getAddressCache.call(idObj, arr[i]).then(cache => {
-						
-						console.log("++++++++++++-1", cache);
-
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
 						if(!cache || (!$.isArray(cache.gps) || !$.isArray(cache.metro) || !$.isset(cache.timezone))){
 							// Выполняем запрос данных
-							idObj.getAddressFromString({
+							idObj.getAddressByString({
 								"address": address + " " +
 								arr[i].name + " " +
 								arr[i].type
 							}).then(res => {
-								
-								console.log("++++++++++++0", res);
-
 								// Если результат найден
 								if($.isset(res)){
 									// Выполняем сохранение данных
@@ -583,9 +568,6 @@ const anyks = require("./lib.anyks");
 											// Удаляем родительские объекты
 											arr[i].parents = undefined;
 										}
-
-										console.log("++++++++++++1", arr[i]);
-
 										// Если это улица или дом то ищем ближайшие станции метро
 										if((arr[i].contentType === 'city')
 										|| (arr[i].contentType === 'street')
@@ -2919,11 +2901,11 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * getAddressFromString Метод получения данных адреса по строке
+		 * getAddressByString Метод получения данных адреса по строке
 		 * @param  {String}   options.address строка запроса
 		 * @return {Promise}                  промис содержащий объект с адресом
 		 */
-		getAddressFromString({address}){
+		getAddressByString({address}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2967,7 +2949,7 @@ const anyks = require("./lib.anyks");
 								// Если происходит ошибка тогда выходим
 								}).catch(err => {
 									// Выводим ошибку метода
-									idObj.log("parseAnswerGeoCoder in getAddressFromString", err).error();
+									idObj.log("parseAnswerGeoCoder in getAddressByString", err).error();
 									// Выходим
 									resolve(false);
 								});
@@ -3048,7 +3030,7 @@ const anyks = require("./lib.anyks");
 						// Если происходит ошибка тогда выходим
 						}).catch(err => {
 							// Выводим ошибку метода
-							idObj.log("parseAddress in getAddressFromString", err).error();
+							idObj.log("parseAddress in getAddressByString", err).error();
 							// Выходим
 							getDataFromGeocoder(address);
 						});
@@ -3056,7 +3038,7 @@ const anyks = require("./lib.anyks");
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log("getRedis in getAddressFromString", err).error();
+					idObj.log("getRedis in getAddressByString", err).error();
 					// Выходим
 					resolve(false);
 				});

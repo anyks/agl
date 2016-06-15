@@ -30,11 +30,11 @@ socket.onerror = function(error){
 
 // socket.send(JSON.stringify({"action": "getTimezone", "query": {"lat":"55.870031", "lng":"41.772074"}}));
 
-// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
+// socket.send(JSON.stringify({"action": "getAddressByString", "query": {"address": "Россия, Москва город, Коммунарка поселок, Липовый парк улица, 10К2"}}));
 
-// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
+// socket.send(JSON.stringify({"action": "getAddressByString", "query": {"address": "Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"}}));
 
-// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
+// socket.send(JSON.stringify({"action": "getAddressByString", "query": {"address": "кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
 
 // socket.send(JSON.stringify({"action": "updateMetro"}));
 // socket.send(JSON.stringify({"action": "findCity", "query": {"str":"Москва"}}));
@@ -52,7 +52,7 @@ socket.onerror = function(error){
 
 // socket.send(JSON.stringify({"action": "getCitiesByGPS", query: {"lat":"55.870031", "lng":"41.772074"}}));
 //
-//socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "Москва, Чечерский проезд 126, к.2"}}));
+//socket.send(JSON.stringify({"action": "getAddressByString", "query": {"address": "Москва, Чечерский проезд 126, к.2"}}));
 //
 //
 // socket.send(JSON.stringify({"action": "updateCountries", "query": {updateKey: "sekh234khk234hk22"}}));
@@ -112,12 +112,12 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getDistricts", "query": {"page": 1, "limit": 10, regionId: '4100000000000', type: 'Край'}}));
 //
 // socket.send(JSON.stringify({"action": "getCities", "query": {"page": 1, "limit": 10, regionId: "3700000000000"}}));
+// socket.send(JSON.stringify({"action": "getCities", "query": {"page": 1, "limit": 10, districtId: "3701900000000"}}));
+// socket.send(JSON.stringify({"action": "getStreets", "query": {"page": 1, "limit": 10, cityId: '3701900100000'}}));
 //
 //
-// getCities({regionId, districtId, type, page = 1, limit = 10})
 //
-//
-//
+//getStreets({cityId, type, page = 1, limit = 10})
 //
 //
 //
