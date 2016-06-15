@@ -2505,6 +2505,10 @@ const anyks = require("./lib.anyks");
 								const getData = function * (){
 									// Формируем параметры запроса
 									let str, country, region, district, city, street, house;
+
+
+									console.log("+++++++", address);
+
 									// Если страна найдена
 									if($.isset(address.country)){
 										// Присваиваем параметр поиска
