@@ -107,9 +107,9 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getAddressByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address":'Россия, Владимирская область, Селивановский район, поселок городского типа Красная Горбатка, Комсомольская улица, 84'}}));
 //
-// socket.send(JSON.stringify({"action": "getCountries", "query": {"page": 0, "limit": 10}}));
-// socket.send(JSON.stringify({"action": "getRegions", "query": {"page": 0, "limit": 10}}));
-//
+// socket.send(JSON.stringify({"action": "getCountries", "query": {"page": 1, "limit": 10}}));
+// socket.send(JSON.stringify({"action": "getRegions", "query": {"page": 1, "limit": 10}}));
+// socket.send(JSON.stringify({"action": "getDistricts", "query": {"page": 1, "limit": 10, regionId: '4100000000000', type: 'Край'}}));
 //
 //
 //
