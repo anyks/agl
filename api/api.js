@@ -814,7 +814,7 @@ const anyks = require("./lib.anyks");
 			// Ищем данные в кеше
 			getRedisByMaskKey.call(idObj, key).then(result => {
 				// Если данные в кеше сть тогда выводим их
-				if(!$.isArray(result) && result.length) resolve(result[0]);
+				if($.isArray(result) && result.length) resolve(result[0]);
 				// Если данные в кеше не найдены тогда продолжаем искать
 				else {
 					
