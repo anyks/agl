@@ -1829,8 +1829,14 @@ const anyks = require("./lib.anyks");
 				const ContentType	= 'region';
 				const WithParent	= 0;
 				const Limit			= limit;
+
+				console.log("+++++++++++Region1", ContentName, ContentType, cacheParentId, cacheParentType);
+
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, null, null, Limit).then(result => {
+
+					console.log("+++++++++++Region2", result);
+
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -1878,8 +1884,14 @@ const anyks = require("./lib.anyks");
 				const ParentId		= ($.isset(regionId) ? regionId : undefined);
 				const WithParent	= 1;
 				const Limit			= limit;
+
+				console.log("+++++++++++District1", ContentName, ContentType, cacheParentId, cacheParentType);
+
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
+					
+					console.log("+++++++++++District2", result);
+
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -1939,8 +1951,14 @@ const anyks = require("./lib.anyks");
 				// Определяем ключ кеша
 				const cacheParentType	= ($.isset(regionId) ? '*'							: ParentType);
 				const cacheParentId		= ($.isset(regionId) ? regionId.substr(0, 2) + "*"	: ParentId);
+
+				console.log("+++++++++++City1", ContentName, ContentType, cacheParentId, cacheParentType);
+
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, cacheParentId, cacheParentType, Limit).then(result => {
+					
+					console.log("+++++++++++City2", result);
+
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -1991,10 +2009,13 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 1;
 				const Limit			= limit;
 
-				console.log("+++++++++++", ContentName, ContentType, ParentType, ParentId, Limit);
+				console.log("+++++++++++Street1", ContentName, ContentType, ParentType, ParentId);
 
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
+					
+					console.log("+++++++++++Street2", result);
+
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -2459,7 +2480,7 @@ const anyks = require("./lib.anyks");
 				// Ищем данные в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные в кеше сть тогда выводим их
-					if($.isset(cache)) resolve(JSON.parse(cache));
+					if(!$.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
 					else {
 						// Выполняем интерпретацию данных
