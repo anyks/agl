@@ -2638,8 +2638,10 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Если идентификатор региона не передан то создаем маску
+				if(!$.isset(regionId)) regionId = "*";
 				// Выполняем поиск подсказок в кеше
-				findAddressInCache.call(idObj, str, "district", regionId, "*", 100)
+				findAddressInCache.call(idObj, str, "district", regionId, "region", 100)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
@@ -2660,9 +2662,10 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Определяем идентификатор
-				const id = ($.isset(regionId) ? regionId : ($.isset(districtId) ? districtId : undefined));
+				const id	= ($.isset(regionId) ? regionId : ($.isset(districtId) ? districtId : "*"));
+				const type	= ($.isset(regionId) ? "region" : ($.isset(districtId) ? "district" : "*"));
 				// Выполняем поиск подсказок в кеше
-				findAddressInCache.call(idObj, str, "city", id , "*", 100)
+				findAddressInCache.call(idObj, str, "city", id , type, 100)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
@@ -2682,8 +2685,10 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Если идентификатор улицы не передан то создаем маску
+				if(!$.isset(cityId)) cityId = "*";
 				// Выполняем поиск подсказок в кеше
-				findAddressInCache.call(idObj, str, "street", cityId , "*", 100)
+				findAddressInCache.call(idObj, str, "street", cityId , "city", 100)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
@@ -2703,8 +2708,10 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Если идентификатор дома не передан то создаем маску
+				if(!$.isset(streetId)) streetId = "*";
 				// Выполняем поиск подсказок в кеше
-				findAddressInCache.call(idObj, str, "house", streetId , "*", 100)
+				findAddressInCache.call(idObj, str, "house", streetId , "street", 100)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
