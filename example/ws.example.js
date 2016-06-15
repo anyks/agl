@@ -100,10 +100,9 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "findMetroByHouseId", "query": {"id": '7700000000009530046'}}));
 //
 // socket.send(JSON.stringify({"action": "findAddress", "query": {"address": 'площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12'}}));
+// socket.send(JSON.stringify({"action": "findAddress", "query": {"address": 'Ив. обл., г.Шуя, ул. Свердлова, 96'}}));
 //
-//
-//
-//
+// socket.send(JSON.stringify({"action": "hintCountries", "query": {"str": 'Рос'}}));
 //
 //
 //

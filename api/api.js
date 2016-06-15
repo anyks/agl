@@ -2597,7 +2597,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Выполняем поиск подсказок в кеше
-				findAddressInCache.call(idObj, str, "country", "*", "*", 100)
+				findAddressInCache.call(idObj, str, "country", null, null, 100)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
 				.then(resolve).catch(err => {
 					// Выводим ошибку метода
