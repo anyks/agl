@@ -775,15 +775,9 @@ const anyks = require("./lib.anyks");
 					// Выполняем поиск идентификатора
 					scheme.findOne({"_id": id}).exec((err, data) => {
 						// Если ошибки нет
-						if(!$.isset(err) && $.isset(data)){
-							// Ключ запроса из Redis
-							const key = getKeyRedisForSubject(data);
-							// Сохраняем данные в кеше
-							Agl.setRedis.call(idObj, "set", key, data).then();
-							// Выводим результат
-							resolve(data);
+						if(!$.isset(err) && $.isset(data)) resolve(data);
 						// Выводим в консоль сообщение что данные не найдены
-						} else {
+						else {
 							// Выводим сообщение об ошибке
 							idObj.log("поиск по id не дал результатов:", "id =", id, err, data).error();
 							// Выводим результат
