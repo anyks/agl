@@ -2971,7 +2971,7 @@ const anyks = require("./lib.anyks");
 									err => idObj.log('получения данных с google api', err).error()
 								) : false);
 
-								console.log("+++++++++++++++", google);
+								console.log("+++++++++++++++", yandex, google.status);
 
 								// Выполняем запрос с геокодера OpenStreet Maps
 								const osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
