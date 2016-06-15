@@ -3074,7 +3074,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(result => {
 					// Если данные пришли, выводим результат
-					if(!$.isArray(result) && result.length){
+					if($.isArray(result) && result.length){
 						// Определяем количество записей
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
@@ -3141,7 +3141,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(data => {
 					// Если данные пришли, выводим результат
-					if($.isArray(data) && data.length){
+					if(!$.isArray(data) && data.length){
 						// Результат поиска данных
 						let result = [];
 						// Если тип данных указан
