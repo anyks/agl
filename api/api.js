@@ -2483,8 +2483,14 @@ const anyks = require("./lib.anyks");
 					if(!$.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
 					else {
+						
+						console.log("++++++++++", address);
+
 						// Выполняем интерпретацию данных
 						idObj.parseAddress({address}).then(address => {
+							
+							console.log("++++++++++1", address);
+
 							// Если адрес интерпретирован удачно
 							if($.isset(address)){
 								/**
