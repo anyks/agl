@@ -382,7 +382,7 @@ const anyks = require("./lib.anyks");
 			// Ограничиваем максимальный лимит
 			if(limit > 100) limit = 100;
 			// Ключ запроса из Redis
-			const key = createSubjectKey({
+			let key = createSubjectKey({
 				db,
 				parentId,
 				parentType,
