@@ -1937,7 +1937,7 @@ const anyks = require("./lib.anyks");
 				const WithParent	= 1;
 				const Limit			= limit;
 				// Определяем ключ кеша
-				const cacheParentType	= ($.isset(regionId) ? '*'							: ParentType);
+				const cacheParentType	= ($.isset(regionId) ? "*"							: ParentType);
 				const cacheParentId		= ($.isset(regionId) ? regionId.substr(0, 2) + "*"	: ParentId);
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, cacheParentId, cacheParentType, Limit).then(result => {
@@ -2662,7 +2662,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Определяем идентификатор
-				const type	= ($.isset(regionId) ? "region"						: ($.isset(districtId) ? "district" : "*"));
+				const type	= ($.isset(regionId) ? "*"							: ($.isset(districtId) ? "district" : "*"));
 				const id	= ($.isset(regionId) ? regionId.substr(0, 2) + "*"	: ($.isset(districtId) ? districtId : "*"));
 				// Выполняем поиск подсказок в кеше
 				findAddressInCache.call(idObj, str, "city", id , type, 100)
