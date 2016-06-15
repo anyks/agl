@@ -465,16 +465,25 @@ const anyks = require("./lib.anyks");
 			 * @param  {Object} callback функция обратного вызова
 			 */
 			const updateDB = (obj, callback) => {
+				
+				console.log("++++++++++++2", obj);
+
 				// Запрашиваем все данные из базы
 				scheme.findOne({_id: obj._id})
 				// Выполняем запрос
 				.exec((err, data) => {
+					
+					console.log("++++++++++++3", data);
+
 					/**
 					 * saveCache Функция сохранения данных в кеше
 					 */
 					const saveCache = () => {
 						// Ключ запроса из Redis
 						const key = getKeyRedisForSubject(obj);
+
+						console.log("++++++++++++4", key, obj);
+
 						// Сохраняем данные в кеше
 						Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
 					};
@@ -568,6 +577,9 @@ const anyks = require("./lib.anyks");
 											// Удаляем родительские объекты
 											arr[i].parents = undefined;
 										}
+
+										console.log("++++++++++++1", arr[i]);
+
 										// Если это улица или дом то ищем ближайшие станции метро
 										if((arr[i].contentType === 'city')
 										|| (arr[i].contentType === 'street')

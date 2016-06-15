@@ -111,10 +111,10 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"page": 1, "limit": 10}}));
 // socket.send(JSON.stringify({"action": "getDistricts", "query": {"page": 1, "limit": 10, regionId: '4100000000000', type: 'Край'}}));
 //
+// socket.send(JSON.stringify({"action": "getCities", "query": {"page": 1, "limit": 10, regionId: "3700000000000"}}));
 //
 //
-//
-//
+// getCities({regionId, districtId, type, page = 1, limit = 10})
 //
 //
 //
