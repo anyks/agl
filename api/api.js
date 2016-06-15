@@ -3141,7 +3141,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(data => {
 					// Если данные пришли, выводим результат
-					if(!$.isArray(data) && data.length){
+					if($.isArray(data) && data.length){
 						// Результат поиска данных
 						let result = [];
 						// Если тип данных указан
@@ -3229,7 +3229,7 @@ const anyks = require("./lib.anyks");
 				// Считываем данные из кеша
 				getRedisByMaskKey.call(idObj, key).then(data => {
 					// Если данные пришли, выводим результат
-					if($.isArray(data) && data.length){
+					if(!$.isArray(data) && data.length){
 						// Результат поиска данных
 						let result = [];
 						// Если тип данных указан
