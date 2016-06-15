@@ -208,8 +208,10 @@ const anyks = require("./lib.anyks");
 						let lat			= $.fnShowProps(data, "lat");
 						let lng			= $.fnShowProps(data, "lon");
 						let city		= $.fnShowProps(data, "city");
+						let town		= $.fnShowProps(data, "town");
 						let code		= $.fnShowProps(data, "country_code");
 						let street		= $.fnShowProps(data, "road");
+						let county		= $.fnShowProps(data, "county");
 						let region		= $.fnShowProps(data, "state");
 						let country		= $.fnShowProps(data, "country");
 						let district	= $.fnShowProps(data, "state_district");
@@ -218,6 +220,8 @@ const anyks = require("./lib.anyks");
 						let zip			= parseInt($.fnShowProps(data, "postcode"), 10);
 						let gps			= [parseFloat(lng), parseFloat(lat)];
 						let _id			= idObj.generateKey(description);
+						// Если город не найден ищем его еще раз
+						if(!$.isset(city)) city = town;
 						// Формируем объект
 						result = {
 							_id, lat, lng, gps,
