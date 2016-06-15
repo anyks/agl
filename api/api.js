@@ -2939,7 +2939,7 @@ const anyks = require("./lib.anyks");
 								'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 							].map(val => val.replace("$address", encodeURI(address)));
 							// Заменяем адрес OSM если он существует
-							if($.isset(osmAddress)) urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
+							if($.isset(osmAddress)) urlsGeo[2] = urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
 							// Получаем объект запроса с геокодера
 							const init = obj => {
 								// Выполняем обработку результата геокодера
@@ -2979,13 +2979,10 @@ const anyks = require("./lib.anyks");
 								// Если лимит запросов у гугла исчерпан тогда запоминаем это
 								if($.isset(google) && (google.status === "OVER_QUERY_LIMIT")) google = false;
 								// Выполняем запрос с геокодера OpenStreet Maps
-								let osm = (!google && !yandex ? yield fetch('http://nominatim.openstreetmap.org/search?q=' + encodeURI(osmAddress) + '&format=json&addressdetails=1&limit=1').then( // urlsGeo[2]
+								let osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm api', err).error()
 								) : false);
-
-								console.log("++++++++++++", osmAddress, osm);
-
 								// Создаем объект ответа
 								const obj = (
 									yandex ? {data: yandex, status: "yandex"} :
