@@ -3071,8 +3071,10 @@ const anyks = require("./lib.anyks");
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						const data = result.splice(page * limit, limit);
+						// Увеличиваем значение страницы
+						page += 1;
 						// Выводим результат
-						resolve({page + 1, limit, count, data});
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Запрашиваем все данные из базы
@@ -3090,8 +3092,10 @@ const anyks = require("./lib.anyks");
 									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Увеличиваем значение страницы
+									page += 1;
 									// Выводим результат
-									resolve({page + 1, limit, count, data});
+									resolve({page, limit, count, data});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3145,8 +3149,10 @@ const anyks = require("./lib.anyks");
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						data = result.splice(page * limit, limit);
+						// Увеличиваем значение страницы
+						page += 1;
 						// Выводим результат
-						resolve({page + 1, limit, count, data});
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3168,8 +3174,10 @@ const anyks = require("./lib.anyks");
 									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Увеличиваем значение страницы
+									page += 1;
 									// Выводим результат
-									resolve({page + 1, limit, count, data});
+									resolve({page, limit, count, data});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3229,8 +3237,10 @@ const anyks = require("./lib.anyks");
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						data = result.splice(page * limit, limit);
+						// Увеличиваем значение страницы
+						page += 1;
 						// Выводим результат
-						resolve({page + 1, limit, count, data});
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3253,8 +3263,10 @@ const anyks = require("./lib.anyks");
 									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Увеличиваем значение страницы
+									page += 1;
 									// Выводим результат
-									resolve({page + 1, limit, count, data});
+									resolve({page, limit, count, data});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3319,8 +3331,10 @@ const anyks = require("./lib.anyks");
 									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Увеличиваем значение страницы
+									page += 1;
 									// Формируем объект
-									const obj = {page + 1, limit, count, data};
+									const obj = {page, limit, count, data};
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
@@ -3387,8 +3401,10 @@ const anyks = require("./lib.anyks");
 									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Увеличиваем значение страницы
+									page += 1;
 									// Формируем объект
-									const obj = {page + 1, limit, count, data};
+									const obj = {page, limit, count, data};
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
@@ -3455,8 +3471,10 @@ const anyks = require("./lib.anyks");
 									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
+									// Увеличиваем значение страницы
+									page += 1;
 									// Формируем объект
-									const obj = {page + 1, limit, count, data};
+									const obj = {page, limit, count, data};
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
@@ -3505,8 +3523,10 @@ const anyks = require("./lib.anyks");
 						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						const data = result.splice(page * limit, limit);
+						// Увеличиваем значение страницы
+						page += 1;
 						// Выводим результат
-						resolve({page + 1, limit, count, data});
+						resolve({page, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3539,8 +3559,10 @@ const anyks = require("./lib.anyks");
 										// Добавляем в массив наш объект метро
 										metro.push(createMetroObject(station.cityId, station.lineId, station));
 									});
+									// Увеличиваем значение страницы
+									page += 1;
 									// Выводим результат
-									resolve({page + 1, limit, count, data: metro});
+									resolve({page, limit, count, data: metro});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
