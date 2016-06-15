@@ -2510,14 +2510,18 @@ const anyks = require("./lib.anyks");
 										// Присваиваем параметр поиска
 										str = address.country.name;
 										// Запрашиваем данные страны
-										country = yield findSubject("findCountry", {str})[0];
+										country = yield findSubject("findCountry", {str});
+										// Если страна существует тогда изменяем ее
+										if($.isArray(country) && country.length) country = country[0];
 									}
 									// Если регион найден
 									if($.isset(address.region)){
 										// Присваиваем параметр поиска
 										str = address.region.name;
 										// Запрашиваем данные региона
-										region = yield findSubject("findRegion", {str})[0];
+										region = yield findSubject("findRegion", {str});
+										// Если регион существует тогда изменяем его
+										if($.isArray(region) && region.length) region = region[0];
 									}
 									// Если район найден
 									if($.isset(address.district)){
@@ -2527,6 +2531,8 @@ const anyks = require("./lib.anyks");
 										const regionId = ($.isset(region) ? region._id : undefined);
 										// Запрашиваем данные района
 										district = yield findSubject("findDistrict", {str, regionId})[0];
+										// Если район существует тогда изменяем его
+										if($.isArray(district) && district.length) district = district[0];
 									}
 									// Если город найден
 									if($.isset(address.city)){
@@ -2537,7 +2543,9 @@ const anyks = require("./lib.anyks");
 										// Получаем идентификатор района
 										const districtId = ($.isset(district) ? district._id : undefined);
 										// Запрашиваем данные города
-										city = yield findSubject("findCity", {str, regionId, districtId})[0];
+										city = yield findSubject("findCity", {str, regionId, districtId});
+										// Если город существует тогда изменяем его
+										if($.isArray(city) && city.length) city = city[0];
 									}
 									// Если улица найдена
 									if($.isset(address.street) && $.isset(city)){
@@ -2546,7 +2554,9 @@ const anyks = require("./lib.anyks");
 										// Получаем идентификатор города
 										const cityId = city._id;
 										// Запрашиваем данные улицы
-										street = yield findSubject("findStreet", {str, cityId})[0];
+										street = yield findSubject("findStreet", {str, cityId});
+										// Если улица существует тогда изменяем её
+										if($.isArray(street) && street.length) street = street[0];
 									}
 									// Если дом найден
 									if($.isset(address.house) && $.isset(street)){
@@ -2555,7 +2565,9 @@ const anyks = require("./lib.anyks");
 										// Получаем идентификатор улицы
 										const streetId = street._id;
 										// Запрашиваем данные дома
-										house = yield findSubject("findHouse", {str, streetId})[0];
+										house = yield findSubject("findHouse", {str, streetId});
+										// Если дом существует тогда изменяем его
+										if($.isArray(house) && house.length) house = house[0];
 									}
 									// Формируем объект с результатами поиска
 									const result = {country, region, district, city, street, house};
