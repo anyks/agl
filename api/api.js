@@ -1100,6 +1100,17 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Определяем копирайт
+				let getCopyYuear = idObj.copyright.match(/\-\s*(\d{4})/i);
+				// Определяем текущий год
+				let getCurYuear = (new Date()).getFullYear();
+				// Сравниваем года, если текущий год выше следующего то изменяем копирайт
+				if($.isArray(getCopyYuear)
+				&& (parseInt(getCopyYuear[1]) < getCurYuear)){
+					// Заменяем копирайт
+					idObj.copyright = idObj.copyright
+					.replace(getCopyYuear[0], getCopyYuear[1] + " - " + getCurYuear);
+				}
 				// Выводим результат
 				const object = {
 					version:	idObj.version,
@@ -3672,7 +3683,7 @@ const anyks = require("./lib.anyks");
 				// Ключ запроса из Redis
 				const key = createSubjectKey({
 					id,
-					db:			"house",
+					db:			"building",
 					key:		"subjects",
 					parentId:	"*",
 					parentType:	"*"
