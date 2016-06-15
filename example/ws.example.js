@@ -26,10 +26,6 @@ socket.onerror = function(error){
 //
 // socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "г.Шуя, площадь комсомольская, д.12"}}));
 
-// socket.send(JSON.stringify({"action": "initEmptyDatabases"}));
-
-// socket.send(JSON.stringify({"action": "updateMetroCity"}));
-
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"limit": 100}}));
 
 // socket.send(JSON.stringify({"action": "getTimezone", "query": {"lat":"55.870031", "lng":"41.772074"}}));
@@ -64,6 +60,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "updateDistricts", "query": {updateKey: "sekh234khk234hk22"}}));
 // socket.send(JSON.stringify({"action": "updateMetro", "query": {updateKey: "sekh234khk234hk22"}}));
 // socket.send(JSON.stringify({"action": "updateMetroCity", "query": {updateKey: "sekh234khk234hk22"}}));
+// socket.send(JSON.stringify({"action": "initEmptyDatabases", "query": {updateKey: "sekh234khk234hk22"}}));
 //
 //
 // socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
@@ -106,6 +103,28 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "hintMetro", "query": {"str": 'Рум'}})); // hintMetro({str, streetId, houseId})
 //
 // socket.send(JSON.stringify({"action": "getVersionSystem"}));
+//
+// socket.send(JSON.stringify({"action": "getAddressByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
+// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address":'Россия, Владимирская область, Селивановский район, поселок городского типа Красная Горбатка, Комсомольская улица, 84'}}));
+//
+// socket.send(JSON.stringify({"action": "getCountries", "query": {"page": 0, "limit": 10}}));
+// socket.send(JSON.stringify({"action": "getRegions", "query": {"page": 0, "limit": 10}}));
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //

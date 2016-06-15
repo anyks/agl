@@ -3045,11 +3045,13 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  options.limit количество результатов к выдаче
 		 * @return {Promise}               промис результата
 		 */
-		getCountries({page = 0, limit = 10}){
+		getCountries({page = 1, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Уменьшаем значение страницы
+				page -= 1;
 				// Преобразуем размер лимита
 				limit = Math.ceil(limit);
 				// Ограничиваем максимальный лимит
@@ -3061,11 +3063,11 @@ const anyks = require("./lib.anyks");
 					// Если данные пришли, выводим результат
 					if($.isArray(result) && result.length){
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						const data = result.splice(page * limit, limit);
 						// Выводим результат
-						resolve({page, limit, count, data});
+						resolve({page + 1, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Запрашиваем все данные из базы
@@ -3080,11 +3082,11 @@ const anyks = require("./lib.anyks");
 								// Запрашиваем количество записей
 								idObj.schemes.Countries.count({}, (err, len) => {
 									// Определяем количество записей
-									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
+									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Выводим результат
-									resolve({data, page, limit, count});
+									resolve({page + 1, limit, count, data});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3106,11 +3108,13 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  options.limit количество результатов к выдаче
 		 * @return {Promise}               промис результата
 		 */
-		getRegions({type, page = 0, limit = 10}){
+		getRegions({type, page = 1, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Уменьшаем значение страницы
+				page -= 1;
 				// Преобразуем размер лимита
 				limit = Math.ceil(limit);
 				// Ограничиваем максимальный лимит
@@ -3132,13 +3136,12 @@ const anyks = require("./lib.anyks");
 							});
 						// Иначе просто приравниваем массив
 						} else result = data;
-
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						data = result.splice(page * limit, limit);
 						// Выводим результат
-						resolve({page, limit, count, data});
+						resolve({page + 1, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3157,11 +3160,11 @@ const anyks = require("./lib.anyks");
 								// Запрашиваем количество записей
 								idObj.schemes.Regions.count(query, (err, len) => {
 									// Определяем количество записей
-									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
+									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Выводим результат
-									resolve({data, page, limit, count});
+									resolve({page + 1, limit, count, data});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3184,11 +3187,13 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  options.limit     количество результатов к выдаче
 		 * @return {Promise}                   промис результата
 		 */
-		getDistricts({regionId, type, page = 0, limit = 10}){
+		getDistricts({regionId, type, page = 1, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Уменьшаем значение страницы
+				page -= 1;
 				// Преобразуем размер лимита
 				limit = Math.ceil(limit);
 				// Ограничиваем максимальный лимит
@@ -3216,11 +3221,11 @@ const anyks = require("./lib.anyks");
 						// Иначе просто приравниваем массив
 						} else result = data;
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						data = result.splice(page * limit, limit);
 						// Выводим результат
-						resolve({page, limit, count, data});
+						resolve({page + 1, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3240,11 +3245,11 @@ const anyks = require("./lib.anyks");
 								// Запрашиваем количество записей
 								idObj.schemes.Districts.count(query, (err, len) => {
 									// Определяем количество записей
-									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
+									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Выводим результат
-									resolve({data, page, limit, count});
+									resolve({page + 1, limit, count, data});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
@@ -3268,11 +3273,13 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  options.limit       количество результатов к выдаче
 		 * @return {Promise}                     промис результата
 		 */
-		getCities({regionId, districtId, type, page = 0, limit = 10}){
+		getCities({regionId, districtId, type, page = 1, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Уменьшаем значение страницы
+				page -= 1;
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
@@ -3304,11 +3311,11 @@ const anyks = require("./lib.anyks");
 								// Запрашиваем количество записей
 								idObj.schemes.Cities.count(query, (err, len) => {
 									// Определяем количество записей
-									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
+									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Формируем объект
-									const obj = {data, page, limit, count};
+									const obj = {page + 1, limit, count, data};
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
@@ -3336,11 +3343,13 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  options.limit     количество результатов к выдаче
 		 * @return {Promise}                   промис результата
 		 */
-		getStreets({cityId, type, page = 0, limit = 10}){
+		getStreets({cityId, type, page = 1, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Уменьшаем значение страницы
+				page -= 1;
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
@@ -3370,11 +3379,11 @@ const anyks = require("./lib.anyks");
 								// Запрашиваем количество записей
 								idObj.schemes.Streets.count(query, (err, len) => {
 									// Определяем количество записей
-									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
+									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Формируем объект
-									const obj = {data, page, limit, count};
+									const obj = {page + 1, limit, count, data};
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
@@ -3402,11 +3411,13 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  options.limit     количество результатов к выдаче
 		 * @return {Promise}                   промис результата
 		 */
-		getHouses({streetId, type, page = 0, limit = 10}){
+		getHouses({streetId, type, page = 1, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Уменьшаем значение страницы
+				page -= 1;
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Ключ запроса
@@ -3436,11 +3447,11 @@ const anyks = require("./lib.anyks");
 								// Запрашиваем количество записей
 								idObj.schemes.Houses.count(query, (err, len) => {
 									// Определяем количество записей
-									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
+									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Формируем объект
-									const obj = {data, page, limit, count};
+									const obj = {page + 1, limit, count, data};
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 									// Выводим результат
@@ -3468,11 +3479,13 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number}  options.limit   количество результатов к выдаче
 		 * @return {Promise}                 промис результата
 		 */
-		getMetro({cityId, lineId, page = 0, limit = 10}){
+		getMetro({cityId, lineId, page = 1, limit = 10}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Уменьшаем значение страницы
+				page -= 1;
 				// Преобразуем размер лимита
 				limit = Math.ceil(limit);
 				// Ограничиваем максимальный лимит
@@ -3484,11 +3497,11 @@ const anyks = require("./lib.anyks");
 					// Если данные пришли, выводим результат
 					if($.isArray(result) && result.length){
 						// Определяем количество записей
-						const count = (result.length > limit ? Math.floor(result.length / limit) : 1);
+						const count = (result.length > limit ? Math.ceil(result.length / limit) : 1);
 						// Если размер массива больше указанного лимита то уменьшаем размер данных
 						const data = result.splice(page * limit, limit);
 						// Выводим результат
-						resolve({page, limit, count, data});
+						resolve({page + 1, limit, count, data});
 					// Если данные не найдены, то ищем их в базе
 					} else {
 						// Формируем параметры запроса
@@ -3511,7 +3524,7 @@ const anyks = require("./lib.anyks");
 								// Запрашиваем количество записей
 								idObj.schemes.Metro_stations.count(query, (err, len) => {
 									// Определяем количество записей
-									let count = (len > limit ? Math.floor(len / limit) : ($.isset(len) ? 1 : 0));
+									let count = (len > limit ? Math.ceil(len / limit) : ($.isset(len) ? 1 : 0));
 									// Если произошла ошибка то выводим в консоль
 									if($.isset(err)) idObj.log("чтение из базы данных", err).error();
 									// Объект с данными метро
@@ -3522,7 +3535,7 @@ const anyks = require("./lib.anyks");
 										metro.push(createMetroObject(station.cityId, station.lineId, station));
 									});
 									// Выводим результат
-									resolve({data: metro, page, limit, count});
+									resolve({page + 1, limit, count, data: metro});
 								});
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
