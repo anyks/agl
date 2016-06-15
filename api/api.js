@@ -1120,13 +1120,11 @@ const anyks = require("./lib.anyks");
 				};
 				// Выводи данные в консоль
 				idObj.log(
-					"\x1B[31m\x1B[1m\u00A9"
+					"\x1B[31m\x1B[1m"
 					.anyks_clearColor(idObj.debug.console),
-					"ver.",
-					idObj.version,
-					idObj.copyright,
-					"\x1B[0m"
-					.anyks_clearColor(idObj.debug.console)
+					"ver.", idObj.version,
+					"\u00A9", idObj.copyright,
+					"\x1B[0m".anyks_clearColor(idObj.debug.console)
 				).info();
 				// Выводим результат
 				resolve(object);
