@@ -2662,8 +2662,8 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Определяем идентификатор
-				const id	= ($.isset(regionId) ? regionId : ($.isset(districtId) ? districtId : "*"));
-				const type	= ($.isset(regionId) ? "region" : ($.isset(districtId) ? "district" : "*"));
+				const type	= ($.isset(regionId) ? "region"						: ($.isset(districtId) ? "district" : "*"));
+				const id	= ($.isset(regionId) ? regionId.substr(0, 2) + "*"	: ($.isset(districtId) ? districtId : "*"));
 				// Выполняем поиск подсказок в кеше
 				findAddressInCache.call(idObj, str, "city", id , type, 100)
 				// Выводим результат а если произошла ошибка то сообщаем об этом
