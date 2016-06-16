@@ -3744,9 +3744,15 @@ const anyks = require("./lib.anyks");
 					// Получаем страну
 					let address = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.country) ? name.address.country : "");
+
+					console.log("+++++++1", address);
+
 					// Получаем регион
 					address += ($.isset(name) && $.isset(name.address)
-					&& $.isset(name.address.region) ? + ", " + name.address.region : "");
+					&& $.isset(name.address.region) ? ", " + name.address.region : "");
+
+					console.log("+++++++2", address);
+
 					// Получаем город
 					address += ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.city) ? ", " + name.address.city : "");
