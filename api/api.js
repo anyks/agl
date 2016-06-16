@@ -3937,8 +3937,11 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.region) ? obj.address.region : false);
-					// Выводим результат
-					resolve(result);
+					// Запрашиваем данные региона
+					if(result) idObj.findRegion({str: result})
+					.then(resolve).catch(() => resolve(false));
+					// Выводим результат так как он есть
+					else resolve(result);
 				// Выполняем поиск региона
 				}).catch(err => {
 					// Выводим ошибку метода
