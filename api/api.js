@@ -3642,7 +3642,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем парсинг строки адреса
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
 					// Получаем результат
-					address = ($.isset(address) && $.isset(address.country) ? address.country.name : false);
+					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
 					// Выполняем поиск страны
 					let country = ($.isset(address) ? yield idObj.findCountry({str: address, limit: 1}) : false);
 					// Получаем результат
@@ -3677,7 +3677,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем парсинг строки адреса
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
 					// Получаем результат
-					address = ($.isset(address) && $.isset(address.region) ? address.region.name : false);
+					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
 					// Выполняем поиск региона
 					let region = ($.isset(address) ? yield idObj.findRegion({str: address, limit: 1}) : false);
 					// Получаем результат
@@ -3712,7 +3712,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем парсинг строки адреса
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
 					// Получаем результат
-					address = ($.isset(address) && $.isset(address.district) ? address.district.name : false);
+					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
 					// Выполняем поиск района
 					let district = ($.isset(address) ? yield idObj.findDistrict({str: address, limit: 1}) : false);
 					// Получаем результат
@@ -3744,16 +3744,13 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					name = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.city) ? name.address.city : false);
-
-					console.log("++++++1", name);
-
 					// Выполняем парсинг строки адреса
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
 
 					console.log("++++++2", address);
 
 					// Получаем результат
-					address = ($.isset(address) && $.isset(address.city) ? address.city.name : false);
+					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
 					// Выполняем поиск города
 					let city = ($.isset(address) ? yield idObj.findCity({str: address, limit: 1}) : false);
 
