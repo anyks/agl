@@ -3857,7 +3857,7 @@ const anyks = require("./lib.anyks");
 								// Удаляем статус
 								json.status = undefined;
 								// Отправляем в Redis на час
-								Agl.setRedis.call(idObj, "set", key, json, 3600).then();
+								//Agl.setRedis.call(idObj, "set", key, json, 3600).then();
 								// Выводим результат
 								resolve(json);
 							// Сообщаем что ничего не найдено
