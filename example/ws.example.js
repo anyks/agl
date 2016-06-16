@@ -61,6 +61,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "updateMetro", "query": {updateKey: "sekh234khk234hk22"}}));
 // socket.send(JSON.stringify({"action": "updateMetroCity", "query": {updateKey: "sekh234khk234hk22"}}));
 // socket.send(JSON.stringify({"action": "initEmptyDatabases", "query": {updateKey: "sekh234khk234hk22"}}));
+// socket.send(JSON.stringify({"action": "updateTimeZones", "query": {updateKey: "sekh234khk234hk22"}}));
 //
 //
 // socket.send(JSON.stringify({"action": "parseAddress", query: {"address":"кв.101, площадь Комсомольская, Ивановская обл.,стр.Россия,г.Шуя, дом 12"}}));
@@ -129,6 +130,9 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getTimezoneByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
 //
 // socket.send(JSON.stringify({"action": "getCountriesByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
+// socket.send(JSON.stringify({"action": "getStreetsByGPS", "query": {"lat":"56.8348879", "lng":"41.3841305"}}));
+// socket.send(JSON.stringify({"action": "getHousesByGPS", "query": {"lat":"56.8348879", "lng":"41.3841305"}}));
+// socket.send(JSON.stringify({"action": "getMetroByGPS", "query": {"lat":"56.313933", "lng":"43.99482"}}));
 //
 //
 //
