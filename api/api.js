@@ -1389,6 +1389,9 @@ const anyks = require("./lib.anyks");
 								// Исправляем название и тип
 								data.name = data.name.anyks_trim().anyks_ucwords();
 								data.type = data.type.anyks_trim().anyks_ucwords();
+								// Если это тип города а найден в названии первым символом цифра то выходим,
+								// так как название города не может начинаться с цифры
+								if(/^\d/.test(data.name) && (key.type === "city")) break;
 								// Создаем объект
 								if(!$.isset(result[key.type])
 								|| (key.type === "city")){
