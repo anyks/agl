@@ -4165,20 +4165,37 @@ const anyks = require("./lib.anyks");
 					 * *getData Генератор для получения данных временной зоны
 					 */
 					const getData = function * (){
+						try {
 						// Выполняем запрос временной зоны для регионов
 						const regions = yield getTimezone(idObj.schemes.Regions);
+
+						console.log("++++++1", regions);
+
 						// Выполняем запрос временной зоны для районов
 						const districts = yield getTimezone(idObj.schemes.Districts);
+
+						console.log("++++++2", districts);
+
 						// Выполняем запрос временной зоны для городов
 						const cities = yield getTimezone(idObj.schemes.Cities);
+
+						console.log("++++++3", cities);
+
 						// Выполняем запрос временной зоны для улиц
 						const streets = yield getTimezone(idObj.schemes.Streets);
+
+						console.log("++++++4", streets);
+
 						// Выполняем запрос временной зоны для домов
 						const houses = yield getTimezone(idObj.schemes.Houses);
+
+						console.log("++++++5", houses);
+
 						// Выводим в консоль что все данные временной зоны обновлены
 						idObj.log("все временные зоны обновлены удачно!").info();
 						// Сообщаем что все выполнено
 						resolve(true);
+						} catch(e) {console.log("++++", e);}
 					};
 					// Запускаем коннект
 					exec(getData());
