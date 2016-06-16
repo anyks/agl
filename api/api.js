@@ -4086,10 +4086,6 @@ const anyks = require("./lib.anyks");
 					 * @param  {Function}        callback функция обратного вызова
 					 */
 					const updateDB = (scheme, obj, callback) => {
-						
-						const key = getKeyRedisForSubject(obj);
-						console.log("------------", key, obj);
-
 						/**
 						 * Функция сохранения данных в кеше saveCache
 						 */
@@ -4138,9 +4134,11 @@ const anyks = require("./lib.anyks");
 												// Если временная зона пришла
 												if(timezone){
 													// Сохраняем временную зону
-													data[i].timezone = timezone;
+													data[i].timezone = timezone;;
+
+													getData(i + 1);
 													// Сохраняем временную зону
-													updateDB(scheme, data[i], () => getData(i + 1));
+													// updateDB(scheme, data[i], () => getData(i + 1));
 												// Просто продолжаем дальше
 												} else getData(i + 1);
 											// Если происходит ошибка тогда выходим
