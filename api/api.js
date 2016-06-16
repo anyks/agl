@@ -1371,7 +1371,7 @@ const anyks = require("./lib.anyks");
 								if(!$.isset(result)) result = {};
 								// Если это дом то делаем дополнительную проверку
 								if((key.type === "house")
-								&& !reg[8].reg.test(subject)) break;
+								&& !reg[8].reg.test(subject)) continue;
 								// Переходим по массиву
 								types.forEach((val, i) => {
 									// Если это не нулевой элемент
@@ -1389,9 +1389,11 @@ const anyks = require("./lib.anyks");
 								// Исправляем название и тип
 								data.name = data.name.anyks_trim().anyks_ucwords();
 								data.type = data.type.anyks_trim().anyks_ucwords();
+								// Если дом найден тогда присваиваем ему тип
+								if(key.type === "house") data.type = "Дом";
 								// Если это тип города а найден в названии первым символом цифра то выходим,
 								// так как название города не может начинаться с цифры
-								if(/^\d/.test(data.name) && (key.type === "city")) break;
+								if(/^\d/.test(data.name) && (key.type === "city")) continue;
 								// Создаем объект
 								if(!$.isset(result[key.type])
 								|| (key.type === "city")){
