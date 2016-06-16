@@ -3837,9 +3837,6 @@ const anyks = require("./lib.anyks");
 				const key = "timezone:" + idObj.generateKey(lat + ":" + lng);
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
-					
-					console.log("++++++++++", key, lat, lng);
-
 					// Если данные это не массив тогда создаем его
 					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
