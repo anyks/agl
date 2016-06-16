@@ -4177,7 +4177,7 @@ const anyks = require("./lib.anyks");
 						// Выполняем запрос временной зоны для районов
 						//const districts = yield getTimezone(idObj.schemes.Districts);
 
-						console.log("++++++2", districts);
+						//console.log("++++++2", districts);
 
 						// Выполняем запрос временной зоны для городов
 						const cities = yield getTimezone(idObj.schemes.Cities);
