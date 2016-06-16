@@ -4086,15 +4086,16 @@ const anyks = require("./lib.anyks");
 					 * @param  {Function}        callback функция обратного вызова
 					 */
 					const updateDB = (scheme, obj, callback) => {
+						
+						const key = getKeyRedisForSubject(obj);
+						console.log("------------", key, obj);
+
 						/**
 						 * Функция сохранения данных в кеше saveCache
 						 */
 						const saveCache = () => {
 							// Ключ запроса
 							const key = getKeyRedisForSubject(obj);
-
-							console.log("------------", key, obj);
-
 							// Сохраняем данные в кеше
 							Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
 						};
@@ -4168,14 +4169,10 @@ const anyks = require("./lib.anyks");
 					 * *getData Генератор для получения данных временной зоны
 					 */
 					const getData = function * (){
-						try {
 						// Выполняем запрос временной зоны для регионов
 						const regions = yield getTimezone(idObj.schemes.Regions);
-
-						console.log("++++++1", regions);
-
 						// Выполняем запрос временной зоны для районов
-						//const districts = yield getTimezone(idObj.schemes.Districts);
+						const districts = yield getTimezone(idObj.schemes.Districts);
 
 						//console.log("++++++2", districts);
 
@@ -4198,7 +4195,6 @@ const anyks = require("./lib.anyks");
 						idObj.log("все временные зоны обновлены удачно!").info();
 						// Сообщаем что все выполнено
 						resolve(true);
-						} catch(e) {console.log("++++", e);}
 					};
 					// Запускаем коннект
 					exec(getData());
