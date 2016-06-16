@@ -3910,8 +3910,8 @@ const anyks = require("./lib.anyks");
 					// Запрашиваем данные страны
 					if(result) idObj.findCountry({str: result})
 					.then(resolve).catch(() => resolve(false));
-					// Выводим результат
-					resolve(result);
+					// Выводим результат так как он есть
+					else resolve(result);
 				// Выполняем поиск страны
 				}).catch(err => {
 					// Выводим ошибку метода
