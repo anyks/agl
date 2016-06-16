@@ -3916,7 +3916,7 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.country) ? address.country.name : false);
 					// Выполняем поиск страны
-					const country = ($.isset(address) ? yield idObj.findRegion({str: address}) : false);
+					const country = ($.isset(address) ? yield idObj.findCountry({str: address}) : false);
 					// Выводим результат
 					resolve(country);
 				};
