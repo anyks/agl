@@ -126,5 +126,19 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getMetroLineById", "query": {"id": '874a3d2cdebc6d1bc5db1d49'}}));
 // socket.send(JSON.stringify({"action": "getMetroCityById", "query": {"id": '7700000000000'}}));
 //
+// socket.send(JSON.stringify({"action": "getTimezoneByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
+//
+// socket.send(JSON.stringify({"action": "getCountriesByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //

@@ -721,7 +721,7 @@ const anyks = require("./lib.anyks");
 							$near: {
 								$geometry: {
 									type:			'Point',
-									coordinates:	[lat, lng]
+									coordinates:	[lng, lat]
 								},
 								$maxDistance: distance
 							}
@@ -2889,7 +2889,7 @@ const anyks = require("./lib.anyks");
 									$geometry: {
 										type: 'Point',
 										// Широта и долгота поиска
-										coordinates: [lat, lng]
+										coordinates: [lng, lat]
 									},
 									$maxDistance: 25
 								}
