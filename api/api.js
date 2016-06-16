@@ -3902,23 +3902,26 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Получаем данные по GPS координатам
-				idObj.getAddressByGPS({lat, lng}).then(obj => {
+				/**
+				 * *getData Генератор для получения данных адреса
+				 */
+				const getData = function * (){
+					// Получаем данные по GPS координатам
+					let name = yield idObj.getAddressByGPS({lat, lng});
 					// Получаем результат
-					const result = ($.isset(obj) && $.isset(obj.address)
-					&& $.isset(obj.address.country) ? obj.address.country : false);
-					// Запрашиваем данные страны
-					if(result) idObj.findCountry({str: result})
-					.then(resolve).catch(() => resolve(false));
-					// Выводим результат так как он есть
-					else resolve(result);
-				// Выполняем поиск страны
-				}).catch(err => {
-					// Выводим ошибку метода
-					idObj.log("getAddressByGPS in getCountriesByGPS", err).error();
-					// Выходим
-					resolve(false);
-				});
+					name = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.country) ? name.address.country : false);
+					// Выполняем парсинг строки адреса
+					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
+					// Получаем результат
+					address = ($.isset(address) && $.isset(address.country) ? address.country.name : false);
+					// Выполняем поиск страны
+					const country = ($.isset(address) ? yield idObj.findRegion({str: address}) : false);
+					// Выводим результат
+					resolve(country);
+				};
+				// Запускаем коннект
+				exec(getData());
 			}));
 		}
 		/**
@@ -3945,7 +3948,7 @@ const anyks = require("./lib.anyks");
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.region) ? address.region.name : false);
-					// Выполняем поиск самого адреса
+					// Выполняем поиск региона
 					const region = ($.isset(address) ? yield idObj.findRegion({str: address}) : false);
 					// Выводим результат
 					resolve(region);
