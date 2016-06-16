@@ -3903,7 +3903,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Получаем данные по GPS координатам
-				Agl.getAddressByGPS({lat, lng}).then(obj => {
+				idObj.getAddressByGPS({lat, lng}).then(obj => {
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.country) ? obj.address.country : false);
@@ -3930,7 +3930,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Получаем данные по GPS координатам
-				Agl.getAddressByGPS({lat, lng}).then(obj => {
+				idObj.getAddressByGPS({lat, lng}).then(obj => {
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.region) ? obj.address.region : false);
@@ -3957,7 +3957,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Получаем данные по GPS координатам
-				Agl.getAddressByGPS({lat, lng}).then(obj => {
+				idObj.getAddressByGPS({lat, lng}).then(obj => {
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.district) ? obj.address.district : false);
@@ -3984,7 +3984,7 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Получаем данные по GPS координатам
-				Agl.getAddressByGPS({lat, lng}).then(obj => {
+				idObj.getAddressByGPS({lat, lng}).then(obj => {
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.city) ? obj.address.city : false);
