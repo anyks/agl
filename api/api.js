@@ -3940,7 +3940,7 @@ const anyks = require("./lib.anyks");
 					// Запрашиваем данные региона
 					if(result){
 						// Выполняем парсинг строки адреса
-						idObj.parseAddress({address: result})
+						idObj.parseAddress({address: result + ","})
 						.then(addr => {
 							// Если регион найден
 							if($.isset(addr) && $.isset(addr.region)){
