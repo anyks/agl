@@ -3916,7 +3916,7 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.country) ? address.country.name : false);
 					// Выполняем поиск страны
-					const country = ($.isset(address) ? yield idObj.findCountry({str: address, limit: 1}) : false);
+					let country = ($.isset(address) ? yield idObj.findCountry({str: address, limit: 1}) : false);
 					// Получаем результат
 					if($.isArray(country) && country.length) country = country[0];
 					// Выводим результат
@@ -3951,7 +3951,7 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.region) ? address.region.name : false);
 					// Выполняем поиск региона
-					const region = ($.isset(address) ? yield idObj.findRegion({str: address, limit: 1}) : false);
+					let region = ($.isset(address) ? yield idObj.findRegion({str: address, limit: 1}) : false);
 					// Получаем результат
 					if($.isArray(region) && region.length) region = region[0];
 					// Выводим результат
@@ -3986,7 +3986,7 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.district) ? address.district.name : false);
 					// Выполняем поиск района
-					const district = ($.isset(address) ? yield idObj.findDistrict({str: address, limit: 1}) : false);
+					let district = ($.isset(address) ? yield idObj.findDistrict({str: address, limit: 1}) : false);
 					// Получаем результат
 					if($.isArray(district) && district.length) district = district[0];
 					// Выводим результат
@@ -4021,7 +4021,7 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.city) ? address.city.name : false);
 					// Выполняем поиск города
-					const city = ($.isset(address) ? yield idObj.findCity({str: address, limit: 1}) : false);
+					let city = ($.isset(address) ? yield idObj.findCity({str: address, limit: 1}) : false);
 					// Получаем результат
 					if($.isArray(city) && city.length) city = city[0];
 					// Выводим результат
