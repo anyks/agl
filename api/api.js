@@ -4092,6 +4092,9 @@ const anyks = require("./lib.anyks");
 						const saveCache = () => {
 							// Ключ запроса
 							const key = getKeyRedisForSubject(obj);
+
+							console.log("------------", key, obj);
+
 							// Сохраняем данные в кеше
 							Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
 						};
