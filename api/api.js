@@ -3968,20 +3968,26 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Получаем данные по GPS координатам
-				idObj.getAddressByGPS({lat, lng}).then(obj => {
+				/**
+				 * *getData Генератор для получения данных адреса
+				 */
+				const getData = function * (){
+					// Получаем данные по GPS координатам
+					let name = yield idObj.getAddressByGPS({lat, lng});
 					// Получаем результат
-					const result = ($.isset(obj) && $.isset(obj.address)
-					&& $.isset(obj.address.district) ? obj.address.district : false);
+					name = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.district) ? name.address.district : false);
+					// Выполняем парсинг строки адреса
+					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
+					// Получаем результат
+					address = ($.isset(address) && $.isset(address.district) ? address.district.name : false);
+					// Выполняем поиск района
+					const district = ($.isset(address) ? yield idObj.findDistrict({str: address}) : false);
 					// Выводим результат
-					resolve(result);
-				// Выполняем поиск района
-				}).catch(err => {
-					// Выводим ошибку метода
-					idObj.log("getAddressByGPS in getDistrictByGPS", err).error();
-					// Выходим
-					resolve(false);
-				});
+					resolve(district);
+				};
+				// Запускаем коннект
+				exec(getData());
 			}));
 		}
 		/**
