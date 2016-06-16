@@ -3856,11 +3856,8 @@ const anyks = require("./lib.anyks");
 							if(json.status === "OK"){
 								// Удаляем статус
 								json.status = undefined;
-
-								console.log("+++++++", json);
-
 								// Отправляем в Redis на час
-								//Agl.setRedis.call(idObj, "set", key, json, 3600).then();
+								Agl.setRedis.call(idObj, "set", key, json, 3600).then();
 								// Выводим результат
 								resolve(json);
 							// Сообщаем что ничего не найдено
@@ -4133,6 +4130,10 @@ const anyks = require("./lib.anyks");
 									 * @param  {Number} i индекс текущего значения массива
 									 */
 									const getData = (i = 0) => {
+										
+										resolve(true);
+										return;
+
 										// Если не все данные пришли тогда продолжаем загружать
 										if(i < data.length){
 											// Получаем данные временной зоны
