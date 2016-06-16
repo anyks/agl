@@ -3753,7 +3753,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем парсинг строки адреса
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name}) : false);
 					// Получаем результат
-					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
+					address = ($.isset(address) && $.isset(address.lightAddress) ? address.lightAddress : false);
 					// Выполняем поиск города
 					let city = ($.isset(address) ? yield idObj.findCity({str: address, limit: 1}) : false);
 					// Получаем результат
