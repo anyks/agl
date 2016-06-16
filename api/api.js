@@ -4130,10 +4130,6 @@ const anyks = require("./lib.anyks");
 									 * @param  {Number} i индекс текущего значения массива
 									 */
 									const getData = (i = 0) => {
-										
-										resolve(true);
-										return;
-
 										// Если не все данные пришли тогда продолжаем загружать
 										if(i < data.length){
 											// Получаем данные временной зоны
@@ -4179,7 +4175,7 @@ const anyks = require("./lib.anyks");
 						console.log("++++++1", regions);
 
 						// Выполняем запрос временной зоны для районов
-						const districts = yield getTimezone(idObj.schemes.Districts);
+						//const districts = yield getTimezone(idObj.schemes.Districts);
 
 						console.log("++++++2", districts);
 
