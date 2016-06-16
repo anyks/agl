@@ -1167,6 +1167,7 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				try {
 				// [Страна, Регион, Район, Город, Улица, Дом, Квартира]
 				//
 				// ИЛИ
@@ -1503,6 +1504,9 @@ const anyks = require("./lib.anyks");
 				idObj.log("строка адреса интерпретирована", result).info();
 				// Выводим результат
 				resolve(result);
+
+				} catch(e) {console.log("++++++", e);}
+
 			}));
 		}
 		/**
