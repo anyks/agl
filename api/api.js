@@ -4775,7 +4775,7 @@ const anyks = require("./lib.anyks");
 												station.cityId	= arr[i]._id;
 												station.lineId	= line._id;
 												// Формируемновый ключ gps;
-												station.gps = [station.lat, station.lng];
+												station.gps = [station.lng, station.lat];
 												// Преобразуем gps координаты
 												station.lat = station.lat.toString();
 												station.lng = station.lng.toString();
