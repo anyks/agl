@@ -3835,12 +3835,15 @@ const anyks = require("./lib.anyks");
 			return (new Promise(resolve => {
 				// Ключ кеша метро
 				const key = "timezone:" + idObj.generateKey(lat + ":" + lng);
+
+				console.log("++++++++++", key, lat, lng);
+
 				// Ищем станции в кеше
-				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+				//Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(cache)) resolve(JSON.parse(cache));
+				//	if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					else {
+				//	else {
 						// Подключаем модуль закачки данных
 						const fetch = require('node-fetch');
 						// Создаем штамп времени
@@ -3883,12 +3886,12 @@ const anyks = require("./lib.anyks");
 						});
 					}
 				// Если происходит ошибка тогда выходим
-				}).catch(err => {
+				//}).catch(err => {
 					// Выводим ошибку метода
-					idObj.log("getRedis in getTimezoneByGPS", err).error();
+				//	idObj.log("getRedis in getTimezoneByGPS", err).error();
 					// Выходим
-					resolve(false);
-				});
+				//	resolve(false);
+				//});
 			}));
 		}
 		/**
@@ -4135,10 +4138,8 @@ const anyks = require("./lib.anyks");
 												if(timezone){
 													// Сохраняем временную зону
 													data[i].timezone = timezone;;
-
-													getData(i + 1);
 													// Сохраняем временную зону
-													// updateDB(scheme, data[i], () => getData(i + 1));
+													updateDB(scheme, data[i], () => getData(i + 1));
 												// Просто продолжаем дальше
 												} else getData(i + 1);
 											// Если происходит ошибка тогда выходим
@@ -4171,24 +4172,12 @@ const anyks = require("./lib.anyks");
 						const regions = yield getTimezone(idObj.schemes.Regions);
 						// Выполняем запрос временной зоны для районов
 						const districts = yield getTimezone(idObj.schemes.Districts);
-
-						//console.log("++++++2", districts);
-
 						// Выполняем запрос временной зоны для городов
 						const cities = yield getTimezone(idObj.schemes.Cities);
-
-						console.log("++++++3", cities);
-
 						// Выполняем запрос временной зоны для улиц
 						const streets = yield getTimezone(idObj.schemes.Streets);
-
-						console.log("++++++4", streets);
-
 						// Выполняем запрос временной зоны для домов
 						const houses = yield getTimezone(idObj.schemes.Houses);
-
-						console.log("++++++5", houses);
-
 						// Выводим в консоль что все данные временной зоны обновлены
 						idObj.log("все временные зоны обновлены удачно!").info();
 						// Сообщаем что все выполнено
