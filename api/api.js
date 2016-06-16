@@ -4016,12 +4016,21 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					name = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.city) ? name.address.city : false);
+
+					console.log("++++++1", name);
+
 					// Выполняем парсинг строки адреса
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
+
+					console.log("++++++2", address);
+
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.city) ? address.city.name : false);
 					// Выполняем поиск города
 					let city = ($.isset(address) ? yield idObj.findCity({str: address, limit: 1}) : false);
+
+					console.log("++++++3", city);
+
 					// Получаем результат
 					if($.isArray(city) && city.length) city = city[0];
 					// Выводим результат
