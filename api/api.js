@@ -1360,7 +1360,7 @@ const anyks = require("./lib.anyks");
 						// Удаляем пробелы
 						subject = subject.anyks_trim();
 						// Переходим по всему объекту регулярных выражений
-						for(key of reg){
+						for(let key of reg){
 							// Получаем массив типов
 							const types = subject.match(key.reg);
 							// Если массив существует
