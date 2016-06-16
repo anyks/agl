@@ -3902,8 +3902,14 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				
+				try {
+
 				// Получаем данные по GPS координатам
 				getAddressByGPS({lat, lng}).then(obj => {
+					
+					console.log("++++++++++", obj);
+
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.country) ? obj.address.country : false);
@@ -3916,6 +3922,9 @@ const anyks = require("./lib.anyks");
 					// Выходим
 					resolve(false);
 				});
+
+				} catch(e) {console.log("++++++++++++1", e);}
+
 			}));
 		}
 		/**
