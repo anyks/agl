@@ -3938,8 +3938,20 @@ const anyks = require("./lib.anyks");
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.region) ? obj.address.region : false);
 					// Запрашиваем данные региона
-					if(result) idObj.findRegion({str: result})
-					.then(resolve).catch(() => resolve(false));
+					if(result){
+						// Выполняем парсинг строки адреса
+						idObj.parseAddress({address: result})
+						.then(addr => {
+							// Если регион найден
+							if($.isset(addr) && $.isset(addr.region)){
+								// Выполняем поиск сам адрес
+								idObj.findRegion({str: addr.region.name})
+								.then(resolve).catch(() => resolve(false));
+							}
+						});
+
+						
+					}
 					// Выводим результат так как он есть
 					else resolve(result);
 				// Выполняем поиск региона
