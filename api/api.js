@@ -3932,35 +3932,26 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Получаем данные по GPS координатам
-				idObj.getAddressByGPS({lat, lng}).then(obj => {
+				/**
+				 * *getData Генератор для получения данных адреса
+				 */
+				const getData = function * (){
+					// Получаем данные по GPS координатам
+					let name = yield idObj.getAddressByGPS({lat, lng});
 					// Получаем результат
-					const result = ($.isset(obj) && $.isset(obj.address)
-					&& $.isset(obj.address.region) ? obj.address.region : false);
-					// Запрашиваем данные региона
-					if(result){
-						// Выполняем парсинг строки адреса
-						idObj.parseAddress({address: result + ","})
-						.then(addr => {
-							// Если регион найден
-							if($.isset(addr) && $.isset(addr.region)){
-								// Выполняем поиск сам адрес
-								idObj.findRegion({str: addr.region.name})
-								.then(resolve).catch(() => resolve(false));
-							}
-						});
-
-						
-					}
-					// Выводим результат так как он есть
-					else resolve(result);
-				// Выполняем поиск региона
-				}).catch(err => {
-					// Выводим ошибку метода
-					idObj.log("getAddressByGPS in getRegionByGPS", err).error();
-					// Выходим
-					resolve(false);
-				});
+					name = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.region) ? name.address.region : false);
+					// Выполняем парсинг строки адреса
+					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
+					// Получаем результат
+					address = ($.isset(address) && $.isset(address.region) ? address.region.name : false);
+					// Выполняем поиск самого адреса
+					const region = ($.isset(address) ? yield idObj.findRegion({str: address}) : false);
+					// Выводим результат
+					resolve(region);
+				};
+				// Запускаем коннект
+				exec(getData());
 			}));
 		}
 		/**
