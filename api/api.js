@@ -3744,6 +3744,9 @@ const anyks = require("./lib.anyks");
 					// Получаем результат
 					name = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.city) ? name.address.city : false);
+
+					console.log("++++++++++1", name);
+
 					// Выполняем парсинг строки адреса
 					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
 
