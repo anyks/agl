@@ -3835,15 +3835,15 @@ const anyks = require("./lib.anyks");
 			return (new Promise(resolve => {
 				// Ключ кеша метро
 				const key = "timezone:" + idObj.generateKey(lat + ":" + lng);
-
-				console.log("++++++++++", key, lat, lng);
-
 				// Ищем станции в кеше
-				//Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+					
+					console.log("++++++++++", key, lat, lng);
+
 					// Если данные это не массив тогда создаем его
-				//	if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-				//	else {
+					else {
 						// Подключаем модуль закачки данных
 						const fetch = require('node-fetch');
 						// Создаем штамп времени
@@ -3886,12 +3886,12 @@ const anyks = require("./lib.anyks");
 						});
 					//}
 				// Если происходит ошибка тогда выходим
-				//}).catch(err => {
+				}).catch(err => {
 					// Выводим ошибку метода
-				//	idObj.log("getRedis in getTimezoneByGPS", err).error();
+					idObj.log("getRedis in getTimezoneByGPS", err).error();
 					// Выходим
-				//	resolve(false);
-				//});
+					resolve(false);
+				});
 			}));
 		}
 		/**
