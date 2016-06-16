@@ -3904,16 +3904,13 @@ const anyks = require("./lib.anyks");
 			return (new Promise(resolve => {
 				// Получаем данные по GPS координатам
 				getAddressByGPS({lat, lng}).then(obj => {
-					
-					console.log("++++++", obj);
-
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.country) ? obj.address.country : false);
 					// Выводим результат
 					resolve(result);
 				// Выполняем поиск страны
-				}).then(resolve).catch(err => {
+				}).catch(err => {
 					// Выводим ошибку метода
 					idObj.log("getAddressByGPS in getCountriesByGPS", err).error();
 					// Выходим
@@ -3940,7 +3937,7 @@ const anyks = require("./lib.anyks");
 					// Выводим результат
 					resolve(result);
 				// Выполняем поиск региона
-				}).then(resolve).catch(err => {
+				}).catch(err => {
 					// Выводим ошибку метода
 					idObj.log("getAddressByGPS in getRegionByGPS", err).error();
 					// Выходим
@@ -3967,7 +3964,7 @@ const anyks = require("./lib.anyks");
 					// Выводим результат
 					resolve(result);
 				// Выполняем поиск района
-				}).then(resolve).catch(err => {
+				}).catch(err => {
 					// Выводим ошибку метода
 					idObj.log("getAddressByGPS in getDistrictByGPS", err).error();
 					// Выходим
@@ -3994,7 +3991,7 @@ const anyks = require("./lib.anyks");
 					// Выводим результат
 					resolve(result);
 				// Выполняем поиск города
-				}).then(resolve).catch(err => {
+				}).catch(err => {
 					// Выводим ошибку метода
 					idObj.log("getAddressByGPS in getCityByGPS", err).error();
 					// Выходим
