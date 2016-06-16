@@ -3741,24 +3741,21 @@ const anyks = require("./lib.anyks");
 				const getData = function * (){
 					// Получаем данные по GPS координатам
 					let name = yield idObj.getAddressByGPS({lat, lng});
-					// Получаем результат
+					// Получаем страну
 					name = ($.isset(name) && $.isset(name.address)
-					&& $.isset(name.address.city) ? name.address.city : false);
-
-					console.log("++++++++++1", name);
-
+					&& $.isset(name.address.country) ? name.address.country : "");
+					// Получаем регион
+					name += ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.region) ? + ", " + name.address.region : "");
+					// Получаем город
+					name += ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.city) ? ", " + name.address.city : "");
 					// Выполняем парсинг строки адреса
-					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
-
-					console.log("++++++2", address);
-
+					let address = ($.isset(name) ? yield idObj.parseAddress({address: name}) : false);
 					// Получаем результат
 					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
 					// Выполняем поиск города
 					let city = ($.isset(address) ? yield idObj.findCity({str: address, limit: 1}) : false);
-
-					console.log("++++++3", city);
-
 					// Получаем результат
 					if($.isArray(city) && city.length) city = city[0];
 					// Выводим результат
