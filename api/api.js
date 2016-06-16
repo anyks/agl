@@ -1216,6 +1216,10 @@ const anyks = require("./lib.anyks");
 					},{
 						"type":	"community",
 						"reg":	/(микрорайон|жилой\s+комплекс)|(?:\s|\.|\,|^)(мкр|жкс?)(?:\s|\.|\,|$)/i
+					// Квартиры
+					},{
+						"type":	"apartment",
+						"reg":	/(квартира|офис|комната)|(?:\s|\.|\,|^)(кв|ко?м|оф)(?:\s|\.|\,|$)/i
 					// Дома
 					},{
 						"type":	"house",
@@ -1225,10 +1229,6 @@ const anyks = require("./lib.anyks");
 						"type":	"house",
 						"reg":	new RegExp("(?:(?:№\\s*)?\\d+[А-ЯЁ]*\\s*(?:\\/|-)\\s*\\d+[А-ЯЁ]*)|"
 								+ "(?:(?:№\\s*)?(?:\\d+)[А-ЯЁ]*\\s*(?:к|с)?\\s*(?:\\d+)?\\s*(?:к|с)?\\s*(?:\\d+)?)$", "i")
-					// Квартиры
-					},{
-						"type":	"apartmetn",
-						"reg":	/(квартира|офис|комната)|(?:\s|\.|\,|^)(кв|ко?м|оф)(?:\s|\.|\,|$)/i
 					// Реки
 					},{
 						"type":	"river",
@@ -1369,6 +1369,9 @@ const anyks = require("./lib.anyks");
 								const data = {name: "", type: ""};
 								// Если объект не создан то создаем его
 								if(!$.isset(result)) result = {};
+								// Если это дом то делаем дополнительную проверку
+								if((key.type === "house")
+								&& !reg[8].reg.test(subject)) break;
 								// Переходим по массиву
 								types.forEach((val, i) => {
 									// Если это не нулевой элемент
@@ -1419,9 +1422,11 @@ const anyks = require("./lib.anyks");
 									// Если это дом
 									case "house":
 										// Проверяем является ли запись номером жилища
-										let house = subject.match(reg[7].reg);
+										let house = subject.match(reg[8].reg);
 										// Если это массив то преобразуем его
-										if($.isArray(house) && house.length){
+										if($.isArray(house) && house.length
+										&& !$.isset(result.subject)
+										&& !$.isset(result.apartment)){
 											// Запоминаем название жилища
 											data.name = house[0].anyks_trim().anyks_ucwords();
 											// Запоминаем тип жилища
