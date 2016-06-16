@@ -3904,6 +3904,9 @@ const anyks = require("./lib.anyks");
 			return (new Promise(resolve => {
 				// Получаем данные по GPS координатам
 				getAddressByGPS({lat, lng}).then(obj => {
+					
+					console.log("++++++", obj);
+
 					// Получаем результат
 					const result = ($.isset(obj) && $.isset(obj.address)
 					&& $.isset(obj.address.country) ? obj.address.country : false);
