@@ -3892,100 +3892,108 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * getCountriesByGPS Метод поиска стран по GPS координатам
-		 * @param  {Number} options.lat      широта
-		 * @param  {Number} options.lng      долгота
-		 * @param  {Number} options.distance дистанция поиска в метрах
-		 * @return {Promise}                 промис содержащий найденные регионы
+		 * getCountryByGPS Метод поиска страны по GPS координатам
+		 * @param  {Number} options.lat широта
+		 * @param  {Number} options.lng долгота
+		 * @return {Promise}            промис содержащий найденные регионы
 		 */
-		getCountriesByGPS({lat, lng, distance = 3000}){
+		getCountryByGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Ключ кеша стран
-				const key = "address:countries:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
-				// Ищем страны
-				getByGPS.call(idObj, "Countries", key, lat, lng, distance)
-				// Выполняем поиск стран
-				.then(resolve).catch(err => {
+				// Получаем данные по GPS координатам
+				getAddressByGPS({lat, lng}).then(obj => {
+					// Получаем результат
+					const result = ($.isset(obj) && $.isset(obj.address)
+					&& $.isset(obj.address.country) ? obj.address.country : false);
+					// Выводим результат
+					resolve(result);
+				// Выполняем поиск страны
+				}).then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log("getByGPS in getCountriesByGPS", err).error();
+					idObj.log("getAddressByGPS in getCountriesByGPS", err).error();
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * getRegionsByGPS Метод поиска регионов по GPS координатам
-		 * @param  {Number} options.lat      широта
-		 * @param  {Number} options.lng      долгота
-		 * @param  {Number} options.distance дистанция поиска в метрах
-		 * @return {Promise}                 промис содержащий найденные регионы
+		 * getRegionByGPS Метод поиска региона по GPS координатам
+		 * @param  {Number} options.lat широта
+		 * @param  {Number} options.lng долгота
+		 * @return {Promise}            промис содержащий найденные регионы
 		 */
-		getRegionsByGPS({lat, lng, distance = 3000}){
+		getRegionByGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Ключ кеша регионов
-				const key = "address:regions:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
-				// Ищем регионы
-				getByGPS.call(idObj, "Regions", key, lat, lng, distance)
-				// Выполняем поиск регионов
-				.then(resolve).catch(err => {
+				// Получаем данные по GPS координатам
+				getAddressByGPS({lat, lng}).then(obj => {
+					// Получаем результат
+					const result = ($.isset(obj) && $.isset(obj.address)
+					&& $.isset(obj.address.region) ? obj.address.region : false);
+					// Выводим результат
+					resolve(result);
+				// Выполняем поиск региона
+				}).then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log("getByGPS in getRegionsByGPS", err).error();
+					idObj.log("getAddressByGPS in getRegionByGPS", err).error();
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * getDistrictsByGPS Метод поиска районов по GPS координатам
-		 * @param  {Number} options.lat      широта
-		 * @param  {Number} options.lng      долгота
-		 * @param  {Number} options.distance дистанция поиска в метрах
-		 * @return {Promise}                 промис содержащий найденные районы
+		 * getDistrictByGPS Метод поиска района по GPS координатам
+		 * @param  {Number} options.lat широта
+		 * @param  {Number} options.lng долгота
+		 * @return {Promise}            промис содержащий найденные районы
 		 */
-		getDistrictsByGPS({lat, lng, distance = 3000}){
+		getDistrictByGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Ключ кеша районов
-				const key = "address:districts:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
-				// Ищем районы
-				getByGPS.call(idObj, "Districts", key, lat, lng, distance)
-				// Выполняем поиск районов
-				.then(resolve).catch(err => {
+				// Получаем данные по GPS координатам
+				getAddressByGPS({lat, lng}).then(obj => {
+					// Получаем результат
+					const result = ($.isset(obj) && $.isset(obj.address)
+					&& $.isset(obj.address.district) ? obj.address.district : false);
+					// Выводим результат
+					resolve(result);
+				// Выполняем поиск района
+				}).then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log("getByGPS in getDistrictsByGPS", err).error();
+					idObj.log("getAddressByGPS in getDistrictByGPS", err).error();
 					// Выходим
 					resolve(false);
 				});
 			}));
 		}
 		/**
-		 * getCitiesByGPS Метод поиска городов по GPS координатам
-		 * @param  {Number} options.lat      широта
-		 * @param  {Number} options.lng      долгота
-		 * @param  {Number} options.distance дистанция поиска в метрах
-		 * @return {Promise}                 промис содержащий найденные города
+		 * getCityByGPS Метод поиска города по GPS координатам
+		 * @param  {Number} options.lat широта
+		 * @param  {Number} options.lng долгота
+		 * @return {Promise}            промис содержащий найденные города
 		 */
-		getCitiesByGPS({lat, lng, distance = 3000}){
+		getCityByGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				// Ключ кеша городов
-				const key = "address:cities:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
-				// Ищем города
-				getByGPS.call(idObj, "Cities", key, lat, lng, distance)
-				// Выполняем поиск городов
-				.then(resolve).catch(err => {
+				// Получаем данные по GPS координатам
+				getAddressByGPS({lat, lng}).then(obj => {
+					// Получаем результат
+					const result = ($.isset(obj) && $.isset(obj.address)
+					&& $.isset(obj.address.city) ? obj.address.city : false);
+					// Выводим результат
+					resolve(result);
+				// Выполняем поиск города
+				}).then(resolve).catch(err => {
 					// Выводим ошибку метода
-					idObj.log("getByGPS in getCitiesByGPS", err).error();
+					idObj.log("getAddressByGPS in getCityByGPS", err).error();
 					// Выходим
 					resolve(false);
 				});
