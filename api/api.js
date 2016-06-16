@@ -1667,6 +1667,9 @@ const anyks = require("./lib.anyks");
 									if(!data) data = {name: "", type: ""};
 									// Получаем массив типов
 									const types = val.match(reg);
+
+									console.log("+++++++++++", val, types);
+
 									// Переходим по массиву
 									types.forEach((val, i) => {
 										// Если это не нулевой элемент
