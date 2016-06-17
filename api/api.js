@@ -3635,20 +3635,18 @@ const anyks = require("./lib.anyks");
 				 */
 				const getData = function * (){
 					// Получаем данные по GPS координатам
-					let name = yield idObj.getAddressByGPS({lat, lng});
-					// Получаем результат
-					name = ($.isset(name) && $.isset(name.address)
-					&& $.isset(name.address.country) ? name.address.country : false);
-					// Выполняем парсинг строки адреса
-					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
-					// Получаем результат
-					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
-					// Выполняем поиск страны
-					let country = ($.isset(address) ? yield idObj.findCountry({str: address, limit: 1}) : false);
-					// Получаем результат
-					if($.isArray(country) && country.length) country = country[0];
+					const name = yield idObj.getAddressByGPS({lat, lng});
+					// Получаем страну
+					let country = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.country) ? name.address.country : "");
+					// Выполняем парсинг строки адреса страны
+					country = ($.isset(country) ? yield idObj.parseAddress({address: country}) : false);
+					// Извлекаем название страны
+					country = ($.isset(country) ? country.subject.name : false);
+					// Запрашиваем данные страны с сервера
+					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
 					// Выводим результат
-					resolve(country);
+					resolve({country});
 				};
 				// Запускаем коннект
 				exec(getData());
@@ -3670,20 +3668,27 @@ const anyks = require("./lib.anyks");
 				 */
 				const getData = function * (){
 					// Получаем данные по GPS координатам
-					let name = yield idObj.getAddressByGPS({lat, lng});
-					// Получаем результат
-					name = ($.isset(name) && $.isset(name.address)
-					&& $.isset(name.address.region) ? name.address.region : false);
-					// Выполняем парсинг строки адреса
-					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
-					// Получаем результат
-					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
-					// Выполняем поиск региона
-					let region = ($.isset(address) ? yield idObj.findRegion({str: address, limit: 1}) : false);
-					// Получаем результат
-					if($.isArray(region) && region.length) region = region[0];
+					const name = yield idObj.getAddressByGPS({lat, lng});
+					// Получаем страну
+					let country = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.country) ? name.address.country : "");
+					// Выполняем парсинг строки адреса страны
+					country = ($.isset(country) ? yield idObj.parseAddress({address: country}) : false);
+					// Извлекаем название страны
+					country = ($.isset(country) ? country.subject.name : false);
+					// Запрашиваем данные страны с сервера
+					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
+					// Получаем регион
+					let region = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.region) ? name.address.region : "");
+					// Выполняем парсинг строки адреса региона
+					region = ($.isset(region) ? yield idObj.parseAddress({address: region}) : false);
+					// Извлекаем название региона
+					region = ($.isset(region) ? region.subject.name : false);
+					// Запрашиваем данные региона с сервера
+					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
 					// Выводим результат
-					resolve(region);
+					resolve({country, region});
 				};
 				// Запускаем коннект
 				exec(getData());
