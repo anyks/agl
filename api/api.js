@@ -217,9 +217,11 @@ const anyks = require("./lib.anyks");
 						let district	= $.fnShowProps(data, "state_district");
 						let boundingbox	= $.fnShowProps(data, "boundingbox");
 						let description	= $.fnShowProps(data, "display_name");
-						let zip			= parseInt($.fnShowProps(data, "postcode"), 10);
+						let zip			= $.fnShowProps(data, "postcode");
 						let gps			= [parseFloat(lng), parseFloat(lat)];
 						let _id			= idObj.generateKey(description);
+						// Если почтовый индекс существует то преобразуем его
+						zip = ($.isset(zip) ? parseInt(zip, 10) : null);
 						// Если город не найден ищем его еще раз
 						if(!$.isset(city)) city = town;
 						// Формируем объект
@@ -279,9 +281,11 @@ const anyks = require("./lib.anyks");
 						// Переходим по всему массиву с компонентами адреса
 						data.address_components.forEach(obj => {
 							// Ищем почтовый индекс
-							if(obj.types.indexOf('postal_code') > -1) zip = parseInt(obj.long_name, 10);
+							if(obj.types.indexOf('postal_code') > -1){
+								// Если почтовый индекс существует
+								zip = ($.isset(obj.long_name) ? parseInt(obj.long_name, 10) : null);
 							// Ищем город
-							else if(obj.types.indexOf('locality') > -1) city = obj.long_name;
+							} else if(obj.types.indexOf('locality') > -1) city = obj.long_name;
 							// Ищем код и название страны
 							else if(obj.types.indexOf('country') > -1){
 								// Получаем название страны
