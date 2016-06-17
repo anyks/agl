@@ -1749,6 +1749,10 @@ const anyks = require("./lib.anyks");
 				const ParentId		= cityId;
 				const WithParent	= 1;
 				const Limit			= limit;
+
+
+				console.log("++++++++++", cityId, ParentId);
+
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
 					// Если данные не найдены
