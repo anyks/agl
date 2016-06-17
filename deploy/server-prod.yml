@@ -1,0 +1,4 @@
+- hosts: server-prod
+  remote_user: freebsd
+  roles:
+    - server
