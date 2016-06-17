@@ -329,6 +329,8 @@
 			const internal = obj => {
 				// Если данный метод существует
 				if(ax.isFunction(agl[obj.action])){
+					// Если параметры запроса не существуют то создаем их
+					if(!$.isset(obj.query)) obj.query = {};
 					// Выполняем запрос данных из api
 					agl[obj.action](obj.query, true)
 					// Выполняем внутренний метод системы
