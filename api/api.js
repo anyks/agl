@@ -2697,7 +2697,7 @@ const anyks = require("./lib.anyks");
 
 											idObj.k++;
 
-											console.log("-------------------------", k);
+											console.log("-------------------------", idObj.k);
 
 											// Отправляем в Redis на час
 											Agl.setRedis.call(idObj, "set", key, result, 3600).then();
