@@ -3705,20 +3705,36 @@ const anyks = require("./lib.anyks");
 				 */
 				const getData = function * (){
 					// Получаем данные по GPS координатам
-					let name = yield idObj.getAddressByGPS({lat, lng});
-					// Получаем результат
-					name = ($.isset(name) && $.isset(name.address)
-					&& $.isset(name.address.district) ? name.address.district : false);
-					// Выполняем парсинг строки адреса
-					let address = ($.isset(name) ? yield idObj.parseAddress({address: name + ","}) : false);
-					// Получаем результат
-					address = ($.isset(address) && $.isset(address.subject) ? address.subject.name : false);
-					// Выполняем поиск района
-					let district = ($.isset(address) ? yield idObj.findDistrict({str: address, limit: 1}) : false);
-					// Получаем результат
-					if($.isArray(district) && district.length) district = district[0];
+					const name = yield idObj.getAddressByGPS({lat, lng});
+					// Получаем страну
+					let country = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.country) ? name.address.country : "");
+					// Выполняем парсинг строки адреса страны
+					country = ($.isset(country) ? yield idObj.parseAddress({address: country}) : false);
+					// Извлекаем название страны
+					country = ($.isset(country) ? country.subject.name : false);
+					// Запрашиваем данные страны с сервера
+					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
+					// Получаем регион
+					let region = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.region) ? name.address.region : "");
+					// Выполняем парсинг строки адреса региона
+					region = ($.isset(region) ? yield idObj.parseAddress({address: region}) : false);
+					// Извлекаем название региона
+					region = ($.isset(region) ? region.subject.name : false);
+					// Запрашиваем данные региона с сервера
+					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
+					// Получаем район
+					let district = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.district) ? name.address.district : "");
+					// Выполняем парсинг строки адреса района
+					district = ($.isset(district) ? yield idObj.parseAddress({address: district}) : false);
+					// Извлекаем название района
+					district = ($.isset(district) ? district.subject.name : false);
+					// Запрашиваем данные района с сервера
+					district = ($.isset(district) && $.isset(region) ? yield idObj.findDistrict({str: district, regionId: region._id, limit: 1}) : false);
 					// Выводим результат
-					resolve(district);
+					resolve({country, region, district});
 				};
 				// Запускаем коннект
 				exec(getData());
@@ -3768,38 +3784,8 @@ const anyks = require("./lib.anyks");
 					city = ($.isset(city) ? city.subject.name : false);
 					// Запрашиваем данные города с сервера
 					city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id, limit: 1}) : false);
-
-					console.log("+++++++", country, region, city);
-
-					resolve(city);
-
-					/*
-					// Получаем город
-					address += ($.isset(name) && $.isset(name.address)
-					&& $.isset(name.address.city) ? ", " + name.address.city : "");
-
-					console.log("+++++++3", address);
-
-					// Выполняем парсинг строки адреса
-					address = ($.isset(address) ? yield idObj.parseAddress({address}) : false);
-
-					console.log("+++++++4", address);
-
-					// Получаем результат
-					address = ($.isset(address) && $.isset(address.lightAddress) ? address.lightAddress : false);
-					
-					console.log("+++++++5", address);
-
-					// Выполняем поиск города
-					let city = ($.isset(address) ? yield idObj.findCity({str: address, limit: 1}) : false);
-
-					console.log("+++++++6", city);
-
-					// Получаем результат
-					if($.isArray(city) && city.length) city = city[0];
 					// Выводим результат
-					resolve(city);
-					*/
+					resolve({country, region, city});
 				};
 				// Запускаем коннект
 				exec(getData());
