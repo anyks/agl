@@ -2565,8 +2565,6 @@ const anyks = require("./lib.anyks");
 									idObj.log("приведение типов выполнено", result).info();
 									// Если данные найдены
 									if($.isset(result)){
-										// Присваиваем ключ запроса
-										result.key = key;
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save();
 										// Отправляем в Redis на час
@@ -2625,7 +2623,19 @@ const anyks = require("./lib.anyks");
 							exec(getData());
 						};
 						// Запрашиваем все данные из базы
-						idObj.schemes.Address.findOne({key: key}).exec((err, data) => {
+						idObj.schemes.Address.findOne({
+							'gps': {
+								$near: {
+									$geometry: {
+										type: 'Point',
+										// Широта и долгота поиска
+										coordinates: [lng, lat]
+									},
+									$maxDistance: 25
+								}
+							}
+						// Выполняем запрос
+						}).exec((err, data) => {
 							// Если ошибки нет, выводим результат
 							if(!$.isset(err) && $.isset(data)
 							&& $.isObject(data)) resolve(data);
@@ -2685,7 +2695,7 @@ const anyks = require("./lib.anyks");
 									// Если данные найдены
 									if($.isset(result)){
 										// Присваиваем ключ запроса
-										result.key = key;
+										result.key = idObj.generateKey(key);
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save();
 										// Отправляем в Redis на час
@@ -2748,7 +2758,7 @@ const anyks = require("./lib.anyks");
 							// Если данные пришли
 							if($.isObject(result)){
 								// Запрашиваем все данные из базы
-								idObj.schemes.Address.findOne({key: key}).exec((err, data) => {
+								idObj.schemes.Address.findOne({key: idObj.generateKey(key)}).exec((err, data) => {
 									// Выводим результат поиска по базе
 									idObj.log("поиск адреса в базе", data).info();
 									// Если ошибки нет, выводим результат
