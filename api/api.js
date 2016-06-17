@@ -3741,21 +3741,30 @@ const anyks = require("./lib.anyks");
 				const getData = function * (){
 					// Получаем данные по GPS координатам
 					const name = yield idObj.getAddressByGPS({lat, lng});
-
-					console.log("+++++++0", name, name.address.region, name.address.city);
-
 					// Получаем страну
-					let address = ($.isset(name) && $.isset(name.address)
+					let country = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.country) ? name.address.country : "");
-
-					console.log("+++++++1", address);
-
+					// Выполняем парсинг строки адреса страны
+					country = ($.isset(country) ? yield idObj.parseAddress({address: country}) : false);
+					// Извлекаем название страны
+					country = ($.isset(country) ? country.subject.name : false);
+					// Запрашиваем данные страны с сервера
+					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
 					// Получаем регион
-					address += ($.isset(name) && $.isset(name.address)
-					&& $.isset(name.address.region) ? ", " + name.address.region : "");
+					let region = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.region) ? name.address.region : "");
+					// Выполняем парсинг строки адреса региона
+					region = ($.isset(region) ? yield idObj.parseAddress({address: region}) : false);
+					// Извлекаем название региона
+					region = ($.isset(region) ? region.subject.name : false);
+					// Запрашиваем данные региона с сервера
+					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
 
-					console.log("+++++++2", address);
+					console.log("+++++++", country, region);
 
+					resolve(region);
+
+					/*
 					// Получаем город
 					address += ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.city) ? ", " + name.address.city : "");
@@ -3781,6 +3790,7 @@ const anyks = require("./lib.anyks");
 					if($.isArray(city) && city.length) city = city[0];
 					// Выводим результат
 					resolve(city);
+					*/
 				};
 				// Запускаем коннект
 				exec(getData());
