@@ -3853,7 +3853,7 @@ const anyks = require("./lib.anyks");
 					// Извлекаем название улицы
 					street = ($.isset(street) ? street.subject.name : false);
 					// Запрашиваем данные улицы с сервера
-					street = ($.isset(street) && $.isset(city) ? yield idObj.findStreet({str: street, regionId: city._id, limit: 1}) : false);
+					street = ($.isset(street) && $.isset(city) ? yield idObj.findStreet({str: street, cityId: city._id, limit: 1}) : false);
 					// Выводим результат
 					resolve({country, region, city, street});
 				};

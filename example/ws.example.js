@@ -133,6 +133,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getRegionByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
 // socket.send(JSON.stringify({"action": "getDistrictByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
 // socket.send(JSON.stringify({"action": "getCityByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
+// socket.send(JSON.stringify({"action": "getStreetByGPS", "query": {"lat":"55.870031", "lng":"41.772074"}}));
 //
 // socket.send(JSON.stringify({"action": "getStreetsByGPS", "query": {"lat":"56.8348879", "lng":"41.3841305"}}));
 // socket.send(JSON.stringify({"action": "getHousesByGPS", "query": {"lat":"56.8348879", "lng":"41.3841305"}}));
