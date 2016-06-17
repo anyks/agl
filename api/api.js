@@ -3802,6 +3802,66 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * getStreetByGPS Метод поиска улицы по GPS координатам
+		 * @param  {Number} options.lat широта
+		 * @param  {Number} options.lng долгота
+		 * @return {Promise}            промис содержащий найденные улицы
+		 */
+		getCityByGPS({lat, lng}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * *getData Генератор для получения данных адреса
+				 */
+				const getData = function * (){
+					// Получаем данные по GPS координатам
+					const name = yield idObj.getAddressByGPS({lat, lng});
+					// Получаем страну
+					let country = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.country) ? name.address.country : "");
+					// Выполняем парсинг строки адреса страны
+					country = ($.isset(country) ? yield idObj.parseAddress({address: country}) : false);
+					// Извлекаем название страны
+					country = ($.isset(country) ? country.subject.name : false);
+					// Запрашиваем данные страны с сервера
+					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
+					// Получаем регион
+					let region = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.region) ? name.address.region : "");
+					// Выполняем парсинг строки адреса региона
+					region = ($.isset(region) ? yield idObj.parseAddress({address: region}) : false);
+					// Извлекаем название региона
+					region = ($.isset(region) ? region.subject.name : false);
+					// Запрашиваем данные региона с сервера
+					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
+					// Получаем город
+					let city = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.city) ? name.address.city : "");
+					// Выполняем парсинг строки адреса города
+					city = ($.isset(city) ? yield idObj.parseAddress({address: city}) : false);
+					// Извлекаем название города
+					city = ($.isset(city) ? city.subject.name : false);
+					// Запрашиваем данные города с сервера
+					city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id, limit: 1}) : false);
+					// Получаем улицу
+					let street = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.street) ? name.address.street : "");
+					// Выполняем парсинг строки адреса улицы
+					street = ($.isset(street) ? yield idObj.parseAddress({address: street}) : false);
+					// Извлекаем название улицы
+					street = ($.isset(street) ? street.subject.name : false);
+					// Запрашиваем данные улицы с сервера
+					street = ($.isset(street) && $.isset(city) ? yield idObj.findStreet({str: street, regionId: city._id, limit: 1}) : false);
+					// Выводим результат
+					resolve({country, region, city, street});
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
+		}
+		/**
 		 * getStreetsByGPS Метод поиска улиц по GPS координатам
 		 * @param  {Number} options.lat      широта
 		 * @param  {Number} options.lng      долгота
