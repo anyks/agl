@@ -2663,9 +2663,9 @@ const anyks = require("./lib.anyks");
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
 				// Преобразуем адрес
-				address = address.anyks_trim();
+				address = address.toLowerCase().anyks_trim();
 				// Ключ кеша адреса
-				const key = "address:string:" + idObj.generateKey(address.toLowerCase());
+				const key = "address:string:" + idObj.generateKey(address);
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
@@ -2695,7 +2695,7 @@ const anyks = require("./lib.anyks");
 									// Если данные найдены
 									if($.isset(result)){
 										// Присваиваем ключ запроса
-										result.key = idObj.generateKey(key);
+										result.key = idObj.generateKey(address);
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save();
 										// Отправляем в Redis на час
@@ -2758,7 +2758,7 @@ const anyks = require("./lib.anyks");
 							// Если данные пришли
 							if($.isObject(result)){
 								// Запрашиваем все данные из базы
-								idObj.schemes.Address.findOne({key: idObj.generateKey(key)}).exec((err, data) => {
+								idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
 									// Выводим результат поиска по базе
 									idObj.log("поиск адреса в базе", data).info();
 									// Если ошибки нет, выводим результат
