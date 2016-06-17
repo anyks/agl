@@ -2691,13 +2691,11 @@ const anyks = require("./lib.anyks");
 									// Если данные найдены
 									if($.isset(result)){
 										// Сохраняем результат в базу данных
-										(new idObj.schemes.Address(result)).save(() => {
+										(new idObj.schemes.Address(result)).save((e, r) => {
 
-											if(!$.isset(idObj.k)) idObj.k = 0;
+											
 
-											idObj.k++;
-
-											console.log("-------------------------", idObj.k);
+											console.log("-------------------------", e, r);
 
 											// Отправляем в Redis на час
 											Agl.setRedis.call(idObj, "set", key, result, 3600).then();
