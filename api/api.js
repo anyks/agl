@@ -3759,10 +3759,19 @@ const anyks = require("./lib.anyks");
 					region = ($.isset(region) ? region.subject.name : false);
 					// Запрашиваем данные региона с сервера
 					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
+					// Получаем город
+					let city = ($.isset(name) && $.isset(name.address)
+					&& $.isset(name.address.city) ? name.address.city : "");
+					// Выполняем парсинг строки адреса города
+					city = ($.isset(city) ? yield idObj.parseAddress({address: city}) : false);
+					// Извлекаем название города
+					city = ($.isset(city) ? city.subject.name : false);
+					// Запрашиваем данные города с сервера
+					city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id, limit: 1}) : false);
 
-					console.log("+++++++", country, region);
+					console.log("+++++++", country, region, city);
 
-					resolve(region);
+					resolve(city);
 
 					/*
 					// Получаем город
