@@ -4894,6 +4894,12 @@ const anyks = require("./lib.anyks");
 							address.createIndex({lat: 1, lng: 1}, {name: "gps"});
 							address.createIndex({"address.zip": 1}, {name: "zip"});
 							address.createIndex({"address.district": 1}, {name: "district"});
+							address.createIndex({"address.region": 1}, {name: "region"});
+							address.createIndex({"address.country": 1}, {name: "country"});
+							address.createIndex({"address.street": 1}, {name: "street"});
+							address.createIndex({"address.city": 1}, {name: "city"});
+							address.createIndex({"address.region": 1, "address.country": 1}, {name: "regcry"});
+							address.createIndex({"address.region": 1, "address.country": 1, "address.city": 1}, {name: "regcrycty"});
 							address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
 							address.createIndex({gps: "2dsphere"}, {name: "locations"});
 							// Создаем индексы для улиц
