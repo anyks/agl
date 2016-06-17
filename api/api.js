@@ -1383,7 +1383,7 @@ const anyks = require("./lib.anyks");
 									}
 								});
 								// Извлекаем название
-								data.name = subject.replace(data.type, "").replace(/[\.\,]/ig, "");
+								data.name = subject.replace(new RegExp(data.type, "ig"), "").replace(/[\.\,]/ig, "");
 								// Переименовываем тип объекта
 								data.type = ($.isset(mapSubjects[data.type]) ? mapSubjects[data.type] : data.type);
 								// Исправляем название и тип

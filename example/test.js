@@ -252,7 +252,7 @@ const parseNativeAddress = address => {
 						}
 					});
 					// Извлекаем название
-					data.name = subject.replace(data.type, "").replace(/[\.\,]/ig, "");
+					data.name = subject.replace(new RegExp(data.type, "ig"), "").replace(/[\.\,]/ig, "");
 					// Переименовываем тип объекта
 					data.type = (isset(mapSubjects[data.type]) ? mapSubjects[data.type] : data.type);
 					// Исправляем название и тип
@@ -361,7 +361,7 @@ const parseNativeAddress = address => {
 // console.log(parseNativeAddress("Россия, Ивановская область, Шуйский район, г.Шуя, площадь Комсомольская, дом 10 корпус 2 строение 1"));
 // console.log(parseNativeAddress("Российская Федерация, г.Москва, посёлок Коммунарка, ул.Липовый парк, 10К2"));
 // console.log(parseNativeAddress("Россия, Москва город, Коммунарка поселок, Липовый улица парк, 10К2"));
- console.log(parseNativeAddress("Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"));
-//
+// console.log(parseNativeAddress("Россия, Ивановская область, город Шуя, площадь Комсомольская, д.12, кв.101"));
+console.log(parseNativeAddress("Россия, Ханты-мансийский автономный округ - югра автономный округ"));
 //
 //
