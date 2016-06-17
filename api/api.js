@@ -3650,6 +3650,8 @@ const anyks = require("./lib.anyks");
 					country = ($.isset(country) ? country.subject.name : false);
 					// Запрашиваем данные страны с сервера
 					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(country) && country.length) country = country[0];
 					// Выводим результат
 					resolve({country});
 				};
@@ -3683,6 +3685,8 @@ const anyks = require("./lib.anyks");
 					country = ($.isset(country) ? country.subject.name : false);
 					// Запрашиваем данные страны с сервера
 					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(country) && country.length) country = country[0];
 					// Получаем регион
 					let region = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.region) ? name.address.region : "");
@@ -3692,6 +3696,8 @@ const anyks = require("./lib.anyks");
 					region = ($.isset(region) ? region.subject.name : false);
 					// Запрашиваем данные региона с сервера
 					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(region) && region.length) region = region[0];
 					// Выводим результат
 					resolve({country, region});
 				};
@@ -3725,6 +3731,8 @@ const anyks = require("./lib.anyks");
 					country = ($.isset(country) ? country.subject.name : false);
 					// Запрашиваем данные страны с сервера
 					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(country) && country.length) country = country[0];
 					// Получаем регион
 					let region = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.region) ? name.address.region : "");
@@ -3734,6 +3742,8 @@ const anyks = require("./lib.anyks");
 					region = ($.isset(region) ? region.subject.name : false);
 					// Запрашиваем данные региона с сервера
 					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(region) && region.length) region = region[0];
 					// Получаем район
 					let district = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.district) ? name.address.district : "");
@@ -3743,6 +3753,8 @@ const anyks = require("./lib.anyks");
 					district = ($.isset(district) ? district.subject.name : false);
 					// Запрашиваем данные района с сервера
 					district = ($.isset(district) && $.isset(region) ? yield idObj.findDistrict({str: district, regionId: region._id, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(district) && district.length) district = district[0];
 					// Выводим результат
 					resolve({country, region, district});
 				};
@@ -3776,6 +3788,8 @@ const anyks = require("./lib.anyks");
 					country = ($.isset(country) ? country.subject.name : false);
 					// Запрашиваем данные страны с сервера
 					country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(country) && country.length) country = country[0];
 					// Получаем регион
 					let region = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.region) ? name.address.region : "");
@@ -3785,6 +3799,8 @@ const anyks = require("./lib.anyks");
 					region = ($.isset(region) ? region.subject.name : false);
 					// Запрашиваем данные региона с сервера
 					region = ($.isset(region) ? yield idObj.findRegion({str: region, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(region) && region.length) region = region[0];
 					// Получаем город
 					let city = ($.isset(name) && $.isset(name.address)
 					&& $.isset(name.address.city) ? name.address.city : "");
@@ -3794,6 +3810,8 @@ const anyks = require("./lib.anyks");
 					city = ($.isset(city) ? city.subject.name : false);
 					// Запрашиваем данные города с сервера
 					city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id, limit: 1}) : false);
+					// Если это массив то извлекаем данные
+					if($.isArray(city) && city.length) city = city[0];
 					// Выводим результат
 					resolve({country, region, city});
 				};
