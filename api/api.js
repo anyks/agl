@@ -2654,7 +2654,7 @@ const anyks = require("./lib.anyks");
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
-			return (new Promise(resolve => {let k = 0;
+			return (new Promise(resolve => {
 				// Преобразуем адрес
 				address = address.anyks_trim();
 				// Ключ кеша адреса
@@ -2688,7 +2688,9 @@ const anyks = require("./lib.anyks");
 									// Сохраняем результат в базу данных
 									if(result) (new idObj.schemes.Address(result)).save(() => {
 
-										k++;
+										if(!$.isset(idObj.k)) idObj.k = 0;
+
+										idObj.k++;
 
 										console.log("-------------------------", k);
 
