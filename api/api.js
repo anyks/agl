@@ -2549,7 +2549,7 @@ const anyks = require("./lib.anyks");
 							const fetch = require('node-fetch');
 							// Массив с геокодерами
 							const urlsGeo = [
-								'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lng,$lat',
+								'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lat,$lng&sco=latlong&lang=ru_RU&results=1',
 								'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
 								'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
 							].map(val => val.replace("$lat", lat).replace("$lng", lng));
@@ -2673,7 +2673,7 @@ const anyks = require("./lib.anyks");
 							const fetch = require('node-fetch');
 							// Массив с геокодерами
 							const urlsGeo = [
-								'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address',
+								'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address&lang=ru_RU&results=1',
 								'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
 								'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
 							].map(val => val.replace("$address", encodeURI(address)));
@@ -3718,8 +3718,14 @@ const anyks = require("./lib.anyks");
 							// Получаем регион
 							let region = ($.isset(name) && $.isset(name.address)
 							&& $.isset(name.address.region) ? name.address.region : "");
+
+							console.log("+++++++++++1", region);
+
 							// Выполняем парсинг строки адреса региона
 							region = ($.isset(region) ? yield idObj.parseAddress({address: region}) : false);
+
+							console.log("+++++++++++2", region);
+
 							// Извлекаем название региона
 							region = ($.isset(region) ? region.subject.name : false);
 							// Запрашиваем данные региона с сервера
