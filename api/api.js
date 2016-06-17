@@ -3807,7 +3807,7 @@ const anyks = require("./lib.anyks");
 		 * @param  {Number} options.lng долгота
 		 * @return {Promise}            промис содержащий найденные улицы
 		 */
-		getCityByGPS({lat, lng}){
+		getStreetByGPS({lat, lng}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
