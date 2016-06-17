@@ -2559,10 +2559,13 @@ const anyks = require("./lib.anyks");
 								parseAnswerGeoCoder.call(idObj, obj).then(result => {
 									// Выводим сообщение об удачном приведении типов
 									idObj.log("приведение типов выполнено", result).info();
-									// Сохраняем результат в базу данных
-									if(result) (new idObj.schemes.Address(result)).save();
-									// Отправляем в Redis на час
-									Agl.setRedis.call(idObj, "set", key, result, 3600).then();
+									// Если данные найдены
+									if($.isset(result)){
+										// Сохраняем результат в базу данных
+										(new idObj.schemes.Address(result)).save();
+										// Отправляем в Redis на час
+										Agl.setRedis.call(idObj, "set", key, result, 3600).then();
+									}
 									// Выводим результат
 									resolve(result);
 								// Если происходит ошибка тогда выходим
@@ -2685,21 +2688,23 @@ const anyks = require("./lib.anyks");
 								parseAnswerGeoCoder.call(idObj, obj).then(result => {
 									// Выводим сообщение об удачном приведении типов
 									idObj.log("приведение типов выполнено", result).info();
-									// Сохраняем результат в базу данных
-									if(result) (new idObj.schemes.Address(result)).save(() => {
+									// Если данные найдены
+									if($.isset(result)){
+										// Сохраняем результат в базу данных
+										(new idObj.schemes.Address(result)).save(() => {
 
-										if(!$.isset(idObj.k)) idObj.k = 0;
+											if(!$.isset(idObj.k)) idObj.k = 0;
 
-										idObj.k++;
+											idObj.k++;
 
-										console.log("-------------------------", k);
+											console.log("-------------------------", k);
 
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, result, 3600).then();
-										// Выводим результат
-										resolve(result);
-									});
-									else resolve(result);
+											// Отправляем в Redis на час
+											Agl.setRedis.call(idObj, "set", key, result, 3600).then();
+											// Выводим результат
+											resolve(result);
+										});
+									} else resolve(result);
 								// Если происходит ошибка тогда выходим
 								}).catch(err => {
 									// Выводим ошибку метода
