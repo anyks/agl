@@ -1497,10 +1497,15 @@ const anyks = require("./lib.anyks");
 				arr.forEach(val => {
 					// Создаем адреса в простом виде
 					if(mapLight.indexOf(val.type) < 0) arrlight.push(val.data.name);
+					// Создаем строку субъекта для добавления в полный адрес
+					const subject = val.data.name + " " + val.data.type.toLowerCase();
 					// Создаем адреса в полном виде
-					arrfull.push(val.data.name + " " + val.data.type.toLowerCase());
-					// Создаем адрес в замаскированном виде
-					arrMask.push("{" + val.type + "}");
+					if(arrfull.indexOf(subject) < 0){
+						// Добавляем данные в полный адрес
+						arrfull.push(subject);
+						// Создаем адрес в замаскированном виде
+						arrMask.push("{" + val.type + "}");
+					}
 				});
 				// Формируем строковый вид адресов
 				address			= arrMask.join(", ");
