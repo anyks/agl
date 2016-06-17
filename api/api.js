@@ -2687,7 +2687,7 @@ const anyks = require("./lib.anyks");
 										// Присваиваем ключ запроса
 										result.key = key;
 										// Сохраняем результат в базу данных
-										(new idObj.schemes.Address(result)).save();
+										(new idObj.schemes.Address(result)).save((e, r) => console.log("++++++", e, r));
 										// Отправляем в Redis на час
 										Agl.setRedis.call(idObj, "set", key, result, 3600).then();
 									}
