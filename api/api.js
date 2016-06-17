@@ -4894,7 +4894,7 @@ const anyks = require("./lib.anyks");
 							// Выполняем загрузку станций метро для городов
 							const metroCity = yield idObj.updateMetroCity({}, true);
 							// Создаем индексы для базы адресов
-							// address.createIndex({id: 1}, {name: "id", unique: true, dropDups: true});
+							address.createIndex({key: 1}, {name: "key", unique: true, dropDups: true});
 							address.createIndex({lat: 1, lng: 1}, {name: "gps"});
 							address.createIndex({"address.zip": 1}, {name: "zip"});
 							address.createIndex({"address.district": 1}, {name: "district"});
