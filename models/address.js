@@ -24,6 +24,7 @@
 				lat:	String,
 				lng:	String,
 				code:	String,
+				key:	String,
 				gps:	[Number],
 				boundingbox: [{
 					type:		String,

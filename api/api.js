@@ -2565,6 +2565,8 @@ const anyks = require("./lib.anyks");
 									idObj.log("приведение типов выполнено", result).info();
 									// Если данные найдены
 									if($.isset(result)){
+										// Присваиваем ключ запроса
+										result.key = key;
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save();
 										// Отправляем в Redis на час
@@ -2623,19 +2625,7 @@ const anyks = require("./lib.anyks");
 							exec(getData());
 						};
 						// Запрашиваем все данные из базы
-						idObj.schemes.Address.findOne({
-							'gps': {
-								$near: {
-									$geometry: {
-										type: 'Point',
-										// Широта и долгота поиска
-										coordinates: [lng, lat]
-									},
-									$maxDistance: 25
-								}
-							}
-						// Выполняем запрос
-						}).exec((err, data) => {
+						idObj.schemes.Address.findOne({key: key}).exec((err, data) => {
 							// Если ошибки нет, выводим результат
 							if(!$.isset(err) && $.isset(data)
 							&& $.isObject(data)) resolve(data);
@@ -2667,11 +2657,11 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша адреса
 				const key = "address:string:" + idObj.generateKey(address.toLowerCase());
 				// Ищем станции в кеше
-				// Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					//if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					//else {
+					else {
 						/**
 						 * getDataFromGeocoder Функция запроса данных с геокодера
 						 */
@@ -2694,6 +2684,8 @@ const anyks = require("./lib.anyks");
 									idObj.log("приведение типов выполнено", result).info();
 									// Если данные найдены
 									if($.isset(result)){
+										// Присваиваем ключ запроса
+										result.key = key;
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save();
 										// Отправляем в Redis на час
@@ -2755,33 +2747,16 @@ const anyks = require("./lib.anyks");
 						idObj.parseAddress({address}).then(result => {
 							// Если данные пришли
 							if($.isObject(result)){
-								// Флаг проверки искать ли данные или нет
-								let flag = false; //true;
-								// Проверяем какие пришли данные
-								if(($.isset(result.region) || $.isset(result.district))
-								&& ($.isset(result.street) || $.isset(result.house) || $.isset(result.apartment))
-								&& (!$.isset(result.city) || !$.isset(result.street) || /[А-ЯЁ]/i.test(result.address))) flag = false;
-								// Если флаг активирован
-								if(flag){
-									// Параметры запроса
-									const query = {};
-									// Создаем параметры запроса
-									if($.isset(result.district))	query["address.district"]	= (new RegExp(result.district.name, "i"));
-									if($.isset(result.city))		query["address.city"]		= (new RegExp(result.city.name, "i"));
-									if($.isset(result.region))		query["address.region"]		= (new RegExp(result.region.name, "i"));
-									if($.isset(result.street))		query["address.street"]		= (new RegExp(result.street.name, "i"));
-									// Запрашиваем все данные из базы
-									idObj.schemes.Address.findOne(query).exec((err, data) => {
-										// Выводим результат поиска по базе
-										idObj.log("поиск адреса в базе", data).info();
-										// Если ошибки нет, выводим результат
-										if(!$.isset(err) && $.isset(data)
-										&& $.isObject(data)) resolve(data);
-										// Продолжаем дальше если данные не найдены
-										else getDataFromGeocoder(result.fullAddress, result.lightAddress);
-									});
-								// Продолжаем дальше если данные не найдены
-								} else getDataFromGeocoder(address, result.lightAddress);
+								// Запрашиваем все данные из базы
+								idObj.schemes.Address.findOne({key: key}).exec((err, data) => {
+									// Выводим результат поиска по базе
+									idObj.log("поиск адреса в базе", data).info();
+									// Если ошибки нет, выводим результат
+									if(!$.isset(err) && $.isset(data)
+									&& $.isObject(data)) resolve(data);
+									// Продолжаем дальше если данные не найдены
+									else getDataFromGeocoder(address, result.lightAddress);
+								});
 							// Продолжаем дальше
 							} else getDataFromGeocoder(address);
 						// Если происходит ошибка тогда выходим
@@ -2791,14 +2766,14 @@ const anyks = require("./lib.anyks");
 							// Выходим
 							getDataFromGeocoder(address);
 						});
-					//}
+					}
 				// Если происходит ошибка тогда выходим
-				//}).catch(err => {
+				}).catch(err => {
 					// Выводим ошибку метода
-					//idObj.log("getRedis in getAddressByString", err).error();
+					idObj.log("getRedis in getAddressByString", err).error();
 					// Выходим
-					//resolve(false);
-				//});
+					resolve(false);
+				});
 			}));
 		}
 		/**
