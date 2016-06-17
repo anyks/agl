@@ -1736,10 +1736,17 @@ const anyks = require("./lib.anyks");
 		 * @return {Promise}                   промис результата
 		 */
 		findStreet({str, cityId, limit = 10, noCache = false}){
+			
+			
+
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				
+
+				try {
+
 				// Ограничиваем максимальный лимит
 				if(limit > 100) limit = 100;
 				// Создаем переменные
@@ -1749,6 +1756,9 @@ const anyks = require("./lib.anyks");
 				const ParentId		= cityId;
 				const WithParent	= 1;
 				const Limit			= limit;
+
+				console.log("++++++++", ContentName, ContentType, ParentId, ParentType, Limit);
+
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, ParentId, ParentType, Limit).then(result => {
 					// Если данные не найдены
@@ -1776,6 +1786,9 @@ const anyks = require("./lib.anyks");
 					// Выходим
 					resolve(false);
 				});
+
+				} catch(e) {console.log("++++++", e);}
+
 			}));
 		}
 		/**
