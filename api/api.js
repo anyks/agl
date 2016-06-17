@@ -2695,18 +2695,12 @@ const anyks = require("./lib.anyks");
 									// Если данные найдены
 									if($.isset(result)){
 										// Сохраняем результат в базу данных
-										(new idObj.schemes.Address(result)).save((e, r) => {
-
-											
-
-											console.log("-------------------------", e, r, result);
-
-											// Отправляем в Redis на час
-											Agl.setRedis.call(idObj, "set", key, result, 3600).then();
-											// Выводим результат
-											resolve(result);
-										});
-									} else resolve(result);
+										(new idObj.schemes.Address(result)).save();
+										// Отправляем в Redis на час
+										Agl.setRedis.call(idObj, "set", key, result, 3600).then();
+									}
+									// Выводим результат
+									resolve(result);
 								// Если происходит ошибка тогда выходим
 								}).catch(err => {
 									// Выводим ошибку метода
@@ -2762,7 +2756,7 @@ const anyks = require("./lib.anyks");
 							// Если данные пришли
 							if($.isObject(result)){
 								// Флаг проверки искать ли данные или нет
-								let flag = true;
+								let flag = false; //true;
 								// Проверяем какие пришли данные
 								if(($.isset(result.region) || $.isset(result.district))
 								&& ($.isset(result.street) || $.isset(result.house) || $.isset(result.apartment))
