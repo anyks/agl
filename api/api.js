@@ -2654,7 +2654,7 @@ const anyks = require("./lib.anyks");
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
-			return (new Promise(resolve => {
+			return (new Promise(resolve => {let k = 0;
 				// Преобразуем адрес
 				address = address.anyks_trim();
 				// Ключ кеша адреса
@@ -2686,11 +2686,18 @@ const anyks = require("./lib.anyks");
 									// Выводим сообщение об удачном приведении типов
 									idObj.log("приведение типов выполнено", result).info();
 									// Сохраняем результат в базу данных
-									if(result) (new idObj.schemes.Address(result)).save();
-									// Отправляем в Redis на час
-									Agl.setRedis.call(idObj, "set", key, result, 3600).then();
-									// Выводим результат
-									resolve(result);
+									if(result) (new idObj.schemes.Address(result)).save(() => {
+
+										k++;
+
+										console.log("-------------------------", k);
+
+										// Отправляем в Redis на час
+										Agl.setRedis.call(idObj, "set", key, result, 3600).then();
+										// Выводим результат
+										resolve(result);
+									});
+									else resolve(result);
 								// Если происходит ошибка тогда выходим
 								}).catch(err => {
 									// Выводим ошибку метода
