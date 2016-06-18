@@ -2698,7 +2698,8 @@ const anyks = require("./lib.anyks");
 							const urlsGeo = [
 								'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lat,$lng&sco=latlong&lang=ru_RU&results=1',
 								'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
-								'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18'
+								'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18',
+								'https://api.pickpoint.io/v1/forward?key=hkCko3fohQFQyDEyyZzt&format=json&lat=$lat&lon=$lng&limit=1&zoom=18'
 							].map(val => val.replace("$lat", lat).replace("$lng", lng));
 							// Получаем объект запроса с геокодера
 							const init = obj => {
@@ -2747,6 +2748,11 @@ const anyks = require("./lib.anyks");
 								let osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm api', err).error()
+								) : false);
+								// Выполняем запрос на альтернативный адрес OpenStreet Maps
+								osm = (!google && !yandex && !osm ? yield fetch(urlsGeo[3]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log('получения данных с osm2 api', err).error()
 								) : false);
 								// Создаем объект ответа
 								const obj = (
@@ -2827,10 +2833,14 @@ const anyks = require("./lib.anyks");
 							const urlsGeo = [
 								'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address&lang=ru_RU&results=1',
 								'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
-								'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1'
+								'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1',
+								'https://api.pickpoint.io/v1/forward?key=hkCko3fohQFQyDEyyZzt&q=$address&format=json&addressdetails=1&limit=1'
 							].map(val => val.replace("$address", encodeURI(address)));
 							// Заменяем адрес OSM если он существует
-							if($.isset(osmAddress)) urlsGeo[2] = urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
+							if($.isset(osmAddress)){
+								urlsGeo[2] = urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
+								urlsGeo[3] = urlsGeo[3].replace(encodeURI(address), encodeURI(osmAddress));
+							}
 							// Получаем объект запроса с геокодера
 							const init = obj => {
 								// Выполняем обработку результата геокодера
@@ -2882,6 +2892,11 @@ const anyks = require("./lib.anyks");
 								let osm = (!google && !yandex ? yield fetch(urlsGeo[2]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm api', err).error()
+								) : false);
+								// Выполняем запрос на альтернативный адрес OpenStreet Maps
+								osm = (!google && !yandex && !osm ? yield fetch(urlsGeo[3]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log('получения данных с osm2 api', err).error()
 								) : false);
 								// Создаем объект ответа
 								const obj = (
