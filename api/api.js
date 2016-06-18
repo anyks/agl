@@ -2903,15 +2903,12 @@ const anyks = require("./lib.anyks");
 									err => idObj.log('получения данных с osm2 api', err).error()
 								) : false);
 
-								console.log("+++++++1", osmAddress);
-								fetch(urlsGeo[3]).then(res => {
-									
-									res.json().then(result => {
-										console.log("+++++++2", res.status, result);
-									});
+								let som2 = yield fetch(urlsGeo[3]).then(
+									res => (res.status === 200 ? res.json() : false),
+									err => idObj.log('получения данных с osm2 api', err).error()
+								);
 
-									
-								});
+								console.log("+++++++++++", som2);
 
 								// Создаем объект ответа
 								const obj = (
