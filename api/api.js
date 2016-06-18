@@ -1179,11 +1179,11 @@ const anyks = require("./lib.anyks");
 			return key.replace(key.substr(4, 8), mkey.substr(8, 16));
 		}
 		/**
-		 * parseFindAddress Метод парсинга и поиска адреса с помощью кеша
+		 * getAddress Метод поиска адреса в кеше
 		 * @param  {String} options.address адрес для парсинга
 		 * @return {Object}                 объект ответа
 		 */
-		parseFindAddress({address}){
+		getAddress({address}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -1213,7 +1213,7 @@ const anyks = require("./lib.anyks");
 				 */
 				const getData = function * (){
 					// Переменные субъектов
-					let country, region, district, city, street, type;
+					let country, region, district, city, street, house;
 					// Разбиваем текст на составляющие
 					address = address
 					// Устанавливаем пробелы в нужных местах
@@ -1225,7 +1225,9 @@ const anyks = require("./lib.anyks");
 					// Переходим по всему массиву
 					for(let subject of address){
 						// Если это не одна буква
-						if(subject.length > 1){
+						if((/^[А-ЯЁ]+$/i.test(subject)
+						&& (subject.length > 1))
+						|| /\d/i.test(subject)){
 							// Выполняем разбор адреса
 							const addr = yield idObj.parseAddress({address: subject});
 							// Проверяем найденный результат, если это тип населенного пункта то пропускаем
@@ -1286,12 +1288,21 @@ const anyks = require("./lib.anyks");
 								// Получаем данные улиц
 								street = findSubject(subject, streets);
 								// Выходим
-								if($.isset(street)) break;
+								if($.isset(street)) continue;
+							}
+							// Если дом не найден а улица найдена
+							if(!$.isset(house) && $.isset(street)){
+								// Получаем данные домов
+								const houses = yield findAddressInCache.call(idObj, subject, 'building', street._id, "street", 100);
+								// Получаем данные домов
+								house = findSubject(subject, houses);
+								// Выходим
+								if($.isset(house)) break;
 							}
 						}
 					}
 					// Выводим результат
-					resolve({country, region, district, city, street});
+					resolve({country, region, district, city, street, house});
 				};
 				// Запускаем коннект
 				exec(getData());
