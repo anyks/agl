@@ -2898,17 +2898,13 @@ const anyks = require("./lib.anyks");
 									err => idObj.log('получения данных с osm api', err).error()
 								) : false);
 								// Выполняем запрос на альтернативный адрес OpenStreet Maps
-								osm = (!google && !yandex && !osm ? yield fetch(urlsGeo[3]).then(
+								osm = (!$.isset(google) && !$.iset(yandex) && !$.isset(osm) ? yield fetch(urlsGeo[3]).then(
 									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm2 api', err).error()
 								) : false);
 
-								let som2 = yield fetch(urlsGeo[3]).then(
-									res => (res.status === 200 ? res.json() : false),
-									err => idObj.log('получения данных с osm2 api', err).error()
-								);
 
-								console.log("+++++++++++", som2);
+								console.log("+++++++++++", osm, som2);
 
 								// Создаем объект ответа
 								const obj = (
