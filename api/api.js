@@ -1635,7 +1635,7 @@ const anyks = require("./lib.anyks");
 				// Строковые виды адресов
 				let lightAddress = "", fullAddress = "";
 				// Формируем массив найденных данных
-				const arr = [], arrlight = [], arrfull = [], arrMask = [];
+				const arr = [], arrlight = [], arrfull = [], arrOsm = [], arrMask = [];
 				// Карта элементов не входящих в простую форму адреса
 				const mapLight = ["zip", "river", "district", "apartment", "community"];
 				// Добавляем в массив найденные данные
@@ -1652,8 +1652,15 @@ const anyks = require("./lib.anyks");
 				if($.isset(result.subject))		arr.push({data: result.subject, type: "subject"});
 				// Создаем адреса в строковом виде
 				arr.forEach(val => {
-					// Создаем адреса в простом виде
-					if(mapLight.indexOf(val.type) < 0) arrlight.push(val.data.name);
+					// Если это не запрещенный тип данных
+					if(mapLight.indexOf(val.type) < 0){
+						// Создаем адреса в простом виде
+						arrlight.push(val.data.name);
+						// Создаем адреса для OSM
+						if(val.type !== "region") arrOsm.push(val.data.name);
+						// Если это регион тогда добавляем полное описание
+						else arrOsm.push(val.data.name + " " + val.data.type.toLowerCase());
+					}
 					// Создаем строку субъекта для добавления в полный адрес
 					const subject = val.data.name + " " + val.data.type.toLowerCase();
 					// Создаем адреса в полном виде
@@ -1666,12 +1673,11 @@ const anyks = require("./lib.anyks");
 				});
 				// Формируем строковый вид адресов
 				address			= arrMask.join(", ");
+				osmAddress		= arrOsm.join(", ");
 				lightAddress	= arrlight.join(", ");
 				fullAddress		= arrfull.join(", ");
 				// Формируем результирующий массив
-				result.address		= address;
-				result.fullAddress	= fullAddress;
-				result.lightAddress	= lightAddress;
+				Object.assign(result, {address, osmAddress, fullAddress, lightAddress});
 				// Выводим в консоль результат
 				idObj.log("строка адреса интерпретирована", result).info();
 				// Выводим результат
@@ -2938,7 +2944,7 @@ const anyks = require("./lib.anyks");
 									if(!$.isset(err) && $.isset(data)
 									&& $.isObject(data)) resolve(data);
 									// Продолжаем дальше если данные не найдены
-									else getDataFromGeocoder(address, result.lightAddress);
+									else getDataFromGeocoder(address, result.osmAddress);
 								});
 							// Продолжаем дальше
 							} else getDataFromGeocoder(address);
