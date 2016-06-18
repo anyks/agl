@@ -566,7 +566,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Регулярное выражение для проверки имени субъекта
-					const regName = new RegExp("^" + arr[i].name + "(?:\\s+[А-ЯЁ]+)?$", "i");
+					const regName = new RegExp(arr[i].name, "i");
 
 					console.log("+++++++++++++", addr, res, regName.test(res.address[arr[i].contentType]));
 
