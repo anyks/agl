@@ -1278,6 +1278,8 @@ const anyks = require("./lib.anyks");
 					let country, region, district, city, street;
 					// Разбиваем текст на составляющие
 					address = address
+					// Устанавливаем пробелы в нужных местах
+					.replace(/(\.|\,)/ig, "$1 ")
 					// Удаляем все символы кроме русских букв, цифр, пробелов и тире
 					.replace(/[^А-ЯЁ\-\d\s]/ig, "")
 					// Разбиваем текст на массив
@@ -1288,6 +1290,12 @@ const anyks = require("./lib.anyks");
 						if(subject.length > 1){
 							// Формируем ключ страны
 							let key = createSubjectKey(subject);
+							// Выполняем разбор адреса
+							const addr = yield parseAddress({address: subject});
+							// Проверяем найденный результат, если это тип населенного пункта то пропускаем
+							if($.isset(addr) && ($.isset(addr.subject)
+							&& $.isset(addr.subject.type)
+							&& !$.isset(addr.subject.name))) continue;
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
