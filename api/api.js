@@ -2788,6 +2788,9 @@ const anyks = require("./lib.anyks");
 								parseAnswerGeoCoder.call(idObj, obj).then(result => {
 									// Выводим сообщение об удачном приведении типов
 									idObj.log("приведение типов выполнено", result).info();
+
+									if(!$.isset(result)) console.log("----------------", address);
+
 									// Если данные найдены
 									if($.isset(result)){
 										// Присваиваем ключ запроса
