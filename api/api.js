@@ -1215,20 +1215,22 @@ const anyks = require("./lib.anyks");
 							// Если район не найден
 							if(!$.isset(district)){
 								// Получаем идентификатор родителя
-								const parentId = ($.isset(region) ? region._id : null);
+								const parentId = ($.isset(region) ? region._id : "*");
 								// Получаем тип родителя
-								const parentType = ($.isset(region) ? "region" : null);
+								const parentType = ($.isset(region) ? "region" : "*");
 								// Получаем данные районов
 								const districts = yield findAddressInCache.call(idObj, subject, "district", parentId, parentType, 100);
 								// Получаем данные района
 								district = findSubject(subject, districts);
+								// Продолжаем дальше
+								if($.isset(district)) continue;
 							}
 							// Если город не найден
 							if(!$.isset(city)){
 								// Получаем идентификатор родителя
-								let parentId = ($.isset(district) ? district._id : ($.isset(region) ? region._id : null));
+								let parentId = ($.isset(district) ? district._id : ($.isset(region) ? region._id : "*"));
 								// Получаем тип родителя
-								let parentType = ($.isset(district) ? "district" : ($.isset(region) ? "region" : null));
+								let parentType = ($.isset(district) ? "district" : ($.isset(region) ? "region" : "*"));
 								// Определяем ключ кеша
 								parentType	= ($.isset(region) ? "*"							: parentType);
 								parentId	= ($.isset(region) ? parentId.substr(0, 2) + "*"	: parentId);
