@@ -1241,30 +1241,15 @@ const anyks = require("./lib.anyks");
 			return key.replace(key.substr(4, 8), mkey.substr(8, 16));
 		}
 		/**
-		 * parseAltAddress Метод альтернативного парсинга адреса с помощью кеша
+		 * parseFindAddress Метод парсинга и поиска адреса с помощью кеша
 		 * @param  {String} options.address адрес для парсинга
 		 * @return {Object}                 объект ответа
 		 */
-		parseAltAddress({address}){
+		parseFindAddress({address}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				/**
-				 * createSubjectKey Функция генерации ключа
-				 * @param  {String} name название субъекта для генерации
-				 * @return {String}      сгенерированный ключ
-				 */
-				const createSubjectKey = name => {
-					// Создаем массив составного ключа
-					const arrKey = [];
-					// Создаем буквы ключа
-					for(let i = 0; i < name.length; i++) arrKey.push(name[i].toLowerCase());
-					// Формируем первоначальное значение ключа
-					return "*" + arrKey.join(":")
-					// Убираем пробелы и двойные двоеточие
-					.replace(/\s/g, "").replace(/:{2,7}/g, ":") + "*";
-				};
 				/**
 				 * findSubject Функция поиска географического субъекта по массиву
 				 * @param  {Object} subject название субъекта
@@ -1305,49 +1290,48 @@ const anyks = require("./lib.anyks");
 							let key = createSubjectKey(subject);
 							// Если страна не найдена
 							if(!$.isset(country)){
+								// Получаем данные стран
+								const countries = yield findAddressInCache.call(idObj, subject, "country", null, null, 100);
 								// Получаем данные страны
 								country = findSubject(subject, countries);
-								// Формируем ключ страны
-								const keyCountry = "address:subjects:country" + key;
-								// Получаем данные стран
-								const countries = yield getRedisByMaskKey.call(idObj, keyCountry);
 							}
 							// Если регион не найден
 							if(!$.isset(region)){
-								// Формируем ключ региона
-								const keyRegion = "address:subjects:region:" + key;
 								// Получаем данные регионов
-								const regions = yield getRedisByMaskKey.call(idObj, keyRegion);
+								const regions = yield findAddressInCache.call(idObj, subject, "region", null, null, 100);
 								// Получаем данные региона
 								region = findSubject(subject, regions);
 							}
 							// Если район не найден
 							if(!$.isset(district)){
-								// Формируем ключ района
-								const keyDistrict = "address:subjects:district:" + ($.isset(region) ? "region:" + region._id : "") + key;
+								// Получаем идентификатор родителя
+								const parentId = ($.isset(region) ? region._id : null);
+								// Получаем тип родителя
+								const parentType = ($.isset(region) ? "region" : null);
 								// Получаем данные районов
-								const districts = yield getRedisByMaskKey.call(idObj, keyDistrict);
+								const districts = yield findAddressInCache.call(idObj, subject, "district", parentId, parentType, 100);
 								// Получаем данные района
 								district = findSubject(subject, districts);
 							}
 							// Если город не найден
 							if(!$.isset(city)){
-								// Формируем ключ города
-								const keyCity = "address:subjects:city:" + ($.isset(district) ? "district:"
-								+ district._id : ($.isset(region) ? "region:" + region._id : "")) + key;
+								// Получаем идентификатор родителя
+								const parentId = ($.isset(district) ? district._id : ($.isset(region) ? region._id : null));
+								// Получаем тип родителя
+								const parentType = ($.isset(district) ? "district" : ($.isset(region) ? "region" : null));
 								// Получаем данные городов
-								const cities = yield getRedisByMaskKey.call(idObj, keyCity);
+								const cities = yield findAddressInCache.call(idObj, subject, "city", parentId, parentType, 100);
 								// Получаем данные города
 								city = findSubject(subject, cities);
 							}
 							// Если улица не найдена а город найден
 							if(!$.isset(street) && $.isset(city)){
-								// Формируем ключ улицы
-								const keyStreet = "address:subjects:street:city:" + city._id + key;
 								// Получаем данные улиц
-								const streets = yield getRedisByMaskKey.call(idObj, keyStreet);
+								const streets = yield findAddressInCache.call(idObj, subject, "street", city._id, "city", 100);
 								// Получаем данные улиц
 								street = findSubject(subject, streets);
+								// Выходим
+								break;
 							}
 						}
 					}
