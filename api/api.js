@@ -543,8 +543,6 @@ const anyks = require("./lib.anyks");
 					arr[i]._id = arr[i].id;
 					// Удаляем основной идентификатор
 					arr[i].id = undefined;
-					
-
 					/**
 					 * *getData Генератор для формирования данных адреса
 					 */
@@ -614,104 +612,6 @@ const anyks = require("./lib.anyks");
 					};
 					// Запускаем коннект
 					exec(getData());
-
-					/*
-					// Получаем данные из кеша
-					getAddressCache.call(idObj, arr[i]).then(cache => {
-						// Если в объекте не найдена временная зона или gps координаты или станции метро
-						if(!cache || (!$.isArray(cache.gps) || !$.isArray(cache.metro) || !$.isset(cache.timezone))){
-							// Выполняем запрос данных
-							idObj.getAddressByString({
-								"address": address + " " +
-								arr[i].name + " " +
-								arr[i].type
-							}).then(res => {
-								// Если результат найден
-								if($.isset(res) && $.isset(res.lat) && $.isset(res.lng)){
-									// Выполняем сохранение данных
-									arr[i].lat	= res.lat;
-									arr[i].lng	= res.lng;
-									arr[i].gps	= res.gps;
-									arr[i].code	= res.address.code;
-									// Выполняем поиск временную зону
-									idObj.getTimezoneByGPS({lat: arr[i].lat, lng: arr[i].lng}).then(timezone => {
-										// Если временная зона найдена
-										if(timezone) arr[i].timezone = timezone;
-										// Если объект внешних ключей существует тогда добавляем их
-										if($.isArray(arr[i].parents)){
-											// Переходим по всему массиву данных
-											arr[i].parents.forEach(val => {
-												// Определяем тип контента
-												switch(val.contentType){
-													// Формируем внешние ключи
-													case 'region':		arr[i].regionId		= val.id;	break;
-													case 'district':	arr[i].districtId	= val.id;	break;
-													case 'city':		arr[i].cityId		= val.id;	break;
-													case 'street':		arr[i].streetId		= val.id;	break;
-												}
-											});
-											// Удаляем родительские объекты
-											arr[i].parents = undefined;
-										}
-										// Если это улица или дом то ищем ближайшие станции метро
-										if((arr[i].contentType === 'city')
-										|| (arr[i].contentType === 'street')
-										|| (arr[i].contentType === 'building')){
-											// Параметры запроса
-											const query = {
-												lat:		parseFloat(arr[i].lat),
-												lng:		parseFloat(arr[i].lng),
-												distance:	(arr[i].typeShort === "г" ? 150000 : 3000)
-											};
-											// Выполняем поиск ближайших станций метро
-											idObj.getMetroByGPS(query).then(metro => {
-												// Если метро передано
-												if($.isArray(metro) && metro.length){
-													// Создаем пустой массив с метро
-													arr[i].metro = [];
-													// Переходим по всему массиву данных
-													metro.forEach(val => arr[i].metro.push(val._id));
-												}
-												// Сохраняем данные
-												updateDB(arr[i], () => getGPS(arr, i + 1));
-											// Если происходит ошибка тогда выходим
-											}).catch(err => {
-												// Выводим ошибку метода
-												idObj.log("getMetroByGPS in getGPSForAddress", err).error();
-												// Сохраняем данные и выходим
-												updateDB(arr[i], () => getGPS(arr, i + 1));
-											});
-										// Сохраняем данные
-										} else updateDB(arr[i], () => getGPS(arr, i + 1));
-									// Если происходит ошибка тогда выходим
-									}).catch(err => {
-										// Выводим ошибку метода
-										idObj.log("getTimezoneByGPS in getGPSForAddress", err).error();
-										// Выходим
-										getGPS(arr, i + 1);
-									});
-								// Идем дальше
-								} else getGPS(arr, i + 1);
-							// Если происходит ошибка тогда выходим
-							}).catch(err => {
-								// Выводим ошибку метода
-								idObj.log("getRedis in getGPSForAddress", err).error();
-								// Выходим
-								getGPS(arr, i + 1);
-							});
-						// Идем дальше
-						} else getGPS(arr, i + 1);
-					// Если происходит ошибка тогда выходим
-					}).catch(err => {
-						// Выводим ошибку метода
-						idObj.log("getAddressCache in getGPSForAddress", err).error();
-						// Выходим
-						resolve(arr);
-					});
-					*/
-
-
-
 				// Сообщаем что все сохранено удачно
 				} else resolve(arr);
 			};
@@ -1250,6 +1150,9 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				
+				try {
+
 				/**
 				 * findSubject Функция поиска географического субъекта по массиву
 				 * @param  {Object} subject название субъекта
@@ -1288,8 +1191,6 @@ const anyks = require("./lib.anyks");
 					for(let subject of address){
 						// Если это не одна буква
 						if(subject.length > 1){
-							// Формируем ключ страны
-							let key = createSubjectKey(subject);
 							// Выполняем разбор адреса
 							const addr = yield parseAddress({address: subject});
 							// Проверяем найденный результат, если это тип населенного пункта то пропускаем
@@ -1351,6 +1252,9 @@ const anyks = require("./lib.anyks");
 				};
 				// Запускаем коннект
 				exec(getData());
+
+				} catch(e) {console.log("++++++", e);}
+
 			}));
 		}
 		/**
