@@ -401,14 +401,8 @@ const anyks = require("./lib.anyks");
 				name:	str,
 				key:	"subjects"
 			});
-
-			console.log("++++++++1", key);
-
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
-				
-				console.log("++++++++2", keys);
-
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -1207,7 +1201,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные страны
 								country = findSubject(subject, countries);
 								// Продолжаем дальше
-								continue;
+								if($.isset(country)) continue;
 							}
 							// Если регион не найден
 							if(!$.isset(region)){
@@ -1216,7 +1210,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные региона
 								region = findSubject(subject, regions);
 								// Продолжаем дальше
-								continue;
+								if($.isset(region)) continue;
 							}
 							// Если район не найден
 							if(!$.isset(district)){
@@ -1229,7 +1223,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные района
 								district = findSubject(subject, districts);
 								// Продолжаем дальше
-								continue;
+								if($.isset(district)) continue;
 							}
 							// Если город не найден
 							if(!$.isset(city)){
@@ -1245,7 +1239,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные города
 								city = findSubject(subject, cities);
 								// Продолжаем дальше
-								continue;
+								if($.isset(city)) continue;
 							}
 							// Если улица не найдена а город найден
 							if(!$.isset(street) && $.isset(city)){
@@ -1254,7 +1248,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные улиц
 								street = findSubject(subject, streets);
 								// Выходим
-								break;
+								if($.isset(street)) break;
 							}
 						}
 					}
