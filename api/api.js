@@ -47,6 +47,15 @@ const anyks = require("./lib.anyks");
 		// Выходим из приложения
 		process.exit(1);
 	}
+	// Карта поправок по gps координатам
+	const gpsMap = {
+		// Байконур
+		"9900000000000": {
+			"lat": "45.96611",
+			"lng": "63.30778",
+			"gps": [parseFloat("63.30778"), parseFloat("45.96611")]
+		}
+	};
 	/**
 	 * exec Функция управления генераторами
 	 * @param  {Generator} gen      генератор
@@ -472,6 +481,17 @@ const anyks = require("./lib.anyks");
 			// Изменяем данные схемы
 			scheme = idObj.schemes[scheme];
 			/**
+			 * gpsFix Функция исправления неверных gps координат
+			 * @param  {Object} id  идентификатор субъекта
+			 * @return {Object}     объект с исправленными координатами
+			 */
+			const gpsFix = id => {
+				// Выводим результат
+				if($.isset(id) && $.isset(gpsMap[id])) return gpsMap[id];
+				// Иначе сообщаем что ничего не найдено
+				else return false;
+			};
+			/**
 			 * updateDB Функция обновления данных в базе
 			 * @param  {Object} obj      объект для обновления данных
 			 * @param  {Object} callback функция обратного вызова
@@ -544,12 +564,28 @@ const anyks = require("./lib.anyks");
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Если результат найден
-					if($.isset(res) && $.isset(res.lat) && $.isset(res.lng)){
+					if(($.isset(res) && $.isset(res.lat) && $.isset(res.lng)
+					// Если искоммый тип мы найшли а не просто GPS россии
+					&& $.isset(res.address[arr[i].contentType]))
+					// Если текущий идентификатор есть в списке для исправления координат
+					|| $.isset(gpsMap[arr[i]._id])){
 						// Выполняем сохранение данных
-						arr[i].lat	= res.lat;
-						arr[i].lng	= res.lng;
-						arr[i].gps	= res.gps;
 						arr[i].code	= res.address.code;
+						// Выполняем получение данные gps
+						const fixGps = gpsFix(arr[i]._id);
+						// Если исправления есть то применяем их
+						if($.isset(fixGps)){
+							// Применяем исправленные координаты
+							arr[i].lat	= fixGps.lat;
+							arr[i].lng	= fixGps.lng;
+							arr[i].gps	= fixGps.gps;
+						// Сохраняем результат
+						} else {
+							// Применяем координаты так как они есть
+							arr[i].lat	= res.lat;
+							arr[i].lng	= res.lng;
+							arr[i].gps	= res.gps;
+						}
 						// Выполняем поиск временной зоны
 						const timezone = yield idObj.getTimezoneByGPS({lat: arr[i].lat, lng: arr[i].lng});
 						// Если временная зона найдена
@@ -1596,10 +1632,10 @@ const anyks = require("./lib.anyks");
 				if($.isset(result.subject))		arr.push({data: result.subject, type: "subject"});
 				// Создаем адреса в строковом виде
 				arr.forEach(val => {
-					// Создаем адреса в простом виде
-					if(mapLight.indexOf(val.type) < 0) arrlight.push(val.data.name);
 					// Создаем строку субъекта для добавления в полный адрес
 					const subject = val.data.name + " " + val.data.type.toLowerCase();
+					// Создаем адреса в простом виде
+					if(mapLight.indexOf(val.type) < 0) arrlight.push(subject);
 					// Создаем адреса в полном виде
 					if(arrfull.indexOf(subject) < 0){
 						// Добавляем данные в полный адрес
@@ -4390,8 +4426,6 @@ const anyks = require("./lib.anyks");
 					const key = createSubjectKey({key: "subjects", db: "region"});
 					// Удаляем данные из кеша
 					Agl.rmRedis.call(idObj, key);
-					// Удаляем данные из кеша
-					Agl.rmRedis.call(idObj, "*");
 					/**
 					 * getRegion Рекурсивная функция загрузки региона
 					 * @param  {Number} i текущий индекс массива
