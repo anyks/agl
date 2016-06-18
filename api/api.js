@@ -237,6 +237,8 @@ const anyks = require("./lib.anyks");
 						zip = ($.isset(zip) ? parseInt(zip, 10) : null);
 						// Если город не найден ищем его еще раз
 						if(!$.isset(city)) city = town;
+						// Если район не найден тогда присваиваем ему другой район
+						if(!$.isset(district)) district = county;
 						// Формируем объект
 						result = {
 							_id, lat, lng, gps,
@@ -563,9 +565,6 @@ const anyks = require("./lib.anyks");
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
-					
-					console.log("+++++", res, arr[i].contentType);
-
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.lat) && $.isset(res.lng)
 					// Если искоммый тип мы найшли а не просто GPS россии
