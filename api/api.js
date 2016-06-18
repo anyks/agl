@@ -1113,6 +1113,8 @@ const anyks = require("./lib.anyks");
 			this.debug = config.debug;
 			// Устанавливаем ключ кладра
 			this.keyKladr = config.kladr;
+			// Устанавливаем ключ pikpoint
+			this.keyPickPoint = config.pickpoint;
 			// Устанавливаем версию системы
 			this.version = config.version;
 			// Устанавливаем копирайт
@@ -2699,8 +2701,8 @@ const anyks = require("./lib.anyks");
 								'https://geocode-maps.yandex.ru/1.x/?format=json&geocode=$lat,$lng&sco=latlong&lang=ru_RU&results=1',
 								'http://maps.googleapis.com/maps/api/geocode/json?address=$lat,$lng&sensor=false&language=ru',
 								'http://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1&zoom=18',
-								'https://api.pickpoint.io/v1/forward?key=hkCko3fohQFQyDEyyZzt&format=json&lat=$lat&lon=$lng&limit=1&zoom=18'
-							].map(val => val.replace("$lat", lat).replace("$lng", lng));
+								'https://api.pickpoint.io/v1/forward?key=$keyPickPoint&format=json&lat=$lat&lon=$lng&limit=1&zoom=18'
+							].map(val => val.replace("$lat", lat).replace("$lng", lng).replace("$keyPickPoint", idObj.keyPickPoint));
 							// Получаем объект запроса с геокодера
 							const init = obj => {
 								// Выполняем обработку результата геокодера
@@ -2834,8 +2836,8 @@ const anyks = require("./lib.anyks");
 								'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$address&lang=ru_RU&results=1',
 								'http://maps.googleapis.com/maps/api/geocode/json?address=$address&sensor=false&language=ru',
 								'http://nominatim.openstreetmap.org/search?q=$address&format=json&addressdetails=1&limit=1',
-								'https://api.pickpoint.io/v1/forward?key=hkCko3fohQFQyDEyyZzt&q=$address&format=json&addressdetails=1&limit=1'
-							].map(val => val.replace("$address", encodeURI(address)));
+								'https://api.pickpoint.io/v1/forward?key=$keyPickPoint&q=$address&format=json&addressdetails=1&limit=1'
+							].map(val => val.replace("$address", encodeURI(address)).replace("$keyPickPoint", idObj.keyPickPoint));
 							// Заменяем адрес OSM если он существует
 							if($.isset(osmAddress)){
 								urlsGeo[2] = urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
