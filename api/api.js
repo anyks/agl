@@ -1632,10 +1632,10 @@ const anyks = require("./lib.anyks");
 				if($.isset(result.subject))		arr.push({data: result.subject, type: "subject"});
 				// Создаем адреса в строковом виде
 				arr.forEach(val => {
+					// Создаем адреса в простом виде
+					if(mapLight.indexOf(val.type) < 0) arrlight.push(val.data.name);
 					// Создаем строку субъекта для добавления в полный адрес
 					const subject = val.data.name + " " + val.data.type.toLowerCase();
-					// Создаем адреса в простом виде
-					if(mapLight.indexOf(val.type) < 0) arrlight.push(subject);
 					// Создаем адреса в полном виде
 					if(arrfull.indexOf(subject) < 0){
 						// Добавляем данные в полный адрес
@@ -2820,6 +2820,9 @@ const anyks = require("./lib.anyks");
 							if($.isset(osmAddress)) urlsGeo[2] = urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
 							// Получаем объект запроса с геокодера
 							const init = obj => {
+								
+								console.log("+++++++++", obj, osmAddress);
+
 								// Выполняем обработку результата геокодера
 								parseAnswerGeoCoder.call(idObj, obj).then(result => {
 									// Выводим сообщение об удачном приведении типов
