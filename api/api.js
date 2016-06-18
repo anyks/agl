@@ -2899,11 +2899,14 @@ const anyks = require("./lib.anyks");
 								) : false);
 								// Выполняем запрос на альтернативный адрес OpenStreet Maps
 								osm = (!google && !yandex && !osm ? yield fetch(urlsGeo[3]).then(
-									res => {console.log("+++++++++", res); return (res.status === 200 ? res.json() : false)},
+									res => (res.status === 200 ? res.json() : false),
 									err => idObj.log('получения данных с osm2 api', err).error()
 								) : false);
 
-
+								console.log("+++++++1", osmAddress);
+								fetch(urlsGeo[3]).then(res => {
+									console.log("+++++++2", res.status, res.json());
+								});
 
 								// Создаем объект ответа
 								const obj = (
