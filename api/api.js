@@ -1192,7 +1192,7 @@ const anyks = require("./lib.anyks");
 						// Если это не одна буква
 						if(subject.length > 1){
 							// Выполняем разбор адреса
-							const addr = yield parseAddress({address: subject});
+							const addr = yield idObj.parseAddress({address: subject});
 							// Проверяем найденный результат, если это тип населенного пункта то пропускаем
 							if($.isset(addr) && ($.isset(addr.subject)
 							&& $.isset(addr.subject.type)
