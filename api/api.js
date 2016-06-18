@@ -2798,10 +2798,6 @@ const anyks = require("./lib.anyks");
 				address = address.toLowerCase().anyks_trim();
 				// Ключ кеша адреса
 				const key = "address:string:" + idObj.generateKey(address);
-
-				// Удаляем данные из кеша
-				Agl.rmRedis.call(idObj, "*");
-
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
@@ -2824,9 +2820,6 @@ const anyks = require("./lib.anyks");
 							if($.isset(osmAddress)) urlsGeo[2] = urlsGeo[2].replace(encodeURI(address), encodeURI(osmAddress));
 							// Получаем объект запроса с геокодера
 							const init = obj => {
-								
-								console.log("+++++++++", obj, osmAddress);
-
 								// Выполняем обработку результата геокодера
 								parseAnswerGeoCoder.call(idObj, obj).then(result => {
 									// Выводим сообщение об удачном приведении типов
