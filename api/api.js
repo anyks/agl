@@ -714,8 +714,6 @@ const anyks = require("./lib.anyks");
 
 				// Сообщаем что все сохранено удачно
 				} else resolve(arr);
-				// Выходим
-				return;
 			};
 			// Выполняем запрос на получение gps данных
 			getGPS(arr);
