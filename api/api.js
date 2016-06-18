@@ -543,6 +543,79 @@ const anyks = require("./lib.anyks");
 					arr[i]._id = arr[i].id;
 					// Удаляем основной идентификатор
 					arr[i].id = undefined;
+					
+
+					/**
+					 * *getData Генератор для формирования данных адреса
+					 */
+					const getData = function * (){
+						// Получаем данные из кеша
+						const cache = yield getAddressCache.call(idObj, arr[i]);
+						// Если в объекте не найдена временная зона или gps координаты или станции метро
+						if(!cache || (!$.isArray(cache.gps) || !$.isArray(cache.metro) || !$.isset(cache.timezone))){
+							// Формируем строку адреса
+							const addr = (address + " " + arr[i].name + " " + arr[i].type);
+							// Выполняем запрос данных
+							const res = yield idObj.getAddressByString({"address": addr});
+							// Если результат найден
+							if($.isset(res) && $.isset(res.lat) && $.isset(res.lng)){
+								// Выполняем сохранение данных
+								arr[i].lat	= res.lat;
+								arr[i].lng	= res.lng;
+								arr[i].gps	= res.gps;
+								arr[i].code	= res.address.code;
+								// Выполняем поиск временной зоны
+								const timezone = yield idObj.getTimezoneByGPS({lat: arr[i].lat, lng: arr[i].lng});
+								// Если временная зона найдена
+								if($.isset(timezone)) arr[i].timezone = timezone;
+								// Если объект внешних ключей существует тогда добавляем их
+								if($.isArray(arr[i].parents)){
+									// Переходим по всему массиву данных
+									arr[i].parents.forEach(val => {
+										// Определяем тип контента
+										switch(val.contentType){
+											// Формируем внешние ключи
+											case 'region':		arr[i].regionId		= val.id;	break;
+											case 'district':	arr[i].districtId	= val.id;	break;
+											case 'city':		arr[i].cityId		= val.id;	break;
+											case 'street':		arr[i].streetId		= val.id;	break;
+										}
+									});
+									// Удаляем родительские объекты
+									arr[i].parents = undefined;
+								}
+								// Если это улица или дом то ищем ближайшие станции метро
+								if((arr[i].contentType === 'city')
+								|| (arr[i].contentType === 'street')
+								|| (arr[i].contentType === 'building')){
+									// Параметры запроса
+									const query = {
+										lat:		parseFloat(arr[i].lat),
+										lng:		parseFloat(arr[i].lng),
+										distance:	(arr[i].typeShort === "г" ? 150000 : 3000)
+									};
+									// Выполняем поиск ближайших станций метро
+									const metro = yield idObj.getMetroByGPS(query);
+									// Если метро передано
+									if($.isArray(metro) && metro.length){
+										// Создаем пустой массив с метро
+										arr[i].metro = [];
+										// Переходим по всему массиву данных
+										metro.forEach(val => arr[i].metro.push(val._id));
+									}
+									// Сохраняем данные
+									updateDB(arr[i], () => getGPS(arr, i + 1));
+								// Сохраняем данные
+								} else updateDB(arr[i], () => getGPS(arr, i + 1));
+							// Идем дальше
+							} else getGPS(arr, i + 1);
+						// Идем дальше
+						} else getGPS(arr, i + 1);
+					};
+					// Запускаем коннект
+					exec(getData());
+
+					/*
 					// Получаем данные из кеша
 					getAddressCache.call(idObj, arr[i]).then(cache => {
 						// Если в объекте не найдена временная зона или gps координаты или станции метро
@@ -635,6 +708,10 @@ const anyks = require("./lib.anyks");
 						// Выходим
 						resolve(arr);
 					});
+					*/
+
+
+
 				// Сообщаем что все сохранено удачно
 				} else resolve(arr);
 				// Выходим
