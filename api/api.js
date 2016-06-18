@@ -2793,7 +2793,10 @@ const anyks = require("./lib.anyks");
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
 										// Сохраняем результат в базу данных
-										(new idObj.schemes.Address(result)).save(() => {
+										(new idObj.schemes.Address(result)).save((e, r) => {
+											
+											console.log("++++++", e, r);
+
 											// Удаляем ключ из объекта
 											result.key = undefined;
 											// Отправляем в Redis на час
