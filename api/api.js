@@ -1280,7 +1280,7 @@ const anyks = require("./lib.anyks");
 					// Переменные субъектов
 					let country, region, district, city, street;
 					// Разбиваем текст на составляющие
-					const address = address
+					address = address
 					// Удаляем все символы кроме русских букв, цифр, пробелов и тире
 					.replace(/[^А-ЯЁ\-\d\s]/ig, "")
 					// Разбиваем текст на массив
