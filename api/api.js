@@ -2904,7 +2904,7 @@ const anyks = require("./lib.anyks");
 								) : false);
 
 
-								console.log("+++++++++++", osm, som2);
+								console.log("+++++++++++", osm);
 
 								// Создаем объект ответа
 								const obj = (
