@@ -1200,7 +1200,7 @@ const anyks = require("./lib.anyks");
 							&& $.isset(addr.subject.type)
 							&& !$.isset(addr.subject.name))) continue;
 							// Если тип найден
-							else if($.isset(addr) && ($.isset(addr.subject)) type = addr.subject.type;
+							else if($.isset(addr) && $.isset(addr.subject)) type = addr.subject.type;
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
