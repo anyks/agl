@@ -2903,7 +2903,7 @@ const anyks = require("./lib.anyks");
 									err => idObj.log('получения данных с osm2 api', err).error()
 								) : false);
 
-								console.log("+++++++++", osm, address);
+								console.log("+++++++++", urlsGeo[3]);
 
 								// Создаем объект ответа
 								const obj = (
