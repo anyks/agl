@@ -1630,6 +1630,8 @@ const anyks = require("./lib.anyks");
 					// Выводим найденный результат
 					return result;
 				};
+				try {
+
 				// Формируем объект результата
 				let result = getAddress();
 				// Строковые виды адресов
@@ -1682,6 +1684,7 @@ const anyks = require("./lib.anyks");
 				idObj.log("строка адреса интерпретирована", result).info();
 				// Выводим результат
 				resolve(result);
+				} catch(e) {console.log("+++++++++", e);}
 			}));
 		}
 		/**
