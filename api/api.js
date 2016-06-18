@@ -554,7 +554,7 @@ const anyks = require("./lib.anyks");
 								arr[i].type
 							}).then(res => {
 								// Если результат найден
-								if($.isset(res)){
+								if($.isset(res) && $.isset(res.lat) && $.isset(res.lng)){
 									// Выполняем сохранение данных
 									arr[i].lat	= res.lat;
 									arr[i].lng	= res.lng;
