@@ -412,14 +412,8 @@ const anyks = require("./lib.anyks");
 				name:	str,
 				key:	"subjects"
 			});
-
-			console.log("++++++++++++1", key);
-
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
-				
-				console.log("++++++++++++2", keys);
-
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
@@ -1206,7 +1200,7 @@ const anyks = require("./lib.anyks");
 						// Переходим по всему найденному массиву
 						for(let val of arr){
 							// Создаем регулярное выражение для поиска
-							const reg = new RegExp("^" + subject + "$", "i");
+							const reg = new RegExp("^" + subject + "(?:\\s+[А-ЯЁ]+)?$", "i");
 							// Если элемент в массиве найден
 							if(reg.test(val.name)) return val;
 						}
