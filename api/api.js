@@ -1316,9 +1316,9 @@ const anyks = require("./lib.anyks");
 							// Если город не найден
 							if(!$.isset(city)){
 								// Получаем идентификатор родителя
-								const parentId = ($.isset(district) ? district._id : ($.isset(region) ? region._id : null));
+								let parentId = ($.isset(district) ? district._id : ($.isset(region) ? region._id : null));
 								// Получаем тип родителя
-								const parentType = ($.isset(district) ? "district" : ($.isset(region) ? "region" : null));
+								let parentType = ($.isset(district) ? "district" : ($.isset(region) ? "region" : null));
 								// Определяем ключ кеша
 								parentType	= ($.isset(region) ? "*"							: parentType);
 								parentId	= ($.isset(region) ? parentId.substr(0, 2) + "*"	: parentId);
