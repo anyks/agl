@@ -1250,9 +1250,6 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				
-				try {
-
 				/**
 				 * findSubject Функция поиска географического субъекта по массиву
 				 * @param  {Object} subject название субъекта
@@ -1322,6 +1319,9 @@ const anyks = require("./lib.anyks");
 								const parentId = ($.isset(district) ? district._id : ($.isset(region) ? region._id : null));
 								// Получаем тип родителя
 								const parentType = ($.isset(district) ? "district" : ($.isset(region) ? "region" : null));
+								// Определяем ключ кеша
+								parentType	= ($.isset(region) ? "*"							: parentType);
+								parentId	= ($.isset(region) ? parentId.substr(0, 2) + "*"	: parentId);
 								// Получаем данные городов
 								const cities = yield findAddressInCache.call(idObj, subject, "city", parentId, parentType, 100);
 								// Получаем данные города
@@ -1343,9 +1343,6 @@ const anyks = require("./lib.anyks");
 				};
 				// Запускаем коннект
 				exec(getData());
-
-				} catch(e) {console.log("++++++++++", e);}
-
 			}));
 		}
 		/**
