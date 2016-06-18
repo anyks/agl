@@ -2936,6 +2936,9 @@ const anyks = require("./lib.anyks");
 						idObj.parseAddress({address}).then(result => {
 							// Если данные пришли
 							if($.isObject(result)){
+								
+								console.log("++++++++", result);
+
 								// Запрашиваем все данные из базы
 								idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
 									// Выводим результат поиска по базе
