@@ -2765,9 +2765,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					if(!$.isset(cache)) resolve(JSON.parse(cache));
+					//if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					else {
+					//else {
 						/**
 						 * getDataFromGeocoder Функция запроса данных с геокодера
 						 */
@@ -2882,7 +2882,7 @@ const anyks = require("./lib.anyks");
 							// Выходим
 							getDataFromGeocoder(address);
 						});
-					}
+					//}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
