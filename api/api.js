@@ -1150,9 +1150,6 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
-				
-				try {
-
 				/**
 				 * findSubject Функция поиска географического субъекта по массиву
 				 * @param  {Object} subject название субъекта
@@ -1252,9 +1249,6 @@ const anyks = require("./lib.anyks");
 				};
 				// Запускаем коннект
 				exec(getData());
-
-				} catch(e) {console.log("++++++", e);}
-
 			}));
 		}
 		/**
