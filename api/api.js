@@ -1209,6 +1209,8 @@ const anyks = require("./lib.anyks");
 								const regions = yield findAddressInCache.call(idObj, subject, "region", null, null, 100);
 								// Получаем данные региона
 								region = findSubject(subject, regions);
+								// Продолжаем дальше
+								if($.isset(region)) continue;
 							}
 							// Если район не найден
 							if(!$.isset(district)){
