@@ -24,7 +24,6 @@ socket.onerror = function(error){
 
 
 //
-// socket.send(JSON.stringify({"action": "getAddressFromString", "query": {"address": "г.Шуя, площадь комсомольская, д.12"}}));
 
 // socket.send(JSON.stringify({"action": "getRegions", "query": {"limit": 100}}));
 
@@ -139,7 +138,7 @@ socket.onerror = function(error){
 // socket.send(JSON.stringify({"action": "getHousesByGPS", "query": {"lat":"56.8348879", "lng":"41.3841305"}}));
 // socket.send(JSON.stringify({"action": "getMetroByGPS", "query": {"lat":"56.313933", "lng":"43.99482"}}));
 //
-// socket.send(JSON.stringify({"action": "parseFindAddress", "query": {"address": 'Россия Ивановская область город Шуя улица Свердлова 96'}}));
+// socket.send(JSON.stringify({"action": "getAddress", "query": {"address": 'Россия Ивановская область город Шуя улица Свердлова 96'}}));
 //
 //
 //
