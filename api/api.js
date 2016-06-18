@@ -565,10 +565,12 @@ const anyks = require("./lib.anyks");
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
+					// Регулярное выражение для проверки имени субъекта
+					const regName = new RegExp("^" + arr[i].name + "(?:\\s+[А-ЯЁ]+)?$", "i");
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.lat) && $.isset(res.lng)
 					// Если искоммый тип мы найшли а не просто GPS россии
-					&& $.isset(res.address[arr[i].contentType]))
+					&& regName.test(res.address[arr[i].contentType]))
 					// Если текущий идентификатор есть в списке для исправления координат
 					|| $.isset(gpsMap[arr[i]._id])){
 						// Выполняем сохранение данных
