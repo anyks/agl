@@ -1200,6 +1200,8 @@ const anyks = require("./lib.anyks");
 								const countries = yield findAddressInCache.call(idObj, subject, "country", null, null, 100);
 								// Получаем данные страны
 								country = findSubject(subject, countries);
+								// Продолжаем дальше
+								continue;
 							}
 							// Если регион не найден
 							if(!$.isset(region)){
@@ -1207,6 +1209,8 @@ const anyks = require("./lib.anyks");
 								const regions = yield findAddressInCache.call(idObj, subject, "region", null, null, 100);
 								// Получаем данные региона
 								region = findSubject(subject, regions);
+								// Продолжаем дальше
+								continue;
 							}
 							// Если район не найден
 							if(!$.isset(district)){
@@ -1218,6 +1222,8 @@ const anyks = require("./lib.anyks");
 								const districts = yield findAddressInCache.call(idObj, subject, "district", parentId, parentType, 100);
 								// Получаем данные района
 								district = findSubject(subject, districts);
+								// Продолжаем дальше
+								continue;
 							}
 							// Если город не найден
 							if(!$.isset(city)){
@@ -1232,6 +1238,8 @@ const anyks = require("./lib.anyks");
 								const cities = yield findAddressInCache.call(idObj, subject, "city", parentId, parentType, 100);
 								// Получаем данные города
 								city = findSubject(subject, cities);
+								// Продолжаем дальше
+								continue;
 							}
 							// Если улица не найдена а город найден
 							if(!$.isset(street) && $.isset(city)){
