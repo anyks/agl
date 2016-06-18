@@ -568,7 +568,7 @@ const anyks = require("./lib.anyks");
 					// Регулярное выражение для проверки имени субъекта
 					const regName = new RegExp("^" + arr[i].name + "(?:\\s+[А-ЯЁ]+)?$", "i");
 
-					console.log("+++++++++++++", arr[i].name, res.address[arr[i].contentType], regName.test(res.address[arr[i].contentType]));
+					console.log("+++++++++++++", addr, res, regName.test(res.address[arr[i].contentType]));
 
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.lat) && $.isset(res.lng)
