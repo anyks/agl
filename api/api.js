@@ -2765,9 +2765,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					//if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					//else {
+					else {
 						/**
 						 * getDataFromGeocoder Функция запроса данных с геокодера
 						 */
@@ -2788,18 +2788,12 @@ const anyks = require("./lib.anyks");
 								parseAnswerGeoCoder.call(idObj, obj).then(result => {
 									// Выводим сообщение об удачном приведении типов
 									idObj.log("приведение типов выполнено", result).info();
-
-									if(!$.isset(result)) console.log("----------------", address);
-
 									// Если данные найдены
 									if($.isset(result)){
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
 										// Сохраняем результат в базу данных
-										(new idObj.schemes.Address(result)).save((e, r) => {
-											
-											console.log("++++++", e, r);
-
+										(new idObj.schemes.Address(result)).save(() => {
 											// Удаляем ключ из объекта
 											result.key = undefined;
 											// Отправляем в Redis на час
@@ -2882,7 +2876,7 @@ const anyks = require("./lib.anyks");
 							// Выходим
 							getDataFromGeocoder(address);
 						});
-					//}
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
