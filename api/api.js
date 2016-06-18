@@ -111,7 +111,9 @@ const anyks = require("./lib.anyks");
 			// Добавляем идентификатор
 			if($.isset(id)) arrKey.push(id);
 			// Формируем первоначальное значение ключа
-			return (arguments[0].join(":") + ":" + arrKey.join(":")).replace(/:{2,7}/g, ":");
+			return (arguments[0].join(":") + ":" + arrKey.join(":"))
+			// Убираем пробелы и двойные двоеточие
+			.replace(/\s/g, "").replace(/:{2,7}/g, ":");
 		})([key, db, parentType, parentId], name, id);
 	};
 	/**
@@ -136,7 +138,9 @@ const anyks = require("./lib.anyks");
 			// Добавляем идентификатор
 			if($.isset(id)) arrKey.push(id);
 			// Формируем первоначальное значение ключа
-			return (arguments[0].join(":") + ":" + arrKey.join(":")).replace(/:{2,7}/g, ":");
+			return (arguments[0].join(":") + ":" + arrKey.join(":"))
+			// Убираем пробелы и двойные двоеточие
+			.replace(/\s/g, "").replace(/:{2,7}/g, ":");
 		})([key, cityId, lineId], name, id);
 	};
 	/**
@@ -1160,6 +1164,124 @@ const anyks = require("./lib.anyks");
 			let key = (mkey.substr(0, 8) + mkey.substr(24, 31));
 			// Выводим результат
 			return key.replace(key.substr(4, 8), mkey.substr(8, 16));
+		}
+		/**
+		 * parseAltAddress Метод альтернативного парсинга адреса с помощью кеша
+		 * @param  {String} options.address адрес для парсинга
+		 * @return {Object}                 объект ответа
+		 */
+		parseAltAddress({address}){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				/**
+				 * createSubjectKey Функция генерации ключа
+				 * @param  {String} name название субъекта для генерации
+				 * @return {String}      сгенерированный ключ
+				 */
+				const createSubjectKey = name => {
+					// Создаем массив составного ключа
+					const arrKey = [];
+					// Создаем буквы ключа
+					for(let i = 0; i < name.length; i++) arrKey.push(name[i].toLowerCase());
+					// Формируем первоначальное значение ключа
+					return "*" + arrKey.join(":")
+					// Убираем пробелы и двойные двоеточие
+					.replace(/\s/g, "").replace(/:{2,7}/g, ":") + "*";
+				};
+				/**
+				 * findSubject Функция поиска географического субъекта по массиву
+				 * @param  {Object} subject название субъекта
+				 * @param  {Array}  arr     массив найденных субъектов
+				 * @return {Object}         найденный объект
+				 */
+				const findSubject = (subject, arr) => {
+					// Если это массив
+					if($.isArray(arr) && arr.length){
+						// Переходим по всему найденному массиву
+						for(let val of arr){
+							// Создаем регулярное выражение для поиска
+							const reg = new RegExp("^" + subject, "i");
+							// Если элемент в массиве найден
+							if(reg.test(val.name)) return val;
+						}
+					}
+					// Выходим из функции
+					return false;
+				};
+				/**
+				 * *getData Генератор для получения данных субъектов
+				 */
+				const getData = function * (){
+					// Переменные субъектов
+					let country, region, district, city, street;
+					// Разбиваем текст на составляющие
+					const address = address
+					// Удаляем все символы кроме русских букв, цифр, пробелов и тире
+					.replace(/[^А-ЯЁ\-\d\s]/ig, "")
+					// Разбиваем текст на массив
+					.anyks_trim().split(" ");
+					// Переходим по всему массиву
+					for(let subject of address){
+						// Если это не одна буква
+						if(subject.length > 1){
+							// Формируем ключ страны
+							let key = createSubjectKey(subject);
+							// Если страна не найдена
+							if(!$.isset(country)){
+								// Получаем данные страны
+								country = findSubject(subject, countries);
+								// Формируем ключ страны
+								const keyCountry = "address:subjects:country" + key;
+								// Получаем данные стран
+								const countries = yield getRedisByMaskKey.call(idObj, keyCountry);
+							}
+							// Если регион не найден
+							if(!$.isset(region)){
+								// Формируем ключ региона
+								const keyRegion = "address:subjects:region:" + key;
+								// Получаем данные регионов
+								const regions = yield getRedisByMaskKey.call(idObj, keyRegion);
+								// Получаем данные региона
+								region = findSubject(subject, regions);
+							}
+							// Если район не найден
+							if(!$.isset(district)){
+								// Формируем ключ района
+								const keyDistrict = "address:subjects:district:" + ($.isset(region) ? "region:" + region._id : "") + key;
+								// Получаем данные районов
+								const districts = yield getRedisByMaskKey.call(idObj, keyDistrict);
+								// Получаем данные района
+								district = findSubject(subject, districts);
+							}
+							// Если город не найден
+							if(!$.isset(city)){
+								// Формируем ключ города
+								const keyCity = "address:subjects:city:" + ($.isset(district) ? "district:"
+								+ district._id : ($.isset(region) ? "region:" + region._id : "")) + key;
+								// Получаем данные городов
+								const cities = yield getRedisByMaskKey.call(idObj, keyCity);
+								// Получаем данные города
+								city = findSubject(subject, cities);
+							}
+							// Если улица не найдена а город найден
+							if(!$.isset(street) && $.isset(city)){
+								// Формируем ключ улицы
+								const keyStreet = "address:subjects:street:city:" + city._id + key;
+								// Получаем данные улиц
+								const streets = yield getRedisByMaskKey.call(idObj, keyStreet);
+								// Получаем данные улиц
+								street = findSubject(subject, streets);
+							}
+						}
+					}
+					// Выводим результат
+					resolve({country, region, district, city, street});
+				};
+				// Запускаем коннект
+				exec(getData());
+			}));
 		}
 		/**
 		 * parseAddress Метод парсинга адреса
@@ -2562,12 +2684,14 @@ const anyks = require("./lib.anyks");
 									// Если данные найдены
 									if($.isset(result)){
 										// Сохраняем результат в базу данных
-										(new idObj.schemes.Address(result)).save();
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, result, 3600).then();
-									}
+										(new idObj.schemes.Address(result)).save(() => {
+											// Отправляем в Redis на час
+											Agl.setRedis.call(idObj, "set", key, result, 3600)
+											// Выводим результат
+											.then(() => resolve(result)).catch(() => resolve(result));
+										});
 									// Выводим результат
-									resolve(result);
+									} else resolve(result);
 								// Если происходит ошибка тогда выходим
 								}).catch(err => {
 									// Выводим ошибку метода
@@ -2693,12 +2817,16 @@ const anyks = require("./lib.anyks");
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
 										// Сохраняем результат в базу данных
-										(new idObj.schemes.Address(result)).save();
-										// Отправляем в Redis на час
-										Agl.setRedis.call(idObj, "set", key, result, 3600).then();
-									}
+										(new idObj.schemes.Address(result)).save(() => {
+											// Удаляем ключ из объекта
+											result.key = undefined;
+											// Отправляем в Redis на час
+											Agl.setRedis.call(idObj, "set", key, result, 3600)
+											// Выводим результат
+											.then(() => resolve(result)).catch(() => resolve(result));
+										});
 									// Выводим результат
-									resolve(result);
+									} else resolve(result);
 								// Если происходит ошибка тогда выходим
 								}).catch(err => {
 									// Выводим ошибку метода
