@@ -2798,6 +2798,10 @@ const anyks = require("./lib.anyks");
 				address = address.toLowerCase().anyks_trim();
 				// Ключ кеша адреса
 				const key = "address:string:" + idObj.generateKey(address);
+
+				// Удаляем данные из кеша
+				Agl.rmRedis.call(idObj, "*");
+
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
