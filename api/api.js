@@ -1245,9 +1245,6 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(street) && $.isset(city)){
 								// Получаем данные улиц
 								const streets = yield findAddressInCache.call(idObj, subject, "street", city._id, "city", 100);
-								
-								console.log("+++++++++", subject, city, streets);
-
 								// Получаем данные улиц
 								street = findSubject(subject, streets);
 								// Выходим
