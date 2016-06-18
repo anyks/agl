@@ -2763,11 +2763,11 @@ const anyks = require("./lib.anyks");
 				// Ключ кеша адреса
 				const key = "address:string:" + idObj.generateKey(address);
 				// Ищем станции в кеше
-				//Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
+				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					//if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					//else {
+					else {
 						/**
 						 * getDataFromGeocoder Функция запроса данных с геокодера
 						 */
@@ -2876,14 +2876,14 @@ const anyks = require("./lib.anyks");
 							// Выходим
 							getDataFromGeocoder(address);
 						});
-					//}
+					}
 				// Если происходит ошибка тогда выходим
-				//}).catch(err => {
+				}).catch(err => {
 					// Выводим ошибку метода
-					//idObj.log("getRedis in getAddressByString", err).error();
+					idObj.log("getRedis in getAddressByString", err).error();
 					// Выходим
-					//resolve(false);
-				//});
+					resolve(false);
+				});
 			}));
 		}
 		/**
@@ -4390,6 +4390,8 @@ const anyks = require("./lib.anyks");
 					const key = createSubjectKey({key: "subjects", db: "region"});
 					// Удаляем данные из кеша
 					Agl.rmRedis.call(idObj, key);
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, "*");
 					/**
 					 * getRegion Рекурсивная функция загрузки региона
 					 * @param  {Number} i текущий индекс массива
