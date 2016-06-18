@@ -1152,24 +1152,19 @@ const anyks = require("./lib.anyks");
 			return (new Promise(resolve => {
 				/**
 				 * findSubject Функция поиска географического субъекта по массиву
-				 * @param  {String} subject название субъекта
-				 * @param  {String} type    тип для поиска
+				 * @param  {Object} subject название субъекта
 				 * @param  {Array}  arr     массив найденных субъектов
 				 * @return {Object}         найденный объект
 				 */
-				const findSubject = (subject, type = "", arr) => {
+				const findSubject = (subject, arr) => {
 					// Если это массив
 					if($.isArray(arr) && arr.length){
 						// Переходим по всему найденному массиву
 						for(let val of arr){
 							// Создаем регулярное выражение для поиска
-							const regName = new RegExp("^" + subject, "i");
-							const regType = new RegExp("^" + type, "i");
+							const reg = new RegExp("^" + subject + "$", "i");
 							// Если элемент в массиве найден
-							if(regName.test(val.name)
-							&& ($.isset(type) && regType.test(val.type))) return val;
-							// Если тип не найден то просто проверяем на название
-							else if(regName.test(val.name)) return val;
+							if(reg.test(val.name)) return val;
 						}
 					}
 					// Выходим из функции
@@ -1199,14 +1194,12 @@ const anyks = require("./lib.anyks");
 							if($.isset(addr) && ($.isset(addr.subject)
 							&& $.isset(addr.subject.type)
 							&& !$.isset(addr.subject.name))) continue;
-							// Если тип найден
-							else if($.isset(addr) && $.isset(addr.subject)) type = addr.subject.type;
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
 								const countries = yield findAddressInCache.call(idObj, subject, "country", null, null, 100);
 								// Получаем данные страны
-								country = findSubject(subject, type, countries);
+								country = findSubject(subject, countries);
 								// Продолжаем дальше
 								if($.isset(country)) continue;
 							}
@@ -1215,7 +1208,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные регионов
 								const regions = yield findAddressInCache.call(idObj, subject, "region", null, null, 100);
 								// Получаем данные региона
-								region = findSubject(subject, type, regions);
+								region = findSubject(subject, regions);
 								// Продолжаем дальше
 								if($.isset(region)) continue;
 							}
@@ -1228,7 +1221,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные районов
 								const districts = yield findAddressInCache.call(idObj, subject, "district", parentId, parentType, 100);
 								// Получаем данные района
-								district = findSubject(subject, type, districts);
+								district = findSubject(subject, districts);
 							}
 							// Если город не найден
 							if(!$.isset(city)){
@@ -1242,7 +1235,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные городов
 								const cities = yield findAddressInCache.call(idObj, subject, "city", parentId, parentType, 100);
 								// Получаем данные города
-								city = findSubject(subject, type, cities);
+								city = findSubject(subject, cities);
 								// Продолжаем дальше
 								if($.isset(city)) continue;
 							}
@@ -1251,7 +1244,7 @@ const anyks = require("./lib.anyks");
 								// Получаем данные улиц
 								const streets = yield findAddressInCache.call(idObj, subject, "street", city._id, "city", 100);
 								// Получаем данные улиц
-								street = findSubject(subject, type, streets);
+								street = findSubject(subject, streets);
 								// Выходим
 								if($.isset(street)) break;
 							}
