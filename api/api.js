@@ -401,8 +401,14 @@ const anyks = require("./lib.anyks");
 				name:	str,
 				key:	"subjects"
 			});
+
+			console.log("++++++++1", key);
+
 			// Получаем список ключей
 			Agl.getRedisKeys.call(idObj, key).then(keys => {
+				
+				console.log("++++++++2", keys);
+
 				// Если ключи найдены
 				if($.isArray(keys)){
 					// Массив данных результата
