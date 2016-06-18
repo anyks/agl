@@ -2905,7 +2905,12 @@ const anyks = require("./lib.anyks");
 
 								console.log("+++++++1", osmAddress);
 								fetch(urlsGeo[3]).then(res => {
-									console.log("+++++++2", res.status, res.json());
+									
+									res.json().then(result => {
+										console.log("+++++++2", res.status, result);
+									});
+
+									
 								});
 
 								// Создаем объект ответа
