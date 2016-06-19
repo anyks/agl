@@ -624,9 +624,15 @@ const anyks = require("./lib.anyks");
 						// Выполняем разбор адреса
 						let resName1 = yield idObj.parseAddress({address: addr1});
 						let resName2 = yield idObj.parseAddress({address: addr2});
+						
+						console.log("++++++++++++++1", resName1, resName2);
+
 						// Если разбор удачный
 						resName1 = $.fnShowProps(resName1, "name");
 						resName2 = $.fnShowProps(resName2, "name");
+
+						console.log("++++++++++++++2", resName1, resName2);
+
 						// Если названия не найдены тогда присваиваем основное название
 						if(!$.isset(resName1)) resName1 = addr1;
 						if(!$.isset(resName2)) resName2 = addr2;
