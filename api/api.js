@@ -621,7 +621,8 @@ const anyks = require("./lib.anyks");
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Удаляем тип субъекта если он существует
-					const resName = res.address[arr[i].contentType].replace(arr[i].type, "").anyks_trim();
+					const resName = res.address[arr[i].contentType]
+					.replace(arr[i].type.toLowerCase(), "").anyks_trim();
 
 					console.log("+++++++++++++++++++++++", arr[i].type, "=", arr[i].name, "=", resName, "=", compareWords(arr[i].name, resName));
 
