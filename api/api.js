@@ -245,7 +245,7 @@ const anyks = require("./lib.anyks");
 		// Определяем процентное соотношение
 		const proc = (good / count) * 100;
 		// Определяем сколько процентов верно
-		if(proc >= 60) return true;
+		if(proc >= 53) return true;
 		// Сообщаем что сравнение не верное
 		else return false;
 	};
