@@ -670,7 +670,7 @@ const anyks = require("./lib.anyks");
 						// Выполняем справнение найденного результата
 						const compare = yield compareResult(arr[i].name, res.address[arr[i].contentType]);
 						
-						console.log("++++++++++++++++", arr[i].name, res.address[arr[i].contentType], compare);
+						console.log("++++++++++++++++", arr[i].name, "=", arr[i].type, "-", res.address[arr[i].contentType], compare);
 
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
