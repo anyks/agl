@@ -628,14 +628,12 @@ const anyks = require("./lib.anyks");
 						if($.isset(resName.subject) && $.isset(resName.subject.name)) resName = resName.subject.name;
 						// Запоминаем название так как оно есть
 						else resName = res.address[arr[i].contentType];
-					
-
-						console.log("+++++++++++++++++++++++", arr[i].name, "=", resName, "=", compareWords(arr[i].name, resName));
-
+						// Создаем регулярное выражение для поиска
+						const regName = new RegExp(arr[i].name, "i");
 						// Если результат найден
 						if($.isset(res.lat) && $.isset(res.lng)
 						// Если искоммый тип мы найшли а не просто GPS россии
-						&& compareWords(arr[i].name, resName)){
+						&& (compareWords(arr[i].name, resName) || regName.test(resName))){
 							// Выполняем сохранение данных
 							arr[i].code	= res.address.code;
 							// Выполняем получение данные gps
