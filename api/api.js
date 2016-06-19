@@ -621,6 +621,8 @@ const anyks = require("./lib.anyks");
 					 * *getData Генератор для формирования данных адреса
 					 */
 					const getData = function * (){
+						try {
+
 						// Выполняем разбор адреса
 						let resName1 = yield idObj.parseAddress({address: addr1});
 						let resName2 = yield idObj.parseAddress({address: addr2});
@@ -668,6 +670,7 @@ const anyks = require("./lib.anyks");
 							resolve(compare);
 						// Просто выходим
 						} else resolve(false);
+						} catch(e) {console.log("+++++++++++++", e);}
 					};
 					// Запускаем коннект
 					exec(getData());
@@ -679,9 +682,6 @@ const anyks = require("./lib.anyks");
 			 * @param {Number} i   индекс итерации массива
 			 */
 			const getData = function * (arr, i){
-				
-				try {
-
 				// Получаем данные из кеша
 				const cache = yield getAddressCache.call(idObj, arr[i]);
 				// Если в объекте не найдена временная зона или gps координаты или станции метро
@@ -699,9 +699,6 @@ const anyks = require("./lib.anyks");
 
 						// Выполняем справнение найденного результата
 						const compare = yield compareResult(arr[i].name, res.address[arr[i].contentType], res.address);
-						
-						console.log("++++++++++2", ($.isset(res.lat) && $.isset(res.lng) && compare), $.isset(fixGps));
-
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
 							// Выполняем сохранение данных
@@ -768,8 +765,6 @@ const anyks = require("./lib.anyks");
 					} else getGPS(arr, i + 1);
 				// Идем дальше
 				} else getGPS(arr, i + 1);
-
-				} catch(e) {console.log("-------------------------", e);}
 			};
 			/**
 			 * getGPS Рекурсивная функция поиска gps координат для города
