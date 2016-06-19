@@ -2,4 +2,4 @@
 107.170.122.222 ansible_ssh_port=22 ansible_ssh_host=107.170.122.222
 
 [server-prod]
-107.170.66.207 ansible_ssh_port=22 ansible_ssh_host=107.170.66.207
+188.166.33.144 ansible_ssh_port=22 ansible_ssh_host=188.166.33.144
