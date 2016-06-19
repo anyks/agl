@@ -195,6 +195,61 @@ const anyks = require("./lib.anyks");
 		});
 	};
 	/**
+	 * compareWords Функция сравнения строк
+	 * @param  {String}  str1 первая строка для сравнения
+	 * @param  {String}  str2 вторая строка для сравнения
+	 * @return {Boolean}      результат сравнения
+	 */
+	const compareWords = (str1, str2) => {
+		/**
+		 * levenshtein Алгоритм Левенштейна
+		 * @param {string} s1 Исходная строка
+		 * @param {string} s2 Сравниваемая строка
+		 * @param {object} [costs] Веса операций { [replace], [replaceCase], [insert], [remove] }
+		 * @return {number} Расстояние Левенштейна
+		 */
+		const levenshtein = (s1, s2, costs) => {
+			let i, j, l1, l2, flip, ch, chl, ii, ii2, cost, cutHalf;
+			l1			= s1.length;
+			l2			= s2.length;
+			costs		= (costs || {});
+			let cr		= (costs.replace || 1);
+			let cri		= (costs.replaceCase || costs.replace || 1);
+			let ci		= (costs.insert || 1);
+			let cd		= (costs.remove || 1);
+			cutHalf 	= flip = Math.max(l1, l2);
+			let minCost	= Math.min(cd, ci, cr);
+			let minD	= Math.max(minCost, (l1 - l2) * cd);
+			let minI	= Math.max(minCost, (l2 - l1) * ci);
+			let buf		= new Array((cutHalf * 2) - 1);
+			for(i = 0; i <= l2; ++i) buf[i] = i * minD;
+			for(i = 0; i < l1; ++i, flip = cutHalf - flip){
+				ch	= s1[i];
+				chl	= ch.toLowerCase();
+				buf[flip] = (i + 1) * minI;
+				ii	= flip;
+				ii2	= cutHalf - flip;
+				for(j = 0; j < l2; ++j, ++ii, ++ii2){
+					cost = (ch === s2[j] ? 0 : (chl === s2[j].toLowerCase()) ? cri : cr);
+					buf[ii + 1] = Math.min(buf[ii2 + 1] + cd, buf[ii] + ci, buf[ii2] + cost);
+				}
+			}
+			return buf[l2 + cutHalf - flip];
+		};
+		// Определяем самую длинную строку
+		const count = (str1.length > str2.length ? str1.length : str2.length);
+		// Определяем расстояние Левенштейна
+		const lev = levenshtein(str1, str2);
+		// Определяем количество верных символов
+		const good = count - lev;
+		// Определяем процентное соотношение
+		const proc = (good / count) * 100;
+		// Определяем сколько процентов верно
+		if(proc >= 60) return true;
+		// Сообщаем что сравнение не верное
+		else return false;
+	};
+	/**
 	 * parseAnswerGeoCoder Функция обработки результата полученного с геокодера
 	 * @param  {Object} obj   ответ с геокодера
 	 * @return {Object}       результат обработки
@@ -565,15 +620,10 @@ const anyks = require("./lib.anyks");
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
-					// Регулярное выражение для проверки имени субъекта
-					const regName = new RegExp(arr[i].name, "i");
-
-					console.log("+++++++++++++", addr, res, regName.test(res.address[arr[i].contentType]));
-
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.lat) && $.isset(res.lng)
 					// Если искоммый тип мы найшли а не просто GPS россии
-					&& regName.test(res.address[arr[i].contentType]))
+					&& compareWords(arr[i].name, res.address[arr[i].contentType]))
 					// Если текущий идентификатор есть в списке для исправления координат
 					|| $.isset(gpsMap[arr[i]._id])){
 						// Выполняем сохранение данных
