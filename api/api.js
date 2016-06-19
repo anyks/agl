@@ -612,6 +612,9 @@ const anyks = require("./lib.anyks");
 			 * *getData Генератор для формирования данных адреса
 			 */
 			const getData = function * (arr, i){
+				
+				try {
+
 				// Получаем данные из кеша
 				const cache = yield getAddressCache.call(idObj, arr[i]);
 				// Если в объекте не найдена временная зона или gps координаты или станции метро
@@ -701,6 +704,7 @@ const anyks = require("./lib.anyks");
 					} else getGPS(arr, i + 1);
 				// Идем дальше
 				} else getGPS(arr, i + 1);
+				} catch(e) {console.log("+++++++++++++++", e);}
 			};
 			/**
 			 * getGPS Рекурсивная функция поиска gps координат для города
