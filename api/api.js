@@ -616,12 +616,14 @@ const anyks = require("./lib.anyks");
 				const cache = yield getAddressCache.call(idObj, arr[i]);
 				// Если в объекте не найдена временная зона или gps координаты или станции метро
 				if(!cache || (!$.isArray(cache.gps) || !$.isArray(cache.metro) || !$.isset(cache.timezone))){
+					// Выполняем получение данные gps
+					const fixGps = gpsFix(arr[i]._id);
 					// Формируем строку адреса
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Если результат найден
-					if($.isset(res) && $.isset(res.address[arr[i].contentType])){
+					if(($.isset(res) && $.isset(res.address[arr[i].contentType])) || $.isset(fixGps)){
 						// Выполняем разбор адреса
 						let resName = yield idObj.parseAddress({address: res.address[arr[i].contentType]});
 						// Если разбор удачный
@@ -630,15 +632,16 @@ const anyks = require("./lib.anyks");
 						else resName = res.address[arr[i].contentType];
 						// Создаем регулярное выражение для поиска
 						const regName = new RegExp(arr[i].name, "i");
+
+						console.log("+++++++++++++", arr[i].name, "=", resName, "=", compareWords(arr[i].name, resName), "=", regName.test(resName));
+
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng)
 						// Если искоммый тип мы найшли а не просто GPS россии
-						&& (compareWords(arr[i].name, resName) || regName.test(resName)))
-						|| $.isset(gpsMap[arr[i]._id])){
+						&& (compareWords(arr[i].name, resName)
+						|| regName.test(resName))) || $.isset(fixGps)){
 							// Выполняем сохранение данных
 							arr[i].code	= res.address.code;
-							// Выполняем получение данные gps
-							const fixGps = gpsFix(arr[i]._id);
 							// Если исправления есть то применяем их
 							if($.isset(fixGps)){
 								// Применяем исправленные координаты
