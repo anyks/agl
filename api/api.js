@@ -621,56 +621,57 @@ const anyks = require("./lib.anyks");
 					 * *getData Генератор для формирования данных адреса
 					 */
 					const getData = function * (){
-						try {
-
-						// Выполняем разбор адреса
-						let resName1 = yield idObj.parseAddress({address: addr1});
-						let resName2 = yield idObj.parseAddress({address: addr2});
-						// Если разбор удачный
-						resName1 = $.fnShowProps(resName1, "name");
-						resName2 = $.fnShowProps(resName2, "name");
-						// Если названия не найдены тогда присваиваем основное название
-						if(!$.isset(resName1)) resName1 = addr1;
-						if(!$.isset(resName2)) resName2 = addr2;
-						// Создаем регулярное выражение для поиска
-						const regName1 = new RegExp(resName1, "i");
-						const regName2 = new RegExp(resName2, "i");
-						// Выполняем проверку
-						if(compareWords(addr1, addr2) ||
-						compareWords(resName1, resName2) ||
-						compareWords(addr1, resName2) ||
-						compareWords(addr2, resName1) ||
-						regName1.test(resName2) ||
-						regName1.test(addr2) ||
-						regName2.test(resName1) ||
-						regName2.test(addr1)) resolve(true);
-						// Если сравнение не удалось то сообщаем что не удачно
-						else if($.isset(obj)) {
-							// Копируем объект
-							const newObj = Object.assign({}, obj);
-							// Запоминаем данные субъекта
-							let key = false, compare = false;
-							// Перебираем оставшиеся объекты
-							for(let subject in newObj){
-								// Если текущее значение адреса найдено то удаляем
-								if(newObj[subject] === addr2) newObj[subject] = undefined;
-								// Выполняем следующую проверку
-								else key = subject;
-							}
-							// Если ключ не найден тогда выходим
-							if($.isset(key)){
-								// Копируем значение адреса
-								addr2 = newObj[key];
-								// Удаляем его из списка
-								newObj[key] = undefined;
-								// Выполняем следующую проверку
-								compare = yield compareResult(addr1, addr2, newObj);
-							}
-							// Если ответ пришел тогда выходим
-							resolve(compare);
+						// Если адреса существуют
+						if($.isset(addr1) && $.isset(addr2)){
+							// Выполняем разбор адреса
+							let resName1 = yield idObj.parseAddress({address: addr1});
+							let resName2 = yield idObj.parseAddress({address: addr2});
+							// Если разбор удачный
+							resName1 = $.fnShowProps(resName1, "name");
+							resName2 = $.fnShowProps(resName2, "name");
+							// Если названия не найдены тогда присваиваем основное название
+							if(!$.isset(resName1)) resName1 = addr1;
+							if(!$.isset(resName2)) resName2 = addr2;
+							// Создаем регулярное выражение для поиска
+							const regName1 = new RegExp(resName1, "i");
+							const regName2 = new RegExp(resName2, "i");
+							// Выполняем проверку
+							if(compareWords(addr1, addr2) ||
+							compareWords(resName1, resName2) ||
+							compareWords(addr1, resName2) ||
+							compareWords(addr2, resName1) ||
+							regName1.test(resName2) ||
+							regName1.test(addr2) ||
+							regName2.test(resName1) ||
+							regName2.test(addr1)) resolve(true);
+							// Если сравнение не удалось то сообщаем что не удачно
+							else if($.isset(obj)) {
+								// Копируем объект
+								const newObj = Object.assign({}, obj);
+								// Запоминаем данные субъекта
+								let key = false, compare = false;
+								// Перебираем оставшиеся объекты
+								for(let subject in newObj){
+									// Если текущее значение адреса найдено то удаляем
+									if(newObj[subject] === addr2) newObj[subject] = undefined;
+									// Выполняем следующую проверку
+									else key = subject;
+								}
+								// Если ключ не найден тогда выходим
+								if($.isset(key)){
+									// Копируем значение адреса
+									addr2 = newObj[key];
+									// Удаляем его из списка
+									newObj[key] = undefined;
+									// Выполняем следующую проверку
+									compare = yield compareResult(addr1, addr2, newObj);
+								}
+								// Если ответ пришел тогда выходим
+								resolve(compare);
+							// Просто выходим
+							} else resolve(false);
 						// Просто выходим
 						} else resolve(false);
-						} catch(e) {console.log("+++++++++++++", e);}
 					};
 					// Запускаем коннект
 					exec(getData());
@@ -694,9 +695,6 @@ const anyks = require("./lib.anyks");
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.address[arr[i].contentType])) || $.isset(fixGps)){
-						
-						console.log("+++++++++++++1", $.isset(fixGps));
-
 						// Выполняем справнение найденного результата
 						const compare = yield compareResult(arr[i].name, res.address[arr[i].contentType], res.address);
 						// Если результат найден
