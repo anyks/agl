@@ -4547,11 +4547,9 @@ const anyks = require("./lib.anyks");
 							// Создаем индексы стран
 							countries.createIndex({name: 1}, {name: "country"});
 							countries.createIndex({type: 1}, {name: "type"});
-							countries.createIndex({typeShort: 1}, {name: "typeShort"});
-							countries.createIndex({lat: 1, lng: 1}, {name: "gps"});
 							countries.createIndex({nameShort: 1}, {name: "nameShort"});
 							countries.createIndex({nameFull: 1}, {name: "nameFull"});
-							countries.createIndex({gps: "2dsphere"}, {name: "locations"});
+							countries.createIndex({gps: "2dsphere"}, {name: "gps"});
 							// Выводим в консоль сообщение
 							idObj.log("все страны установлены!").info();
 							// Сообщаем что все удачно выполнено
@@ -4633,9 +4631,7 @@ const anyks = require("./lib.anyks");
 							regions.createIndex({name: 1}, {name: "region"});
 							regions.createIndex({okato: 1}, {name: "okato"});
 							regions.createIndex({type: 1}, {name: "type"});
-							regions.createIndex({typeShort: 1}, {name: "typeShort"});
-							regions.createIndex({lat: 1, lng: 1}, {name: "gps"});
-							regions.createIndex({gps: "2dsphere"}, {name: "locations"});
+							regions.createIndex({gps: "2dsphere"}, {name: "gps"});
 							// Выводим в консоль сообщение
 							idObj.log("все регионы установлены!").info();
 							// Сообщаем что все удачно выполнено
@@ -4738,13 +4734,21 @@ const anyks = require("./lib.anyks");
 								} else {
 									// Создаем индексы районов
 									districts.createIndex({name: 1}, {name: "district"});
-									districts.createIndex({regionId: 1}, {name: "region"});
 									districts.createIndex({okato: 1}, {name: "okato"});
-									districts.createIndex({zip: 1}, {name: "zip"});
 									districts.createIndex({type: 1}, {name: "type"});
-									districts.createIndex({typeShort: 1}, {name: "typeShort"});
-									districts.createIndex({lat: 1, lng: 1}, {name: "gps"});
-									districts.createIndex({gps: "2dsphere"}, {name: "locations"});
+									districts.createIndex({gps: "2dsphere"}, {name: "gps"});
+									districts.createIndex({regionId: 1}, {
+										name: "region",
+										partialFilterExpression: {
+											regionId: {$exists: true}
+										}
+									});
+									districts.createIndex({zip: 1}, {
+										name: "zip",
+										partialFilterExpression: {
+											zip: {$exists: true}
+										}
+									});
 									// Выводим в консоль сообщение
 									idObj.log("все районы установлены!").info();
 									// Сообщаем что все удачно выполнено
@@ -4856,14 +4860,27 @@ const anyks = require("./lib.anyks");
 								} else {
 									// Создаем индексы городов
 									cities.createIndex({name: 1}, {name: "city"});
-									cities.createIndex({regionId: 1}, {name: "region"});
-									cities.createIndex({districtId: 1}, {name: "district"});
 									cities.createIndex({okato: 1}, {name: "okato"});
-									cities.createIndex({zip: 1}, {name: "zip"});
 									cities.createIndex({type: 1}, {name: "type"});
-									cities.createIndex({typeShort: 1}, {name: "typeShort"});
-									cities.createIndex({lat: 1, lng: 1}, {name: "gps"});
-									cities.createIndex({gps: "2dsphere"}, {name: "locations"});
+									cities.createIndex({gps: "2dsphere"}, {name: "gps"});
+									cities.createIndex({districtId: 1}, {
+										name: "district",
+										partialFilterExpression: {
+											districtId: {$exists: true}
+										}
+									});
+									cities.createIndex({regionId: 1}, {
+										name: "region",
+										partialFilterExpression: {
+											regionId: {$exists: true}
+										}
+									});
+									cities.createIndex({zip: 1}, {
+										name: "zip",
+										partialFilterExpression: {
+											zip: {$exists: true}
+										}
+									});
 									// Выводим в консоль сообщение
 									idObj.log("все города установлены!").info();
 									// Сообщаем что все удачно выполнено
@@ -5107,8 +5124,7 @@ const anyks = require("./lib.anyks");
 								metro.createIndex({"lines.name": 1}, {name: "lines"});
 								metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
 								metro.createIndex({"lines.stations.order": 1}, {name: "order"});
-								metro.createIndex({"lines.stations.lat": 1, "lines.stations.lng": 1}, {name: "gps"});
-								metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "locations"});
+								metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "gps"});
 								// Создаем индексы для метро городов
 								metro_cities.createIndex({name: 1}, {name: "city"});
 								metro_cities.createIndex({linesIds: 1}, {name: "lines"});
@@ -5122,8 +5138,7 @@ const anyks = require("./lib.anyks");
 								metro_stations.createIndex({cityId: 1}, {name: "city"});
 								metro_stations.createIndex({lineId: 1}, {name: "line"});
 								metro_stations.createIndex({order: 1}, {name: "order"});
-								metro_stations.createIndex({lat: 1, lng: 1}, {name: "gps"});
-								metro_stations.createIndex({gps: "2dsphere"}, {name: "locations"});
+								metro_stations.createIndex({gps: "2dsphere"}, {name: "gps"});
 								// Выводим в консоль сообщение
 								idObj.log("все метро установлены!").info();
 								// Сообщаем что все удачно выполнено
@@ -5196,29 +5211,107 @@ const anyks = require("./lib.anyks");
 							// Выполняем загрузку станций метро для городов
 							const metroCity = yield idObj.updateMetroCity({}, true);
 							// Создаем индексы для базы адресов
-							address.createIndex({key: 1}, {name: "key", unique: true, dropDups: true});
-							address.createIndex({lat: 1, lng: 1}, {name: "gps"});
-							address.createIndex({"address.zip": 1}, {name: "zip"});
-							address.createIndex({"address.district": 1}, {name: "district"});
-							address.createIndex({"address.region": 1}, {name: "region"});
-							address.createIndex({"address.country": 1}, {name: "country"});
-							address.createIndex({"address.street": 1}, {name: "street"});
-							address.createIndex({"address.city": 1}, {name: "city"});
-							address.createIndex({"address.region": 1, "address.country": 1}, {name: "regcry"});
-							address.createIndex({"address.region": 1, "address.country": 1, "address.city": 1}, {name: "regcrycty"});
-							address.createIndex({"address.region": 1, "address.country": 1, "address.street": 1, "address.city": 1}, {name: "address"});
-							address.createIndex({gps: "2dsphere"}, {name: "locations"});
+							address.createIndex({gps: "2dsphere"}, {name: "gps"});
+							address.createIndex({"address.country": 1}, {
+								name: "country",
+								partialFilterExpression: {
+									"address.country": {$exists: true}
+								}
+							});
+							address.createIndex({"address.region": 1}, {
+								name: "region",
+								partialFilterExpression: {
+									"address.region": {$exists: true}
+								}
+							});
+							address.createIndex({"address.district": 1}, {
+								name: "district",
+								partialFilterExpression: {
+									"address.district": {$exists: true}
+								}
+							});
+							address.createIndex({"address.city": 1}, {
+								name: "city",
+								partialFilterExpression: {
+									"address.city": {$exists: true}
+								}
+							});
+							address.createIndex({"address.street": 1}, {
+								name: "street",
+								partialFilterExpression: {
+									"address.street": {$exists: true}
+								}
+							});
+							address.createIndex({
+								"address.country":	1,
+								"address.region":	1
+							}, {
+								name: "regcry",
+								partialFilterExpression: {
+									"address.country":	{$exists: true},
+									"address.region":	{$exists: true}
+								}
+							});
+							address.createIndex({
+								"address.country":	1,
+								"address.region":	1,
+								"address.city":		1
+							}, {
+								name: "regcrycty",
+								partialFilterExpression: {
+									"address.country":	{$exists: true},
+									"address.region":	{$exists: true},
+									"address.city":		{$exists: true}
+								}
+							});
+							address.createIndex({
+								"address.country":	1,
+								"address.region":	1,
+								"address.city":		1,
+								"address.street":	1
+							}, {
+								name: "address",
+								partialFilterExpression: {
+									"address.country":	{$exists: true},
+									"address.region":	{$exists: true},
+									"address.city":		{$exists: true},
+									"address.street":	{$exists: true}
+								}
+							});
+							address.createIndex({key: 1}, {
+								name:		"key",
+								unique:		true,
+								dropDups:	true,
+								partialFilterExpression: {
+									key: {$exists: true}
+								}
+							});
+							address.createIndex({zip: 1}, {
+								name: "zip",
+								partialFilterExpression: {
+									zip: {$exists: true}
+								}
+							});
 							// Создаем индексы для улиц
 							streets.createIndex({name: 1}, {name: "street"});
 							streets.createIndex({regionId: 1}, {name: "region"});
 							streets.createIndex({districtId: 1}, {name: "district"});
 							streets.createIndex({cityId: 1}, {name: "city"});
 							streets.createIndex({okato: 1}, {name: "okato"});
-							streets.createIndex({zip: 1}, {name: "zip"});
 							streets.createIndex({type: 1}, {name: "type"});
-							streets.createIndex({typeShort: 1}, {name: "typeShort"});
-							streets.createIndex({lat: 1, lng: 1}, {name: "gps"});
-							streets.createIndex({gps: "2dsphere"}, {name: "locations"});
+							streets.createIndex({gps: "2dsphere"}, {name: "gps"});
+							streets.createIndex({metro: 1}, {
+								name: "metro",
+								partialFilterExpression: {
+									metro: {$exists: true}
+								}
+							});
+							streets.createIndex({zip: 1}, {
+								name: "zip",
+								partialFilterExpression: {
+									zip: {$exists: true}
+								}
+							});
 							// Создаем индексы для домов
 							houses.createIndex({name: 1}, {name: "house"});
 							houses.createIndex({regionId: 1}, {name: "region"});
@@ -5226,11 +5319,20 @@ const anyks = require("./lib.anyks");
 							houses.createIndex({streetId: 1}, {name: "street"});
 							houses.createIndex({cityId: 1}, {name: "city"});
 							houses.createIndex({okato: 1}, {name: "okato"});
-							houses.createIndex({zip: 1}, {name: "zip"});
 							houses.createIndex({type: 1}, {name: "type"});
-							houses.createIndex({typeShort: 1}, {name: "typeShort"});
-							houses.createIndex({lat: 1, lng: 1}, {name: "gps"});
-							houses.createIndex({gps: "2dsphere"}, {name: "locations"});
+							houses.createIndex({gps: "2dsphere"}, {name: "gps"});
+							houses.createIndex({metro: 1}, {
+								name: "metro",
+								partialFilterExpression: {
+									metro: {$exists: true}
+								}
+							});
+							houses.createIndex({zip: 1}, {
+								name: "zip",
+								partialFilterExpression: {
+									zip: {$exists: true}
+								}
+							});
 							// Выводим в консоль сообщение
 							idObj.log("все работы выполнены!").info();
 							// Сообщаем что работа завершена
