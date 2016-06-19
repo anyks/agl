@@ -622,6 +622,9 @@ const anyks = require("./lib.anyks");
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Удаляем тип субъекта если он существует
 					const resName = res.address[arr[i].contentType].replace(arr[i].type, "").anyks_trim();
+
+					console.log("+++++++++++++++++++++++", arr[i].name, resName);
+
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.lat) && $.isset(res.lng)
 					// Если искоммый тип мы найшли а не просто GPS россии
