@@ -609,7 +609,50 @@ const anyks = require("./lib.anyks");
 				}));
 			};
 			/**
+			 * compareResult Функция сравнения двух одинаковых адресов
+			 * @param  {String}  addr1 строка адреса 1
+			 * @param  {String}  addr2 строка адреса 2
+			 * @return {Promise}       промис содержащий результат сравнения
+			 */
+			const compareResult = (addr1, addr2) => {
+				// Создаем промис для обработки
+				return (new Promise(resolve => {
+					/**
+					 * *getData Генератор для формирования данных адреса
+					 */
+					const getData = function * (){
+						// Выполняем разбор адреса
+						let resName1 = yield idObj.parseAddress({address: addr1});
+						let resName2 = yield idObj.parseAddress({address: addr2});
+						// Если разбор удачный
+						resName1 = $.fnShowProps(resName1, "name");
+						resName2 = $.fnShowProps(resName2, "name");
+						// Если названия не найдены тогда присваиваем основное название
+						if(!$.isset(resName1)) resName1 = addr1;
+						if(!$.isset(resName2)) resName2 = addr2;
+						// Создаем регулярное выражение для поиска
+						const regName1 = new RegExp(resName1, "i");
+						const regName2 = new RegExp(resName2, "i");
+						// Выполняем проверку
+						if(compareWords(addr1, addr2) ||
+						compareWords(resName1, resName2) ||
+						compareWords(addr1, resName2) ||
+						compareWords(addr2, resName1) ||
+						regName1.test(resName2) ||
+						regName1.test(addr2) ||
+						regName2.test(resName1) ||
+						regName2.test(addr1)) resolve(true);
+						// Если сравнение не удалось то сообщаем что не удачно
+						else resolve(false);
+					};
+					// Запускаем коннект
+					exec(getData());
+				}));
+			};
+			/**
 			 * *getData Генератор для формирования данных адреса
+			 * @param {Array}  arr массив с данными адресов
+			 * @param {Number} i   индекс итерации массива
 			 */
 			const getData = function * (arr, i){
 				// Получаем данные из кеша
@@ -624,22 +667,13 @@ const anyks = require("./lib.anyks");
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.address[arr[i].contentType])) || $.isset(fixGps)){
-						// Выполняем разбор адреса
-						let resName = yield idObj.parseAddress({address: res.address[arr[i].contentType]});
-						// Если разбор удачный
-						if($.isset(resName.subject) && $.isset(resName.subject.name)) resName = resName.subject.name;
-						// Запоминаем название так как оно есть
-						else resName = res.address[arr[i].contentType];
-						// Создаем регулярное выражение для поиска
-						const regName = new RegExp(arr[i].name, "i");
-
-						console.log("+++++++++++++", arr[i].name, "=", resName, "=", compareWords(arr[i].name, resName), "=", regName.test(resName));
+						// Выполняем справнение найденного результата
+						const compare = yield compareResult(arr[i].name, res.address[arr[i].contentType]);
+						
+						console.log("++++++++++++++++", arr[i].name, res.address[arr[i].contentType], compare);
 
 						// Если результат найден
-						if(($.isset(res.lat) && $.isset(res.lng)
-						// Если искоммый тип мы найшли а не просто GPS россии
-						&& (compareWords(arr[i].name, resName)
-						|| regName.test(resName))) || $.isset(fixGps)){
+						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
 							// Выполняем сохранение данных
 							arr[i].code	= res.address.code;
 							// Если исправления есть то применяем их
