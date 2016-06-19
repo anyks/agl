@@ -614,7 +614,7 @@ const anyks = require("./lib.anyks");
 			 * @param  {String}  addr2 строка адреса 2
 			 * @return {Promise}       промис содержащий результат сравнения
 			 */
-			const compareResult = (addr1, addr2) => {
+			const compareResult = (addr1, addr2, obj) => {
 				// Создаем промис для обработки
 				return (new Promise(resolve => {
 					/**
@@ -643,7 +643,31 @@ const anyks = require("./lib.anyks");
 						regName2.test(resName1) ||
 						regName2.test(addr1)) resolve(true);
 						// Если сравнение не удалось то сообщаем что не удачно
-						else resolve(false);
+						else if($.isset(obj)) {
+							// Копируем объект
+							const newObj = Object.assign({}, obj);
+							// Запоминаем данные субъекта
+							let key = false, compare = false;
+							// Перебираем оставшиеся объекты
+							for(let subject in newObj){
+								// Если текущее значение адреса найдено то удаляем
+								if(newObj[subject] === addr2) newObj[subject] = undefined;
+								// Выполняем следующую проверку
+								else key = subject;
+							}
+							// Если ключ не найден тогда выходим
+							if($.isset(key)){
+								// Копируем значение адреса
+								addr2 = newObj[key];
+								// Удаляем его из списка
+								newObj[key] = undefined;
+								// Выполняем следующую проверку
+								compare = yield compareResult(addr1, addr2, newObj);
+							}
+							// Если ответ пришел тогда выходим
+							resolve(compare);
+						// Просто выходим
+						} else resolve(false);
 					};
 					// Запускаем коннект
 					exec(getData());
@@ -668,7 +692,7 @@ const anyks = require("./lib.anyks");
 					// Если результат найден
 					if(($.isset(res) && $.isset(res.address[arr[i].contentType])) || $.isset(fixGps)){
 						// Выполняем справнение найденного результата
-						const compare = yield compareResult(arr[i].name, res.address[arr[i].contentType]);
+						const compare = yield compareResult(arr[i].name, res.address[arr[i].contentType], res.address);
 						
 						console.log("++++++++++++++++", arr[i].name, "=", arr[i].type, "-", res.address[arr[i].contentType], compare);
 
@@ -1447,7 +1471,7 @@ const anyks = require("./lib.anyks");
 					// Районы
 					},{
 						"type":	"district",
-						"reg":	new RegExp("(?:\\s|\\.|\\,|^)(район|округ|улус|поселение)|(?:\\s|\\.|\\,|^)(р-н|окр|у|п)(?:\\s|\\.|\\,|$)", "i")
+						"reg":	new RegExp("(?:\\s|\\.|\\,|^)(район|(?:автономный\\s+)?округ|улус|поселение)|(?:\\s|\\.|\\,|^)(р-н|окр|у|п)(?:\\s|\\.|\\,|$)", "i")
 					// Города
 					},{
 						"type":	"city",
