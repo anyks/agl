@@ -620,78 +620,84 @@ const anyks = require("./lib.anyks");
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
-					// Удаляем тип субъекта если он существует
-					const resName = res.address[arr[i].contentType]
-					.replace(arr[i].type.toLowerCase(), "").anyks_trim();
-
-					console.log("+++++++++++++++++++++++", arr[i].type, "=", arr[i].name, "=", resName, "=", compareWords(arr[i].name, resName));
-
 					// Если результат найден
-					if(($.isset(res) && $.isset(res.lat) && $.isset(res.lng)
-					// Если искоммый тип мы найшли а не просто GPS россии
-					&& compareWords(arr[i].name, resName))
-					// Если текущий идентификатор есть в списке для исправления координат
-					|| $.isset(gpsMap[arr[i]._id])){
-						// Выполняем сохранение данных
-						arr[i].code	= res.address.code;
-						// Выполняем получение данные gps
-						const fixGps = gpsFix(arr[i]._id);
-						// Если исправления есть то применяем их
-						if($.isset(fixGps)){
-							// Применяем исправленные координаты
-							arr[i].lat	= fixGps.lat;
-							arr[i].lng	= fixGps.lng;
-							arr[i].gps	= fixGps.gps;
-						// Сохраняем результат
-						} else {
-							// Применяем координаты так как они есть
-							arr[i].lat	= res.lat;
-							arr[i].lng	= res.lng;
-							arr[i].gps	= res.gps;
-						}
-						// Выполняем поиск временной зоны
-						const timezone = yield idObj.getTimezoneByGPS({lat: arr[i].lat, lng: arr[i].lng});
-						// Если временная зона найдена
-						if($.isset(timezone)) arr[i].timezone = timezone;
-						// Если объект внешних ключей существует тогда добавляем их
-						if($.isArray(arr[i].parents)){
-							// Переходим по всему массиву данных
-							arr[i].parents.forEach(val => {
-								// Определяем тип контента
-								switch(val.contentType){
-									// Формируем внешние ключи
-									case 'region':		arr[i].regionId		= val.id;	break;
-									case 'district':	arr[i].districtId	= val.id;	break;
-									case 'city':		arr[i].cityId		= val.id;	break;
-									case 'street':		arr[i].streetId		= val.id;	break;
-								}
-							});
-							// Удаляем родительские объекты
-							arr[i].parents = undefined;
-						}
-						// Если это улица или дом то ищем ближайшие станции метро
-						if((arr[i].contentType === 'city')
-						|| (arr[i].contentType === 'street')
-						|| (arr[i].contentType === 'building')){
-							// Параметры запроса
-							const query = {
-								lat:		parseFloat(arr[i].lat),
-								lng:		parseFloat(arr[i].lng),
-								distance:	(arr[i].typeShort === "г" ? 150000 : 3000)
-							};
-							// Выполняем поиск ближайших станций метро
-							const metro = yield idObj.getMetroByGPS(query);
-							// Если метро передано
-							if($.isArray(metro) && metro.length){
-								// Создаем пустой массив с метро
-								arr[i].metro = [];
-								// Переходим по всему массиву данных
-								metro.forEach(val => arr[i].metro.push(val._id));
+					if($.isset(res) || $.isset(gpsMap[arr[i]._id])){
+						// Выполняем разбор адреса
+						let resName = yield idObj.parseAddress({address: res.address[arr[i].contentType]});
+						// Если разбор удачный
+						if($.isset(resName.subject) && $.isset(resName.subject.name)) resName = resName.subject.name;
+						// Запоминаем название так как оно есть
+						else resName = res.address[arr[i].contentType];
+					
+
+						console.log("+++++++++++++++++++++++", arr[i].name, "=", resName, "=", compareWords(arr[i].name, resName));
+
+						// Если результат найден
+						if($.isset(res.lat) && $.isset(res.lng)
+						// Если искоммый тип мы найшли а не просто GPS россии
+						&& compareWords(arr[i].name, resName)){
+							// Выполняем сохранение данных
+							arr[i].code	= res.address.code;
+							// Выполняем получение данные gps
+							const fixGps = gpsFix(arr[i]._id);
+							// Если исправления есть то применяем их
+							if($.isset(fixGps)){
+								// Применяем исправленные координаты
+								arr[i].lat	= fixGps.lat;
+								arr[i].lng	= fixGps.lng;
+								arr[i].gps	= fixGps.gps;
+							// Сохраняем результат
+							} else {
+								// Применяем координаты так как они есть
+								arr[i].lat	= res.lat;
+								arr[i].lng	= res.lng;
+								arr[i].gps	= res.gps;
 							}
+							// Выполняем поиск временной зоны
+							const timezone = yield idObj.getTimezoneByGPS({lat: arr[i].lat, lng: arr[i].lng});
+							// Если временная зона найдена
+							if($.isset(timezone)) arr[i].timezone = timezone;
+							// Если объект внешних ключей существует тогда добавляем их
+							if($.isArray(arr[i].parents)){
+								// Переходим по всему массиву данных
+								arr[i].parents.forEach(val => {
+									// Определяем тип контента
+									switch(val.contentType){
+										// Формируем внешние ключи
+										case 'region':		arr[i].regionId		= val.id;	break;
+										case 'district':	arr[i].districtId	= val.id;	break;
+										case 'city':		arr[i].cityId		= val.id;	break;
+										case 'street':		arr[i].streetId		= val.id;	break;
+									}
+								});
+								// Удаляем родительские объекты
+								arr[i].parents = undefined;
+							}
+							// Если это улица или дом то ищем ближайшие станции метро
+							if((arr[i].contentType === 'city')
+							|| (arr[i].contentType === 'street')
+							|| (arr[i].contentType === 'building')){
+								// Параметры запроса
+								const query = {
+									lat:		parseFloat(arr[i].lat),
+									lng:		parseFloat(arr[i].lng),
+									distance:	(arr[i].typeShort === "г" ? 150000 : 3000)
+								};
+								// Выполняем поиск ближайших станций метро
+								const metro = yield idObj.getMetroByGPS(query);
+								// Если метро передано
+								if($.isArray(metro) && metro.length){
+									// Создаем пустой массив с метро
+									arr[i].metro = [];
+									// Переходим по всему массиву данных
+									metro.forEach(val => arr[i].metro.push(val._id));
+								}
+								// Сохраняем данные
+								updateDB(arr[i], () => getGPS(arr, i + 1));
 							// Сохраняем данные
-							updateDB(arr[i], () => getGPS(arr, i + 1));
-						// Сохраняем данные
-						} else updateDB(arr[i], () => getGPS(arr, i + 1));
+							} else updateDB(arr[i], () => getGPS(arr, i + 1));
+						// Идем дальше
+						} else getGPS(arr, i + 1);
 					// Идем дальше
 					} else getGPS(arr, i + 1);
 				// Идем дальше
