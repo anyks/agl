@@ -621,7 +621,7 @@ const anyks = require("./lib.anyks");
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Если результат найден
-					if($.isset(res) || $.isset(gpsMap[arr[i]._id])){
+					if($.isset(res)){
 						// Выполняем разбор адреса
 						let resName = yield idObj.parseAddress({address: res.address[arr[i].contentType]});
 						// Если разбор удачный
@@ -631,9 +631,10 @@ const anyks = require("./lib.anyks");
 						// Создаем регулярное выражение для поиска
 						const regName = new RegExp(arr[i].name, "i");
 						// Если результат найден
-						if($.isset(res.lat) && $.isset(res.lng)
+						if(($.isset(res.lat) && $.isset(res.lng)
 						// Если искоммый тип мы найшли а не просто GPS россии
-						&& (compareWords(arr[i].name, resName) || regName.test(resName))){
+						&& (compareWords(arr[i].name, resName) || regName.test(resName)))
+						|| $.isset(gpsMap[arr[i]._id])){
 							// Выполняем сохранение данных
 							arr[i].code	= res.address.code;
 							// Выполняем получение данные gps
