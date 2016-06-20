@@ -2992,9 +2992,6 @@ const anyks = require("./lib.anyks");
 									idObj.log("приведение типов выполнено", result).info();
 									// Если данные найдены
 									if($.isset(result)){
-
-										console.log("+++++++++++++++++++++2", address, idObj.generateKey(address));
-
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
 										// Сохраняем результат в базу данных
@@ -3064,9 +3061,6 @@ const anyks = require("./lib.anyks");
 							// Запускаем коннект
 							exec(getData());
 						};
-
-						console.log("+++++++++++++++++++++1", address, idObj.generateKey(address));
-
 						// Запрашиваем все данные из базы
 						idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
 							// Выводим результат поиска по базе
