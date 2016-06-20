@@ -2994,9 +2994,6 @@ const anyks = require("./lib.anyks");
 									if($.isset(result)){
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
-
-										console.log("+++++++++++++++2", address, idObj.generateKey(address), result);
-
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save(() => {
 											// Удаляем ключ из объекта
@@ -3064,9 +3061,6 @@ const anyks = require("./lib.anyks");
 							// Запускаем коннект
 							exec(getData());
 						};
-
-						console.log("++++++++++++++++++++++++++++", idObj.generateKey(address), address);
-
 						// Запрашиваем все данные из базы
 						idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
 							// Выводим результат поиска по базе
@@ -5283,7 +5277,8 @@ const anyks = require("./lib.anyks");
 								"address.city":		1,
 								"address.street":	1
 							}, {
-								name: "address",
+								name:	"address",
+								unique:	true,
 								partialFilterExpression: {
 									"address.country":	{$exists: true},
 									"address.region":	{$exists: true},
