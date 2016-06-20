@@ -1369,7 +1369,7 @@ const anyks = require("./lib.anyks");
 					// Разбиваем текст на массив
 					.anyks_trim().split(" ");
 					// Массив найденных индексов
-					const indexes = [];
+					const indexes = [], mask = ["дом", "строение", "корпус"];
 					// Делаем первый обход массива и извлекаем из него все типы
 					for(let i = 0; i < address.length; i++){
 						// Выполняем разбор адреса
@@ -1382,7 +1382,8 @@ const anyks = require("./lib.anyks");
 							types.push(addr.subject.type);
 							// Добавляем найденный индекс в массив
 							indexes.push(i);
-						} else console.log("-----------", addr);
+						// Если найден запрещенный субъект то также добавляем его в список
+						} else if(mask.indexOf(address[i].toLowerCase()) > -1) indexes.push(i);
 					}
 					// Удаляем ненужные нам индексы
 					address = address.filter((val, i) => (indexes.indexOf(i) < 0));
