@@ -1344,7 +1344,7 @@ const anyks = require("./lib.anyks");
 							const reg = new RegExp("^" + subject + "(?:\\s+[А-ЯЁ]+)?$", "i");
 							// Если элемент в массиве найден
 							if(reg.test(val.name) && (!$.isset(result)
-							|| (mask.indexOf(val.name.toLowerCase()) > -1))) result = val;
+							|| (mask.indexOf(val.type.toLowerCase()) > -1))) result = val;
 						}
 						// Выводим результат
 						return result;
