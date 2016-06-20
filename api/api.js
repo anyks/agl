@@ -2541,9 +2541,9 @@ const anyks = require("./lib.anyks");
 				// Ищем данные в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные в кеше сть тогда выводим их
-					if(!$.isset(cache)) resolve(JSON.parse(cache));
+					//if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					else {
+					//else {
 						// Выполняем интерпретацию данных
 						idObj.parseAddress({address}).then(address => {
 							// Если адрес интерпретирован удачно
@@ -2577,6 +2577,9 @@ const anyks = require("./lib.anyks");
 										const regType = new RegExp(type.replace(regBroken, ""), "i");
 										// Переходим по всему массиву
 										for(let subject of subjects){
+											
+											console.log("++++++++++", regType, type, subject.type, subject.type.replace(regBroken, ""), regType.test(subject.type.replace(regBroken, "")));
+
 											// Если тип найден тогда выходим
 											if(regType.test(subject.type.replace(regBroken, ""))) return subject;
 										}
@@ -2595,12 +2598,11 @@ const anyks = require("./lib.anyks");
 									// Если страна найдена
 									if($.isset(address.country)){
 										// Присваиваем параметр поиска
-										str		= address.country.name;
-										type	= address.country.type;
+										str = address.country.name;
 										// Запрашиваем данные страны
 										country = yield findSubject("findCountry", {str});
 										// Если страна существует тогда изменяем ее
-										if($.isArray(country) && country.length) country = findSubjectByType(country, type);
+										if($.isArray(country) && country.length) country = findSubjectByType(country);
 									}
 									// Если регион найден
 									if($.isset(address.region)){
@@ -2653,14 +2655,13 @@ const anyks = require("./lib.anyks");
 									// Если дом найден
 									if($.isset(address.house) && $.isset(street)){
 										// Присваиваем параметр поиска
-										str		= address.house.name;
-										type	= address.house.type;
+										str = address.house.name;
 										// Получаем идентификатор улицы
 										const streetId = street._id;
 										// Запрашиваем данные дома
 										house = yield findSubject("findHouse", {str, streetId});
 										// Если дом существует тогда изменяем его
-										if($.isArray(house) && house.length) house = findSubjectByType(house, type);
+										if($.isArray(house) && house.length) house = findSubjectByType(house);
 									}
 									// Формируем объект с результатами поиска
 									const result = {country, region, district, city, street, house};
@@ -2693,7 +2694,7 @@ const anyks = require("./lib.anyks");
 							// Выходим
 							resolve(false);
 						});
-					}
+					//}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
