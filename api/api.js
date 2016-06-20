@@ -1325,6 +1325,8 @@ const anyks = require("./lib.anyks");
 			const idObj = this;
 			// Создаем промис для обработки
 			return (new Promise(resolve => {
+				// Массив с типами субъектов для поиска
+				const types = [];
 				/**
 				 * findSubject Функция поиска географического субъекта по массиву
 				 * @param  {Object} subject название субъекта
@@ -1357,7 +1359,7 @@ const anyks = require("./lib.anyks");
 				 */
 				const getData = function * (){
 					// Переменные субъектов
-					let country, region, district, city, street, house, type;
+					let country, region, district, city, street, house;
 					// Разбиваем текст на составляющие
 					address = address
 					// Устанавливаем пробелы в нужных местах
@@ -1366,6 +1368,24 @@ const anyks = require("./lib.anyks");
 					.replace(/[^А-ЯЁ\-\d\s]/ig, "")
 					// Разбиваем текст на массив
 					.anyks_trim().split(" ");
+					// Делаем первый обход массива и извлекаем из него все типы
+					for(let i = 0; i < address.length; i++){
+						// Выполняем разбор адреса
+						const addr = yield idObj.parseAddress({address: address[i]});
+						// Проверяем найденный результат, если это тип населенного пункта то пропускаем
+						if($.isset(addr) && ($.isset(addr.subject)
+						&& $.isset(addr.subject.type)
+						&& !$.isset(addr.subject.name))){
+							// Запоминаем типы найденных субъектов
+							types.push(addr.subject.type);
+							// Удаляем из массива субъект
+							address.splice(i, 1);
+						}
+					}
+
+					console.log("+++++++", types);
+
+
 					// Переходим по всему массиву
 					for(let subject of address){
 						// Если это не одна буква
@@ -1377,15 +1397,7 @@ const anyks = require("./lib.anyks");
 							// Проверяем найденный результат, если это тип населенного пункта то пропускаем
 							if($.isset(addr) && ($.isset(addr.subject)
 							&& $.isset(addr.subject.type)
-							&& !$.isset(addr.subject.name))){
-								// Запоминаем найденный тип
-								type = addr.subject.type;
-								// Продолжаем дальше
-								continue;
-							}
-
-							console.log("+++++++", type);
-
+							&& !$.isset(addr.subject.name))) continue;
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
