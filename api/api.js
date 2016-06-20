@@ -1336,8 +1336,6 @@ const anyks = require("./lib.anyks");
 				const findSubject = (subject, arr) => {
 					// Если это массив
 					if($.isArray(arr) && arr.length){
-						// Маска с привилегиями поиска
-						const mask = ["область", "район", "город", "проспект", "площадь"];
 						// Результат поиска
 						let result = false;
 						// Переходим по всему найденному массиву
@@ -1346,7 +1344,7 @@ const anyks = require("./lib.anyks");
 							const reg = new RegExp("^" + subject + "(?:\\s+[А-ЯЁ]+)?$", "i");
 							// Если элемент в массиве найден
 							if(reg.test(val.name) && (!$.isset(result)
-							|| (mask.indexOf(val.type.toLowerCase()) > -1))) result = val;
+							|| (types.indexOf(val.type.toLowerCase()) > -1))) result = val;
 						}
 						// Выводим результат
 						return result;
@@ -1387,22 +1385,12 @@ const anyks = require("./lib.anyks");
 					}
 					// Удаляем ненужные нам индексы
 					address = address.filter((val, i) => (indexes.indexOf(i) < 0));
-
-					console.log("+++++++", address, types);
-
-
 					// Переходим по всему массиву
 					for(let subject of address){
 						// Если это не одна буква
 						if((/^[А-ЯЁ]+$/i.test(subject)
 						&& (subject.length > 1))
 						|| /\d/i.test(subject)){
-							// Выполняем разбор адреса
-							const addr = yield idObj.parseAddress({address: subject});
-							// Проверяем найденный результат, если это тип населенного пункта то пропускаем
-							if($.isset(addr) && ($.isset(addr.subject)
-							&& $.isset(addr.subject.type)
-							&& !$.isset(addr.subject.name))) continue;
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
