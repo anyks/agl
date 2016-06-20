@@ -740,14 +740,13 @@ const anyks = require("./lib.anyks");
 								arr[i].parents = undefined;
 							}
 							// Если это улица или дом то ищем ближайшие станции метро
-							if((arr[i].contentType === 'city')
-							|| (arr[i].contentType === 'street')
+							if((arr[i].contentType === 'street')
 							|| (arr[i].contentType === 'building')){
 								// Параметры запроса
 								const query = {
 									lat:		parseFloat(arr[i].lat),
 									lng:		parseFloat(arr[i].lng),
-									distance:	(arr[i].typeShort === "г" ? 150000 : 3000)
+									distance:	3000
 								};
 								// Выполняем поиск ближайших станций метро
 								const metro = yield idObj.getMetroByGPS(query);
@@ -4994,102 +4993,6 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
-		 * updateMetroCity Метод обновления данных метро в тех городах где оно не найдено
-		 * @param  {String}  updateKey ключ для обновления базы данных
-		 * @param  {Boolean} flag      флаг для внутреннего обновления
-		 * @return {Promise}           промис с данными результата обновлений станций метро
-		 */
-		updateMetroCity({updateKey}, flag = false){
-			// Получаем идентификатор текущего объекта
-			const idObj = this;
-			// Создаем промис для обработки
-			return (new Promise(resolve => {
-				// Проверяем совпадают ли ключи
-				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
-					/**
-					 * updateDB Функция обновления данных в базе
-					 * @param  {Object}   obj      объект для обновления данных
-					 * @param  {Function} callback функция обратного вызова
-					 */
-					const updateDB = (obj, callback) => {
-						/**
-						 * Функция сохранения данных в кеше saveCache
-						 */
-						const saveCache = () => {
-							// Ключ запроса
-							const key = getKeyRedisForSubject(obj);
-							// Сохраняем данные в кеше
-							Agl.setRedis.call(idObj, "set", key, obj).then(callback).catch(callback);
-						};
-						// Запрашиваем все данные из базы
-						idObj.schemes.Cities.findOne({_id: obj._id})
-						// Выполняем запрос
-						.exec((err, data) => {
-							// Если ошибки нет
-							if(!$.isset(err) && $.isset(data)
-							&& $.isObject(data)){
-								// Выполняем обновление
-								idObj.schemes.Cities.update({_id: obj._id}, obj, {upsert: true}, saveCache);
-							// Просто добавляем новый объект
-							} else (new idObj.schemes.Cities(obj)).save(saveCache);
-						});
-					};
-					// Запрашиваем все данные городов
-					idObj.schemes.Cities.find({metro: {$size: 0}, typeShort: "г"})
-					// Запрашиваем данные регионов
-					.exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isArray(data) && data.length){
-							/**
-							 * getData Рекурсивная функция перехода по массиву
-							 * @param  {Number} i индекс текущего значения массива
-							 */
-							const getData = (i = 0) => {
-								// Если не все данные пришли тогда продолжаем загружать
-								if(i < data.length){
-									// Параметры запроса
-									const query = {
-										lat:		data[i].lat,
-										lng:		data[i].lng,
-										distance:	150000
-									};
-									// Получаем данные метро
-									idObj.getMetroByGPS(query).then(metro => {
-										// Если метро передано
-										if($.isArray(metro) && metro.length){
-											// Создаем пустой массив с метро
-											data[i].metro = [];
-											// Переходим по всему массиву данных
-											metro.forEach(val => data[i].metro.push(val._id));
-											// Сохраняем метро
-											updateDB(data[i], () => getData(i + 1));
-										// Просто продолжаем дальше
-										} else getData(i + 1);
-									// Если происходит ошибка тогда выходим
-									}).catch(err => {
-										// Выводим ошибку метода
-										idObj.log("getMetroByGPS in updateMetroCity", err).error();
-										// Выходим
-										getData(i + 1);
-									});
-								// Если все загружено тогда сообщаем об этом
-								} else {
-									// Выводим в консоль сообщение
-									idObj.log("все станции метро в городах установлены!").info();
-									// Выводим результат
-									resolve(true);
-								}
-							};
-							// Запускаем запрос данных
-							getData();
-						// Сообщаем что такие данные не найдены
-						} else resolve(false);
-					});
-				// Сообщаем что ключи не совпадают
-				} else resolve(false);
-			}));
-		}
-		/**
 		 * updateMetro Метод обновления данных базы метро
 		 * @param  {String}  updateKey ключ для обновления базы данных
 		 * @param  {Boolean} flag      флаг для внутреннего обновления
@@ -5300,8 +5203,6 @@ const anyks = require("./lib.anyks");
 						const metro = (cities ? yield idObj.updateMetro({}, true) : false);
 						// Если метро загружено
 						if(metro){
-							// Выполняем загрузку станций метро для городов
-							const metroCity = yield idObj.updateMetroCity({}, true);
 							// Создаем индексы для базы адресов
 							address.createIndex({gps: "2dsphere"}, {name: "gps"});
 							address.createIndex({"address.country": 1}, {
