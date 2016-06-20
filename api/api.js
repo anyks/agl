@@ -2994,6 +2994,9 @@ const anyks = require("./lib.anyks");
 									if($.isset(result)){
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
+
+										console.log("+++++++++++++++2", result.key, idObj.generateKey(address), result);
+
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save(() => {
 											// Удаляем ключ из объекта
@@ -3073,11 +3076,6 @@ const anyks = require("./lib.anyks");
 							&& $.isObject(data)) resolve(data);
 							// Продолжаем дальше если данные не найдены
 							else {
-								
-								console.log("+++++++++++++++++2", err, data, idObj.generateKey(address), address);
-
-								return false;
-
 								// Выполняем интерпретацию адреса
 								idObj.parseAddress({address}).then(result => {
 									// Если данные пришли
