@@ -2995,7 +2995,7 @@ const anyks = require("./lib.anyks");
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
 
-										console.log("+++++++++++++++2", result.key, idObj.generateKey(address), result);
+										console.log("+++++++++++++++2", address, idObj.generateKey(address), result);
 
 										// Сохраняем результат в базу данных
 										(new idObj.schemes.Address(result)).save(() => {
