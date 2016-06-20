@@ -68,8 +68,11 @@ const anyks = require("./lib.anyks");
 		// Если генератор завершен не полностью
 		if(!next.done){
 			next.value.then(
-				res => exec(gen, callback, res),
-				err => gen.throw(err)
+				res => exec.call(this, gen, callback, res),
+				err => {
+					this.log("exec generator", err).error();
+					exec.call(this, gen, callback, false);
+				}
 			);
 		// Выполняем функцию обратного вызова
 		} else callback(next.value);
@@ -672,9 +675,11 @@ const anyks = require("./lib.anyks");
 							} else resolve(false);
 						// Просто выходим
 						} else resolve(false);
+						// Сообщаем что все удачно
+						return true;
 					};
 					// Запускаем коннект
-					exec(getData());
+					exec.call(idObj, getData());
 				}));
 			};
 			/**
@@ -763,6 +768,8 @@ const anyks = require("./lib.anyks");
 					} else getGPS(arr, i + 1);
 				// Идем дальше
 				} else getGPS(arr, i + 1);
+				// Сообщаем что все удачно
+				return true;
 			};
 			/**
 			 * getGPS Рекурсивная функция поиска gps координат для города
@@ -777,7 +784,7 @@ const anyks = require("./lib.anyks");
 					// Удаляем основной идентификатор
 					arr[i].id = undefined;
 					// Запускаем коннект
-					exec(getData(arr, i));
+					exec.call(idObj, getData(arr, i));
 				// Сообщаем что все сохранено удачно
 				} else resolve(arr);
 			};
@@ -1433,9 +1440,11 @@ const anyks = require("./lib.anyks");
 					}
 					// Выводим результат
 					resolve({country, region, district, city, street, house});
+					// Сообщаем что все удачно
+					return true;
 				};
 				// Запускаем коннект
-				exec(getData());
+				exec.call(idObj, getData());
 			}));
 		}
 		/**
@@ -2297,9 +2306,11 @@ const anyks = require("./lib.anyks");
 								// Сообщаем что станции метро не найдены
 								else resolve(false);
 							}
+							// Сообщаем что все удачно
+							return true;
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec.call(idObj, getData());
 					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
@@ -2353,9 +2364,11 @@ const anyks = require("./lib.anyks");
 					}
 					// Выводим результат
 					resolve(metro_stations);
+					// Сообщаем что все удачно
+					return true;
 				};
 				// Запускаем коннект
-				exec(getData());
+				exec.call(idObj, getData());
 			}));
 		}
 		/**
@@ -2448,9 +2461,11 @@ const anyks = require("./lib.anyks");
 						resolve(metro_stations);
 					// Сообщаем что такие данные не найдены
 					} else resolve(false);
+					// Сообщаем что все удачно
+					return true;
 				};
 				// Запускаем коннект
-				exec(getData());
+				exec.call(idObj, getData());
 			}));
 		}
 		/**
@@ -2484,9 +2499,11 @@ const anyks = require("./lib.anyks");
 						resolve(metro_stations);
 					// Сообщаем что такие данные не найдены
 					} else resolve(false);
+					// Сообщаем что все удачно
+					return true;
 				};
 				// Запускаем коннект
-				exec(getData());
+				exec.call(idObj, getData());
 			}));
 		}
 		/**
@@ -2612,9 +2629,11 @@ const anyks = require("./lib.anyks");
 									}
 									// Выводим результат
 									resolve(result);
+									// Сообщаем что все удачно
+									return true;
 								};
 								// Запускаем коннект
-								exec(getData());
+								exec.call(idObj, getData());
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
 						// Если происходит ошибка тогда выходим
@@ -2806,9 +2825,11 @@ const anyks = require("./lib.anyks");
 						resolve(metro_stations);
 					// Сообщаем что ничего не найдено
 					} else resolve([]);
+					// Сообщаем что все удачно
+					return true;
 				};
 				// Запускаем коннект
-				exec(getData());
+				exec.call(idObj, getData());
 			}));
 		}
 		/**
@@ -2912,9 +2933,11 @@ const anyks = require("./lib.anyks");
 								).info();
 								// Выполняем инициализацию
 								init(obj);
+								// Сообщаем что все удачно
+								return true;
 							};
 							// Запускаем коннект
-							exec(getData());
+							exec.call(idObj, getData());
 						};
 						// Запрашиваем все данные из базы
 						idObj.schemes.Address.findOne({
@@ -3057,9 +3080,11 @@ const anyks = require("./lib.anyks");
 								).info();
 								// Выполняем инициализацию
 								init(obj);
+								// Сообщаем что все удачно
+								return true;
 							};
 							// Запускаем коннект
-							exec(getData());
+							exec.call(idObj, getData());
 						};
 						// Запрашиваем все данные из базы
 						idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
@@ -3970,9 +3995,11 @@ const anyks = require("./lib.anyks");
 							Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 							// Выводим результат
 							resolve(obj);
+							// Сообщаем что все удачно
+							return true;
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec.call(idObj, getData());
 					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
@@ -4036,9 +4063,11 @@ const anyks = require("./lib.anyks");
 							Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 							// Выводим результат
 							resolve(obj);
+							// Сообщаем что все удачно
+							return true;
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec.call(idObj, getData());
 					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
@@ -4113,9 +4142,11 @@ const anyks = require("./lib.anyks");
 							Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 							// Выводим результат
 							resolve(obj);
+							// Сообщаем что все удачно
+							return true;
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec.call(idObj, getData());
 					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
@@ -4190,9 +4221,11 @@ const anyks = require("./lib.anyks");
 							Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 							// Выводим результат
 							resolve(obj);
+							// Сообщаем что все удачно
+							return true;
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec.call(idObj, getData());
 					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
@@ -4278,9 +4311,11 @@ const anyks = require("./lib.anyks");
 							Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 							// Выводим результат
 							resolve(obj);
+							// Сообщаем что все удачно
+							return true;
 						};
 						// Запускаем коннект
-						exec(getData());
+						exec.call(idObj, getData());
 					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
@@ -4479,9 +4514,11 @@ const anyks = require("./lib.anyks");
 						idObj.log("все временные зоны обновлены удачно!").info();
 						// Сообщаем что все выполнено
 						resolve(true);
+						// Сообщаем что все удачно
+						return true;
 					};
 					// Запускаем коннект
-					exec(getData());
+					exec.call(idObj, getData());
 				// Сообщаем что ключи не совпадают
 				} else resolve(false);
 			}));
@@ -5357,9 +5394,11 @@ const anyks = require("./lib.anyks");
 							// Сообщаем что работа завершена
 							resolve(false);
 						}
+						// Сообщаем что все удачно
+						return true;
 					};
 					// Запускаем коннект
-					exec(updateDB());
+					exec.call(idObj, updateDB());
 				// Сообщаем что ключи не совпадают
 				} else resolve(false);
 			}));
