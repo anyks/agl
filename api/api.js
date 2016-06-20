@@ -1382,7 +1382,7 @@ const anyks = require("./lib.anyks");
 							types.push(addr.subject.type);
 							// Добавляем найденный индекс в массив
 							indexes.push(i);
-						}
+						} else console.log("-----------", addr.subject);
 					}
 					// Удаляем ненужные нам индексы
 					address = address.filter((val, i) => (indexes.indexOf(i) < 0));
