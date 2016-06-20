@@ -635,6 +635,9 @@ const anyks = require("./lib.anyks");
 							// Если названия не найдены тогда присваиваем основное название
 							if(!$.isset(resName1)) resName1 = addr1;
 							if(!$.isset(resName2)) resName2 = addr2;
+							// Очищаем названия
+							resName1 = resName1.replace(/[^А-ЯЁ\-\d]/ig, "");
+							resName2 = resName2.replace(/[^А-ЯЁ\-\d]/ig, "");
 							// Создаем регулярное выражение для поиска
 							const regName1 = new RegExp(resName1, "i");
 							const regName2 = new RegExp(resName2, "i");
