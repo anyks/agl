@@ -1373,8 +1373,9 @@ const anyks = require("./lib.anyks");
 						// Выполняем разбор адреса
 						const addr = yield idObj.parseAddress({address: address[i]});
 						// Проверяем найденный результат, если это тип населенного пункта то пропускаем
-						if($.isset(addr) && $.isset(addr.subject)
-						&& $.isset(addr.subject.type)){
+						if($.isset(addr) && ($.isset(addr.subject)
+						&& $.isset(addr.subject.type)
+						&& !$.isset(addr.subject.name))){
 							// Запоминаем типы найденных субъектов
 							types.push(addr.subject.type);
 							// Удаляем из массива субъект
