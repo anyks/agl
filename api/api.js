@@ -2548,9 +2548,6 @@ const anyks = require("./lib.anyks");
 						idObj.parseAddress({address}).then(address => {
 							// Если адрес интерпретирован удачно
 							if($.isset(address)){
-								
-								try {
-
 								/**
 								 * findSubject Функция запроса данных из базы
 								 * @param  {Object} func   функция выполняющая поиск
@@ -2580,9 +2577,6 @@ const anyks = require("./lib.anyks");
 										const regType = new RegExp(type.replace(regBroken, ""), "i");
 										// Переходим по всему массиву
 										for(let subject of subjects){
-
-											console.log("+++++++", type, subject.type, regType.test(subject.type.replace(regBroken, "")));
-
 											// Если тип найден тогда выходим
 											if(regType.test(subject.type.replace(regBroken, ""))) return subject;
 										}
@@ -2661,24 +2655,13 @@ const anyks = require("./lib.anyks");
 										str = address.house.name;
 										// Получаем идентификатор улицы
 										const streetId = street._id;
-
-										console.log("++++++++++++++++++0", str);
-
 										// Запрашиваем данные дома
 										house = yield findSubject("findHouse", {str, streetId});
-
-										console.log("++++++++++++++++++1", house);
-
 										// Если дом существует тогда изменяем его
 										if($.isArray(house) && house.length) house = findSubjectByType(house);
-
-										console.log("++++++++++++++++++2", house);
 									}
 									// Формируем объект с результатами поиска
 									const result = {country, region, district, city, street, house};
-
-									console.log("++++++++++++++++++", result);
-
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, result, 3600).then();
 									// Формируем объект для генерации ключа
@@ -2699,9 +2682,6 @@ const anyks = require("./lib.anyks");
 								};
 								// Запускаем коннект
 								exec.call(idObj, getData());
-
-								} catch(e) {console.log("--------------", e);}
-
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
 						// Если происходит ошибка тогда выходим
