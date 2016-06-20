@@ -2548,6 +2548,9 @@ const anyks = require("./lib.anyks");
 						idObj.parseAddress({address}).then(address => {
 							// Если адрес интерпретирован удачно
 							if($.isset(address)){
+								
+								try {
+
 								/**
 								 * findSubject Функция запроса данных из базы
 								 * @param  {Object} func   функция выполняющая поиск
@@ -2685,6 +2688,9 @@ const anyks = require("./lib.anyks");
 								};
 								// Запускаем коннект
 								exec.call(idObj, getData());
+
+								} catch(e) {console.log("--------------", e);}
+
 							// Сообщаем что ничего не найдено
 							} else resolve(false);
 						// Если происходит ошибка тогда выходим
