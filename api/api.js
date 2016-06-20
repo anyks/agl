@@ -2661,13 +2661,24 @@ const anyks = require("./lib.anyks");
 										str = address.house.name;
 										// Получаем идентификатор улицы
 										const streetId = street._id;
+
+										console.log("++++++++++++++++++0", str);
+
 										// Запрашиваем данные дома
 										house = yield findSubject("findHouse", {str, streetId});
+
+										console.log("++++++++++++++++++1", house);
+
 										// Если дом существует тогда изменяем его
 										if($.isArray(house) && house.length) house = findSubjectByType(house);
+
+										console.log("++++++++++++++++++2", house);
 									}
 									// Формируем объект с результатами поиска
 									const result = {country, region, district, city, street, house};
+
+									console.log("++++++++++++++++++", result);
+
 									// Отправляем в Redis на час
 									Agl.setRedis.call(idObj, "set", key, result, 3600).then();
 									// Формируем объект для генерации ключа
