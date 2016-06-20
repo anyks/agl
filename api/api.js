@@ -4890,7 +4890,7 @@ const anyks = require("./lib.anyks");
 					// Создаем ключ для кеша
 					const key = createSubjectKey({key: "subjects", db: "city"});
 					// Удаляем данные из кеша
-					Agl.rmRedis.call(idObj, key);
+					//Agl.rmRedis.call(idObj, key);
 					// Запрашиваем все данные регионов
 					idObj.schemes.Regions.find({})
 					// Запрашиваем данные регионов
