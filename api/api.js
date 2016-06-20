@@ -1385,7 +1385,7 @@ const anyks = require("./lib.anyks");
 						}
 					}
 					// Удаляем ненужные нам индексы
-					address = address.filter((val, i) => (indexes.indexOf(i) > -1));
+					address = address.filter((val, i) => (indexes.indexOf(i) < 0));
 
 					console.log("+++++++", address, types);
 
