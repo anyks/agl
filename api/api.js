@@ -1377,7 +1377,15 @@ const anyks = require("./lib.anyks");
 							// Проверяем найденный результат, если это тип населенного пункта то пропускаем
 							if($.isset(addr) && ($.isset(addr.subject)
 							&& $.isset(addr.subject.type)
-							&& !$.isset(addr.subject.name))) continue;
+							&& !$.isset(addr.subject.name))){
+								// Запоминаем найденный тип
+								type = addr.subject.type;
+								// Продолжаем дальше
+								continue;
+							}
+
+							console.log("+++++++", type);
+
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
