@@ -1371,6 +1371,9 @@ const anyks = require("./lib.anyks");
 							if($.isset(addr) && ($.isset(addr.subject)
 							&& $.isset(addr.subject.type)
 							&& !$.isset(addr.subject.name))) continue;
+
+							console.log("+++++++++", addr.subject.type);
+
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
