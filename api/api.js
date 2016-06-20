@@ -2344,10 +2344,11 @@ const anyks = require("./lib.anyks");
 		}
 		/**
 		 * findNearStationsMetroByIds Метод поиска ближайших станций метро к каждому из метро
-		 * @param  {Array} options.ids массив идентификаторов станций метро
-		 * @return {Promise}           промис результата
+		 * @param  {Array}   options.ids      массив идентификаторов станций метро
+		 * @param  {Number}  options.distance дистанция поиска в метрах
+		 * @return {Promise}                  промис результата
 		 */
-		findNearStationsMetroByIds({ids}){
+		findNearStationsMetroByIds({ids, distance = 5000}){
 			// Получаем идентификатор текущего объекта
 			const idObj = this;
 			// Создаем промис для обработки
@@ -2366,7 +2367,7 @@ const anyks = require("./lib.anyks");
 						const stations = yield idObj.getMetroByGPS({
 							lat:		metro.lat,
 							lng:		metro.lng,
-							distance:	5000
+							distance:	distance
 						});
 						// Список ближайших станций метро
 						const newStations = [];
