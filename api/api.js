@@ -3061,6 +3061,9 @@ const anyks = require("./lib.anyks");
 							// Запускаем коннект
 							exec(getData());
 						};
+
+						console.log("++++++++++++++++++++++++++++", idObj.generateKey(address), address);
+
 						// Запрашиваем все данные из базы
 						idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
 							// Выводим результат поиска по базе
