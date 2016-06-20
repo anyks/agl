@@ -1373,7 +1373,7 @@ const anyks = require("./lib.anyks");
 							&& !$.isset(addr.subject.name))) continue;
 							// Ищем тип субъекта
 							else if($.isset(addr)
-							&& ($.isset(addr.subject)
+							&& $.isset(addr.subject)
 							&& $.isset(addr.subject.type)) type = addr.subject.type;
 							
 							console.log("+++++++++++", type);
