@@ -2561,46 +2561,74 @@ const anyks = require("./lib.anyks");
 									return idObj[func](query);
 								};
 								/**
+								 * findSubjectByType Функция поиска субъекта по его типу
+								 * @param  {Array}  subjects массив объектов субъектов для поиска
+								 * @param  {String} type     тип субъекта который нужно найти
+								 * @return {Object}          найденный объект субъекта
+								 */
+								const findSubjectByType = (subjects, type) => {
+									// Если тип не передан тогда выводим нулевой элемент
+									if(!$.isset(type)) return subjects[0];
+									// Если тип передан тогда ищем указанный тип
+									else {
+										// Регулярное выражение для удаления ненужных символов
+										const regBroken = /[^А-ЯЁ\-]/ig;
+										// Регулярное выражение для поиска типа
+										const regType = new RegExp(type.replace(regBroken, ""), "i");
+										// Переходим по всему массиву
+										for(let subject of subjects){
+											// Если тип найден тогда выходим
+											if(regType.test(subject.type.replace(regBroken, ""))) return subject;
+										}
+										// Сообщаем что ничего не найдено
+										return subjects[0];
+									}
+								};
+								/**
 								 * *getData Генератор для получения данных адреса
 								 */
 								const getData = function * (){
 									// Формируем параметры запроса
-									let str, country = false, region = false,
+									let str, type, country = false, region = false,
 									district = false, city = false,
 									street = false, house = false;
 									// Если страна найдена
 									if($.isset(address.country)){
 										// Присваиваем параметр поиска
-										str = address.country.name;
+										str		= address.country.name;
+										type	= address.country.type;
 										// Запрашиваем данные страны
 										country = yield findSubject("findCountry", {str});
 										// Если страна существует тогда изменяем ее
-										if($.isArray(country) && country.length) country = country[0];
+										if($.isArray(country) && country.length) country = findSubjectByType(country, type);
 									}
 									// Если регион найден
 									if($.isset(address.region)){
 										// Присваиваем параметр поиска
-										str = address.region.name;
+										str		= address.region.name;
+										type	= address.region.type;
 										// Запрашиваем данные региона
 										region = yield findSubject("findRegion", {str});
 										// Если регион существует тогда изменяем его
-										if($.isArray(region) && region.length) region = region[0];
+										if($.isArray(region) && region.length) region = findSubjectByType(region, type);
 									}
 									// Если район найден
 									if($.isset(address.district)){
 										// Присваиваем параметр поиска
-										str = address.district.name;
+										str		= address.district.name;
+										type	= address.district.type;
 										// Получаем идентификатор региона
 										const regionId = ($.isset(region) ? region._id : undefined);
 										// Запрашиваем данные района
-										district = yield findSubject("findDistrict", {str, regionId})[0];
+										district = yield findSubject("findDistrict", {str, regionId});
 										// Если район существует тогда изменяем его
-										if($.isArray(district) && district.length) district = district[0];
+										if($.isArray(district) && district.length) district = findSubjectByType(district, type);
 									}
 									// Если город найден
 									if($.isset(address.city)){
 										// Присваиваем параметр поиска
-										str = address.city.name;
+										str		= address.city.name;
+										type	= address.city.type;
 										// Получаем идентификатор региона
 										const regionId = ($.isset(region) ? region._id : undefined);
 										// Получаем идентификатор района
@@ -2608,29 +2636,31 @@ const anyks = require("./lib.anyks");
 										// Запрашиваем данные города
 										city = yield findSubject("findCity", {str, regionId, districtId});
 										// Если город существует тогда изменяем его
-										if($.isArray(city) && city.length) city = city[0];
+										if($.isArray(city) && city.length) city = findSubjectByType(city, type);
 									}
 									// Если улица найдена
 									if($.isset(address.street) && $.isset(city)){
 										// Присваиваем параметр поиска
-										str = address.street.name;
+										str		= address.street.name;
+										type	= address.street.type;
 										// Получаем идентификатор города
 										const cityId = city._id;
 										// Запрашиваем данные улицы
 										street = yield findSubject("findStreet", {str, cityId});
 										// Если улица существует тогда изменяем её
-										if($.isArray(street) && street.length) street = street[0];
+										if($.isArray(street) && street.length) street = findSubjectByType(street, type);
 									}
 									// Если дом найден
 									if($.isset(address.house) && $.isset(street)){
 										// Присваиваем параметр поиска
-										str = address.house.name;
+										str		= address.house.name;
+										type	= address.house.type;
 										// Получаем идентификатор улицы
 										const streetId = street._id;
 										// Запрашиваем данные дома
 										house = yield findSubject("findHouse", {str, streetId});
 										// Если дом существует тогда изменяем его
-										if($.isArray(house) && house.length) house = house[0];
+										if($.isArray(house) && house.length) house = findSubjectByType(house, type);
 									}
 									// Формируем объект с результатами поиска
 									const result = {country, region, district, city, street, house};
