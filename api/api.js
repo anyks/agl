@@ -1334,13 +1334,20 @@ const anyks = require("./lib.anyks");
 				const findSubject = (subject, arr) => {
 					// Если это массив
 					if($.isArray(arr) && arr.length){
+						// Маска с привилегиями поиска
+						const mask = ["область", "район", "город", "проспект", "площадь"];
+						// Результат поиска
+						let result = false;
 						// Переходим по всему найденному массиву
 						for(let val of arr){
 							// Создаем регулярное выражение для поиска
 							const reg = new RegExp("^" + subject + "(?:\\s+[А-ЯЁ]+)?$", "i");
 							// Если элемент в массиве найден
-							if(reg.test(val.name)) return val;
+							if(reg.test(val.name) && (!$.isset(result)
+							|| (mask.indexOf(val.name.toLowerCase()) > -1))) result = val;
 						}
+						// Выводим результат
+						return result;
 					}
 					// Выходим из функции
 					return false;
@@ -1371,13 +1378,6 @@ const anyks = require("./lib.anyks");
 							if($.isset(addr) && ($.isset(addr.subject)
 							&& $.isset(addr.subject.type)
 							&& !$.isset(addr.subject.name))) continue;
-							// Ищем тип субъекта
-							else if($.isset(addr)
-							&& $.isset(addr.subject)
-							&& $.isset(addr.subject.type)) type = addr.subject.type;
-							
-							console.log("+++++++++++", type);
-
 							// Если страна не найдена
 							if(!$.isset(country)){
 								// Получаем данные стран
