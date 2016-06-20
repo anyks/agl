@@ -1350,7 +1350,7 @@ const anyks = require("./lib.anyks");
 				 */
 				const getData = function * (){
 					// Переменные субъектов
-					let country, region, district, city, street, house;
+					let country, region, district, city, street, house, type;
 					// Разбиваем текст на составляющие
 					address = address
 					// Устанавливаем пробелы в нужных местах
@@ -1371,8 +1371,12 @@ const anyks = require("./lib.anyks");
 							if($.isset(addr) && ($.isset(addr.subject)
 							&& $.isset(addr.subject.type)
 							&& !$.isset(addr.subject.name))) continue;
-
-							console.log("+++++++++", addr.subject.type);
+							// Ищем тип субъекта
+							else if($.isset(addr)
+							&& ($.isset(addr.subject)
+							&& $.isset(addr.subject.type)) type = addr.subject.type;
+							
+							console.log("+++++++++++", type);
 
 							// Если страна не найдена
 							if(!$.isset(country)){
