@@ -988,19 +988,6 @@ const anyks = require("./lib.anyks");
 						if(!$.isset(err) && $.isset(data)) result = data;
 						// Выводим в консоль сообщение что данные не найдены
 						else idObj.log("поиск по id не дал результатов:", "id =", id, err, data).error();
-						// Если данные существуют
-						if($.isset(data)){
-							// Генерируем ключ метро
-							const key = createMetroKey({
-								id:		data._id,
-								key:	"metro",
-								name:	data.name,
-								cityId:	data.cityId,
-								lineId:	data.lineId
-							});
-							// Сохраняем данные в кеше
-							Agl.setRedis.call(idObj, "set", key, result).then();
-						}
 						// Отправляем в Redis на час
 						Agl.setRedis.call(idObj, "set", key, result, 3600).then();
 						// Выводим результат
@@ -2418,9 +2405,6 @@ const anyks = require("./lib.anyks");
 				});
 				// Ищем станции в кеше
 				getRedisByMaskKey.call(idObj, key).then(result => {
-					
-					console.log("---------------", result);
-
 					// Если данные есть в кеше
 					if($.isArray(result) && result.length) resolve(result[0]);
 					// Если в кеше данные метро не найдены
@@ -2485,9 +2469,6 @@ const anyks = require("./lib.anyks");
 						for(let id of street.metro){
 							// Запрашиваем данные метро
 							const metro = yield idObj.findMetroById({id});
-
-							console.log("++++++++++++", metro);
-
 							// Если метро найдено то добавляем его в массив
 							if($.isset(metro)) metro_stations.push(metro);
 						}
@@ -2878,9 +2859,6 @@ const anyks = require("./lib.anyks");
 						for(let i = 0; i < subject.metro.length; i++){
 							// Загружаем станцию метро
 							let metro = yield idObj.findMetroById({id: subject.metro[i]});
-
-							console.log("++++++", metro);
-
 							// Создаем регулярное выражение для поиска
 							let reg = new RegExp("^" + str, "i");
 							// Добавляем станцию в список
