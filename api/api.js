@@ -4885,13 +4885,9 @@ const anyks = require("./lib.anyks");
 					// Удаляем данные из кеша
 					Agl.rmRedis.call(idObj, key);
 					// Запрашиваем все данные регионов
-					// idObj.schemes.Regions.find({})
-					idObj.schemes.Regions.findOne({_id: "3600000000000"})
+					idObj.schemes.Regions.find({})
 					// Запрашиваем данные регионов
 					.exec((err, data) => {
-						
-						data = [data];
-
 						// Если ошибки нет
 						if(!$.isset(err) && $.isArray(data)){
 							/**
