@@ -632,18 +632,21 @@ const anyks = require("./lib.anyks");
 							// Выполняем разбор адреса
 							let resName1 = yield idObj.parseAddress({address: addr1});
 							let resName2 = yield idObj.parseAddress({address: addr2});
+
+							console.log("+++++++++++++++0", resName1, resName2);
+
 							// Если разбор удачный
 							resName1 = $.fnShowProps(resName1, "name");
 							resName2 = $.fnShowProps(resName2, "name");
 							// Если названия не найдены тогда присваиваем основное название
 							if(!$.isset(resName1)) resName1 = addr1;
 							if(!$.isset(resName2)) resName2 = addr2;
+
+							console.log("+++++++++++++++1", resName1, resName2);
+
 							// Создаем регулярное выражение для поиска
 							const regName1 = new RegExp(resName1, "i");
 							const regName2 = new RegExp(resName2, "i");
-
-							console.log("+++++++++++++++0", regName1, regName2, resName1, resName2);
-
 							// Выполняем проверку
 							if(compareWords(addr1, addr2) ||
 							compareWords(resName1, resName2) ||
@@ -675,9 +678,6 @@ const anyks = require("./lib.anyks");
 									// Выполняем следующую проверку
 									compare = yield compareResult(addr1, addr2, newObj);
 								}
-
-								console.log("+++++++++++++++1", compare);
-
 								// Если ответ пришел тогда выходим
 								resolve(compare);
 							// Просто выходим
@@ -700,9 +700,6 @@ const anyks = require("./lib.anyks");
 			 * @param {Number} i   индекс итерации массива
 			 */
 			const getData = function * (arr, i){
-				
-				try {
-
 				// Получаем данные из кеша
 				const cache = yield getAddressCache.call(idObj, arr[i]);
 				// Если в объекте не найдена временная зона или gps координаты или станции метро
@@ -717,14 +714,8 @@ const anyks = require("./lib.anyks");
 					const name = (arr[i].contentType !== 'building' ? res.address[arr[i].contentType] : arr[i].name);
 					// Если результат найден
 					if(($.isset(res) && $.isset(name)) || $.isset(fixGps)){
-
-						console.log("=====================0", res, name);
-
 						// Выполняем справнение найденного результата
 						const compare = yield compareResult(arr[i].name, name, res.address);
-						
-						console.log("=====================1", compare);
-
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
 							// Выполняем сохранение данных
@@ -792,7 +783,6 @@ const anyks = require("./lib.anyks");
 				} else getGPS(arr, i + 1);
 				// Сообщаем что все удачно
 				return true;
-				} catch(e) {console.log("---------------", e);}
 			};
 			/**
 			 * getGPS Рекурсивная функция поиска gps координат для города
