@@ -1368,6 +1368,8 @@ const anyks = require("./lib.anyks");
 					.replace(/[^А-ЯЁ\-\d\s]/ig, "")
 					// Разбиваем текст на массив
 					.anyks_trim().split(" ");
+					// Массив найденных индексов
+					const indexes = [];
 					// Делаем первый обход массива и извлекаем из него все типы
 					for(let i = 0; i < address.length; i++){
 						// Выполняем разбор адреса
@@ -1378,12 +1380,14 @@ const anyks = require("./lib.anyks");
 						&& !$.isset(addr.subject.name))){
 							// Запоминаем типы найденных субъектов
 							types.push(addr.subject.type);
-							// Удаляем из массива субъект
-							// address.splice(i, 1);
+							// Добавляем найденный индекс в массив
+							indexes.push(i);
 						}
 					}
+					// Удаляем ненужные нам индексы
+					address = address.filter((val, i) => (indexes.indexOf(i) > -1));
 
-					console.log("+++++++", types);
+					console.log("+++++++", address, types);
 
 
 					// Переходим по всему массиву
