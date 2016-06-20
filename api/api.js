@@ -2578,7 +2578,7 @@ const anyks = require("./lib.anyks");
 										// Переходим по всему массиву
 										for(let subject of subjects){
 
-											console.log("+++++++", type, subject.type., regType.test(subject.type.replace(regBroken, "")));
+											console.log("+++++++", type, subject.type, regType.test(subject.type.replace(regBroken, "")));
 
 											// Если тип найден тогда выходим
 											if(regType.test(subject.type.replace(regBroken, ""))) return subject;
