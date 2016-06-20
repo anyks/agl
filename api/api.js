@@ -2556,7 +2556,7 @@ const anyks = require("./lib.anyks");
 								 */
 								const findSubject = (func, query) => {
 									// Устанавливаем лимит записей в 1 штуку
-									query.limit = 1;
+									query.limit = 100;
 									// Выполняем поиск данных
 									return idObj[func](query);
 								};
@@ -2577,9 +2577,6 @@ const anyks = require("./lib.anyks");
 										const regType = new RegExp(type.replace(regBroken, ""), "i");
 										// Переходим по всему массиву
 										for(let subject of subjects){
-											
-											console.log("++++++++++", regType, type, subject.type, subject.type.replace(regBroken, ""), regType.test(subject.type.replace(regBroken, "")));
-
 											// Если тип найден тогда выходим
 											if(regType.test(subject.type.replace(regBroken, ""))) return subject;
 										}
