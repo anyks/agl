@@ -624,29 +624,17 @@ const anyks = require("./lib.anyks");
 					 * *getData Генератор для формирования данных адреса
 					 */
 					const getData = function * (){
-						
-						try {
-
 						// Если адреса существуют
 						if($.isset(addr1) && $.isset(addr2)){
 							// Выполняем разбор адреса
 							let resName1 = yield idObj.parseAddress({address: addr1});
 							let resName2 = yield idObj.parseAddress({address: addr2});
-
-							console.log("+++++++++++++++0", resName1, " == ", resName2);
-
 							// Если разбор удачный
 							resName1 = $.fnShowProps(resName1, "name");
 							resName2 = $.fnShowProps(resName2, "name");
-
-							console.log("+++++++++++++++1", resName1, " == ", resName2);
-
 							// Если названия не найдены тогда присваиваем основное название
 							if(!$.isset(resName1)) resName1 = addr1;
 							if(!$.isset(resName2)) resName2 = addr2;
-
-							console.log("+++++++++++++++2", resName1, " == ",  resName2);
-
 							// Создаем регулярное выражение для поиска
 							const regName1 = new RegExp(resName1, "i");
 							const regName2 = new RegExp(resName2, "i");
@@ -689,9 +677,6 @@ const anyks = require("./lib.anyks");
 						} else resolve(false);
 						// Сообщаем что все удачно
 						return true;
-
-						} catch(e) {console.log("-----------------", e);}
-
 					};
 					// Запускаем коннект
 					exec.call(idObj, getData());
@@ -709,11 +694,11 @@ const anyks = require("./lib.anyks");
 				if(!cache || (!$.isArray(cache.gps) || !$.isArray(cache.metro) || !$.isset(cache.timezone))){
 					// Выполняем получение данные gps
 					const fixGps = gpsFix(arr[i]._id);
+					// Очищаем название и тип
+					arr[i].name = arr[i].name.replace(/[^А-ЯЁ\-\.\,\d]/ig, "");
+					arr[i].type = arr[i].type.replace(/[^А-ЯЁ\-\.\,\d]/ig, "");
 					// Формируем строку адреса
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
-
-					console.log("----------------------------", arr[i].name, " === ", arr[i].type);
-
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Получаем название суъбекта для сравнения
