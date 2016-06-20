@@ -2541,9 +2541,9 @@ const anyks = require("./lib.anyks");
 				// Ищем данные в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные в кеше сть тогда выводим их
-					//if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					//else {
+					else {
 						// Выполняем интерпретацию данных
 						idObj.parseAddress({address}).then(address => {
 							// Если адрес интерпретирован удачно
@@ -2691,7 +2691,7 @@ const anyks = require("./lib.anyks");
 							// Выходим
 							resolve(false);
 						});
-					//}
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
