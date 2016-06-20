@@ -698,10 +698,12 @@ const anyks = require("./lib.anyks");
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
+					// Получаем название суъбекта для сравнения
+					const name = (arr[i].contentType !== 'building' ? res.address[arr[i].contentType] : arr[i].name);
 					// Если результат найден
-					if(($.isset(res) && $.isset(res.address[arr[i].contentType])) || $.isset(fixGps)){
+					if(($.isset(res) && $.isset(name)) || $.isset(fixGps)){
 						// Выполняем справнение найденного результата
-						const compare = yield compareResult(arr[i].name, res.address[arr[i].contentType], res.address);
+						const compare = yield compareResult(arr[i].name, name, res.address);
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
 							// Выполняем сохранение данных
