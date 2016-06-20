@@ -3073,6 +3073,11 @@ const anyks = require("./lib.anyks");
 							&& $.isObject(data)) resolve(data);
 							// Продолжаем дальше если данные не найдены
 							else {
+								
+								console.log("+++++++++++++++++2", err, data, idObj.generateKey(address), address);
+
+								return false;
+
 								// Выполняем интерпретацию адреса
 								idObj.parseAddress({address}).then(result => {
 									// Если данные пришли
