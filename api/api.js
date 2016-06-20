@@ -2992,6 +2992,9 @@ const anyks = require("./lib.anyks");
 									idObj.log("приведение типов выполнено", result).info();
 									// Если данные найдены
 									if($.isset(result)){
+
+										console.log("+++++++++++++++++++++2", address, idObj.generateKey(address));
+
 										// Присваиваем ключ запроса
 										result.key = idObj.generateKey(address);
 										// Сохраняем результат в базу данных
@@ -3061,28 +3064,32 @@ const anyks = require("./lib.anyks");
 							// Запускаем коннект
 							exec(getData());
 						};
-						// Выполняем интерпретацию адреса
-						idObj.parseAddress({address}).then(result => {
-							// Если данные пришли
-							if($.isObject(result)){
-								// Запрашиваем все данные из базы
-								idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
-									// Выводим результат поиска по базе
-									idObj.log("поиск адреса в базе", data).info();
-									// Если ошибки нет, выводим результат
-									if(!$.isset(err) && $.isset(data)
-									&& $.isObject(data)) resolve(data);
-									// Продолжаем дальше если данные не найдены
-									else getDataFromGeocoder(address, result.osmAddress);
+
+						console.log("+++++++++++++++++++++1", address, idObj.generateKey(address));
+
+						// Запрашиваем все данные из базы
+						idObj.schemes.Address.findOne({key: idObj.generateKey(address)}).exec((err, data) => {
+							// Выводим результат поиска по базе
+							idObj.log("поиск адреса в базе", data).info();
+							// Если ошибки нет, выводим результат
+							if(!$.isset(err) && $.isset(data)
+							&& $.isObject(data)) resolve(data);
+							// Продолжаем дальше если данные не найдены
+							else {
+								// Выполняем интерпретацию адреса
+								idObj.parseAddress({address}).then(result => {
+									// Если данные пришли
+									if($.isObject(result)) getDataFromGeocoder(address, result.osmAddress);
+									// Продолжаем дальше
+									else getDataFromGeocoder(address);
+								// Если происходит ошибка тогда выходим
+								}).catch(err => {
+									// Выводим ошибку метода
+									idObj.log("parseAddress in getAddressByString", err).error();
+									// Выходим
+									getDataFromGeocoder(address);
 								});
-							// Продолжаем дальше
-							} else getDataFromGeocoder(address);
-						// Если происходит ошибка тогда выходим
-						}).catch(err => {
-							// Выводим ошибку метода
-							idObj.log("parseAddress in getAddressByString", err).error();
-							// Выходим
-							getDataFromGeocoder(address);
+							}
 						});
 					}
 				// Если происходит ошибка тогда выходим
