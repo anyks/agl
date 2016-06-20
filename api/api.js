@@ -2482,6 +2482,9 @@ const anyks = require("./lib.anyks");
 						for(let id of street.metro){
 							// Запрашиваем данные метро
 							const metro = yield idObj.findMetroById({id});
+
+							console.log("++++++++++++", metro);
+
 							// Если метро найдено то добавляем его в массив
 							if($.isset(metro)) metro_stations.push(metro);
 						}
