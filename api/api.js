@@ -2541,7 +2541,7 @@ const anyks = require("./lib.anyks");
 				// Ищем данные в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные в кеше сть тогда выводим их
-					if($.isset(cache)) resolve(JSON.parse(cache));
+					if(!$.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
 					else {
 						// Выполняем интерпретацию данных
