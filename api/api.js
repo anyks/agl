@@ -1379,7 +1379,7 @@ const anyks = require("./lib.anyks");
 							// Запоминаем типы найденных субъектов
 							types.push(addr.subject.type);
 							// Удаляем из массива субъект
-							address.splice(i, 1);
+							// address.splice(i, 1);
 						}
 					}
 
