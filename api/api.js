@@ -2556,7 +2556,7 @@ const anyks = require("./lib.anyks");
 								 */
 								const findSubject = (func, query) => {
 									// Устанавливаем лимит записей в 1 штуку
-									query.limit = 100;
+									query.limit = 10;
 									// Выполняем поиск данных
 									return idObj[func](query);
 								};
