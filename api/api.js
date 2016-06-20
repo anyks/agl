@@ -2872,6 +2872,9 @@ const anyks = require("./lib.anyks");
 						for(let i = 0; i < subject.metro.length; i++){
 							// Загружаем станцию метро
 							let metro = yield idObj.findMetroById({id: subject.metro[i]});
+
+							console.log("++++++", metro);
+
 							// Создаем регулярное выражение для поиска
 							let reg = new RegExp("^" + str, "i");
 							// Добавляем станцию в список
