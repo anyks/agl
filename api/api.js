@@ -711,6 +711,9 @@ const anyks = require("./lib.anyks");
 					const fixGps = gpsFix(arr[i]._id);
 					// Формируем строку адреса
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
+
+					console.log("----------------------------", arr[i].name, " === ", arr[i].type);
+
 					// Выполняем запрос данных
 					const res = yield idObj.getAddressByString({"address": addr});
 					// Получаем название суъбекта для сравнения
