@@ -1377,7 +1377,7 @@ const anyks = require("./lib.anyks");
 						&& $.isset(addr.subject.type)
 						&& !$.isset(addr.subject.name))){
 							// Запоминаем типы найденных субъектов
-							types.push(addr.subject.type);
+							types.push(addr.subject.type.toLowerCase());
 							// Добавляем найденный индекс в массив
 							indexes.push(i);
 						// Если найден запрещенный субъект то также добавляем его в список
