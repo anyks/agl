@@ -624,9 +624,6 @@ const anyks = require("./lib.anyks");
 					 * *getData Генератор для формирования данных адреса
 					 */
 					const getData = function * (){
-						
-						try {
-
 						// Если адреса существуют
 						if($.isset(addr1) && $.isset(addr2)){
 							// Выполняем разбор адреса
@@ -683,9 +680,6 @@ const anyks = require("./lib.anyks");
 						} else resolve(false);
 						// Сообщаем что все удачно
 						return true;
-
-						} catch(e) {console.log("+++++++++++++", e);}
-
 					};
 					// Запускаем коннект
 					exec.call(idObj, getData());
@@ -697,9 +691,6 @@ const anyks = require("./lib.anyks");
 			 * @param {Number} i   индекс итерации массива
 			 */
 			const getData = function * (arr, i){
-				
-				try {
-
 				// Получаем данные из кеша
 				const cache = yield getAddressCache.call(idObj, arr[i]);
 				// Если в объекте не найдена временная зона или gps координаты или станции метро
@@ -784,9 +775,6 @@ const anyks = require("./lib.anyks");
 					} else getGPS(arr, i + 1);
 				// Идем дальше
 				} else getGPS(arr, i + 1);
-
-				} catch(e) {console.log("+++++++++++++", e);}
-
 				// Сообщаем что все удачно
 				return true;
 			};
@@ -1845,7 +1833,7 @@ const anyks = require("./lib.anyks");
 				// Выводим в консоль результат
 				idObj.log("строка адреса интерпретирована", result).info();
 				// Выводим результат
-				resolve(result);
+				resolve(false);// resolve(result);
 			}));
 		}
 		/**

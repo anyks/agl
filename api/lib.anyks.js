@@ -292,6 +292,8 @@
 		 * @return {Variant}     найденный результат
 		 */
 		static fnShowProps(obj, key, def = null){
+			// Если данные не найдены то выходим
+			if(!Anyks.isset(obj)) return def;
 			// Если данный ключ уже найден
 			if(Anyks.isset(obj[key])) return obj[key];
 			// Заполняем массив результатами поиска на каждый ключ
