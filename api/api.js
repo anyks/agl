@@ -664,7 +664,7 @@ const anyks = require("./lib.anyks");
 									// Если текущее значение адреса найдено то удаляем
 									if(newObj[subject] === addr2) newObj[subject] = undefined;
 									// Выполняем следующую проверку
-									else key = subject;
+									else if($.isset(newObj[subject])) key = subject;
 								}
 
 								console.log("==============0", key, newObj[key]);
