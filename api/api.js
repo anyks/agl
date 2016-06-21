@@ -636,8 +636,8 @@ const anyks = require("./lib.anyks");
 							if(!$.isset(resName1)) resName1 = addr1;
 							if(!$.isset(resName2)) resName2 = addr2;
 							// Очищаем названия
-							resName1 = resName1.replace(/[^А-ЯЁ\-\d]/ig, "");
-							resName2 = resName2.replace(/[^А-ЯЁ\-\d]/ig, "");
+							resName1 = resName1.replace(/[^А-ЯЁ\-\d\s]/ig, "");
+							resName2 = resName2.replace(/[^А-ЯЁ\-\d\s]/ig, "");
 							// Создаем регулярное выражение для поиска
 							const regName1 = new RegExp(resName1, "i");
 							const regName2 = new RegExp(resName2, "i");
@@ -698,8 +698,8 @@ const anyks = require("./lib.anyks");
 					// Выполняем получение данные gps
 					const fixGps = gpsFix(arr[i]._id);
 					// Очищаем название и тип
-					arr[i].name = arr[i].name.replace(/[^А-ЯЁ\-\_\.\,\d]/ig, "");
-					arr[i].type = arr[i].type.replace(/[^А-ЯЁ\-\_\.\,\d]/ig, "");
+					arr[i].name = arr[i].name.replace(/[^А-ЯЁ\-\_\.\,\d\s]/ig, "");
+					arr[i].type = arr[i].type.replace(/[^А-ЯЁ\-\_\.\,\d\s]/ig, "");
 					// Формируем строку адреса
 					const addr = (address + " " + arr[i].name + " " + arr[i].type);
 					// Выполняем запрос данных
