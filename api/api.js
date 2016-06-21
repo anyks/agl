@@ -5459,11 +5459,11 @@ const anyks = require("./lib.anyks");
 				// Проверяем совпадают ли ключи
 				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
 					// Подключаемся к коллекции address
-					//const address = idObj.clients.mongo.connection.db.collection("address");
+					const address = idObj.clients.mongo.connection.db.collection("address");
 					// Удаляем все колекции
-					//address.drop();
+					address.drop();
 					// Удаляем данные из кеша
-					//Agl.rmRedis.call(idObj, "*");
+					Agl.rmRedis.call(idObj, "*");
 					/**
 					 * *updateDB Генератор для получения обновления данных
 					 */
