@@ -4,6 +4,7 @@
 
 Необходимые модули для Api:
 -------
+
 ```
 # npm install MD5
 # npm install kladrapi
@@ -15,17 +16,21 @@
 Необходимые модули для Agl Server:
 -------
 
-``# npm install cluster``<br>
-``# npm install minimist``<br>
-``# npm install net``<br>
+```
+# npm install cluster
+# npm install minimist
+# npm install net
+```
 
 Необходимые модули для Agl agent WS Server:
 -------
 
-``# npm install net``<br>
-``# npm install http``<br>
-``# npm install websocket``<br>
-``# npm install minimist``<br>
+```
+# npm install net
+# npm install http
+# npm install websocket
+# npm install minimist
+```
 
 Параметры запуска для Agl Server:
 -------
