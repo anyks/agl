@@ -4268,30 +4268,32 @@ const anyks = require("./lib.anyks");
 						 * *getData Генератор для получения данных адреса
 						 */
 						const getData = function * (){
+							// Получаемые параметры
+							let country, region, city;
 							// Получаем данные по GPS координатам
 							const name = yield idObj.getAddressByGPS({lat, lng});
 							// Получаем страну
-							let country = yield idObj.getCountryByGPS({lat, lng});
+							country = yield idObj.getCountryByGPS({lat, lng});
 							// Если страна найдена
 							if($.isset(country)) country = $.fnShowProps(country, "country");
 							// Получаем регион
-							let region = yield idObj.getRegionByGPS({lat, lng});
+							region = yield idObj.getRegionByGPS({lat, lng});
 							// Если регион найден
 							if($.isset(region)) region = $.fnShowProps(region, "region");
-							// Получаем город
-							let city = ($.isset(name) && $.isset(name.address)
-							&& $.isset(name.address.city) ? name.address.city : "");
-							// Выполняем парсинг строки адреса города
-							city = ($.isset(city) ? yield idObj.parseAddress({address: city}) : false);
-							// Извлекаем название города
-							city = ($.isset(city) ? city.subject.name : false);
-							// Запрашиваем данные города с сервера
-							city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id}) : false);
-
-							console.log("-------------", city);
-
-							// Если это массив то извлекаем данные
-							if($.isArray(city) && city.length) city = yield compareGPS.call(idObj, lat, lng, city);
+							// Если регион найден
+							if($.isset(region)){
+								// Получаем город
+								city = ($.isset(name) && $.isset(name.address)
+								&& $.isset(name.address.city) ? name.address.city : "");
+								// Выполняем парсинг строки адреса города
+								city = ($.isset(city) ? yield idObj.parseAddress({address: city}) : false);
+								// Извлекаем название города
+								city = ($.isset(city) ? city.subject.name : false);
+								// Запрашиваем данные города с сервера
+								city = ($.isset(city) ? yield idObj.findCity({str: city, regionId: region._id}) : false);
+								// Если это массив то извлекаем данные
+								if($.isArray(city) && city.length) city = yield compareGPS.call(idObj, lat, lng, city);
+							}
 							// Создаем объект для сохранения данных
 							const obj = {country, region, city};
 							// Отправляем в Redis на час
@@ -4336,34 +4338,36 @@ const anyks = require("./lib.anyks");
 						 * *getData Генератор для получения данных адреса
 						 */
 						const getData = function * (){
+							// Получаемые параметры
+							let country, region, city, street;
 							// Получаем данные по GPS координатам
 							const name = yield idObj.getAddressByGPS({lat, lng});
 							// Получаем страну
-							let country = yield idObj.getCountryByGPS({lat, lng});
+							country = yield idObj.getCountryByGPS({lat, lng});
 							// Если страна найдена
 							if($.isset(country)) country = $.fnShowProps(country, "country");
 							// Получаем регион
-							let region = yield idObj.getRegionByGPS({lat, lng});
+							region = yield idObj.getRegionByGPS({lat, lng});
 							// Если регион найден
 							if($.isset(region)) region = $.fnShowProps(region, "region");
 							// Получаем город
-							let city = yield idObj.getRegionByGPS({lat, lng});
-
-							console.log("++++++++++", name, city);
-
+							city = yield idObj.getCityByGPS({lat, lng});
 							// Если город найден
 							if($.isset(city)) city = $.fnShowProps(city, "city");
-							// Получаем улицу
-							let street = ($.isset(name) && $.isset(name.address)
-							&& $.isset(name.address.street) ? name.address.street : "");
-							// Выполняем парсинг строки адреса улицы
-							street = ($.isset(street) ? yield idObj.parseAddress({address: street}) : false);
-							// Извлекаем название улицы
-							street = ($.isset(street) ? street.subject.name : false);
-							// Запрашиваем данные улицы с сервера
-							street = ($.isset(street) && $.isset(city) ? yield idObj.findStreet({str: street, cityId: city._id}) : false);
-							// Если это массив то извлекаем данные
-							if($.isArray(street) && street.length) street = yield compareGPS.call(idObj, lat, lng, street);
+							// Если город найден
+							if($.isset(city)){
+								// Получаем улицу
+								street = ($.isset(name) && $.isset(name.address)
+								&& $.isset(name.address.street) ? name.address.street : "");
+								// Выполняем парсинг строки адреса улицы
+								street = ($.isset(street) ? yield idObj.parseAddress({address: street}) : false);
+								// Извлекаем название улицы
+								street = ($.isset(street) ? street.subject.name : false);
+								// Запрашиваем данные улицы с сервера
+								street = ($.isset(street) ? yield idObj.findStreet({str: street, cityId: city._id}) : false);
+								// Если это массив то извлекаем данные
+								if($.isArray(street) && street.length) street = yield compareGPS.call(idObj, lat, lng, street);
+							}
 							// Создаем объект для сохранения данных
 							const obj = {country, region, city, street};
 							// Отправляем в Redis на час
