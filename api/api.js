@@ -4228,7 +4228,7 @@ const anyks = require("./lib.anyks");
 							// Выполняем парсинг строки адреса города
 							city = ($.isset(city) ? yield idObj.parseAddress({address: city}) : false);
 
-							console.log("+++++++++++++++", city);
+							console.log("+++++++++++++++", region, city);
 
 							// Извлекаем название города
 							city = ($.isset(city) ? city.subject.name : false);
