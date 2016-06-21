@@ -4207,9 +4207,6 @@ const anyks = require("./lib.anyks");
 							let country, region, district;
 							// Получаем данные по GPS координатам
 							const name = yield idObj.getAddressByGPS({lat, lng});
-
-							console.log("+++++++", name);
-
 							// Получаем страну
 							country = yield idObj.getCountryByGPS({lat, lng});
 							// Если страна найдена
@@ -4228,7 +4225,7 @@ const anyks = require("./lib.anyks");
 								// Извлекаем название района
 								district = ($.isset(district) ? district.subject.name : false);
 								// Запрашиваем данные района с сервера
-								district = ($.isset(district) ? yield idObj.findCity({str: district, regionId: region._id}) : false);
+								district = ($.isset(district) ? yield idObj.findDistrict({str: district, regionId: region._id}) : false);
 								// Если это массив то извлекаем данные
 								if($.isArray(district) && district.length) district = yield compareGPS.call(idObj, lat, lng, district);
 							}
