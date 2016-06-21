@@ -4196,9 +4196,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(cache)) resolve(JSON.parse(cache));
+					//if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					else {
+					// else {
 						/**
 						 * *getData Генератор для получения данных адреса
 						 */
@@ -4235,7 +4235,7 @@ const anyks = require("./lib.anyks");
 						};
 						// Запускаем коннект
 						exec.call(idObj, getData());
-					}
+					//}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
