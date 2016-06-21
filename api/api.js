@@ -1789,7 +1789,7 @@ const anyks = require("./lib.anyks");
 				// Формируем массив найденных данных
 				const arr = [], arrlight = [], arrfull = [], arrOsm = [], arrMask = [];
 				// Карта элементов не входящих в простую форму адреса
-				const mapLight = ["zip", "river", "district", "apartment", "community"];
+				const mapLight = ["zip", "river", "district", "community"];
 				// Добавляем в массив найденные данные
 				if($.isset(result.zip))			arr.push({data: result.zip, type: "zip"});
 				if($.isset(result.country))		arr.push({data: result.country, type: "country"});
