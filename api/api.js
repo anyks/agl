@@ -713,6 +713,10 @@ const anyks = require("./lib.anyks");
 					if(($.isset(res) && $.isset(name)) || $.isset(fixGps)){
 						// Выполняем справнение найденного результата
 						const compare = yield compareResult(arr[i].name, name, res.address);
+
+						console.log("==============0", arr[i].name, name, compare);
+
+
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
 							// Выполняем сохранение данных
@@ -5459,11 +5463,11 @@ const anyks = require("./lib.anyks");
 				// Проверяем совпадают ли ключи
 				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
 					// Подключаемся к коллекции address
-					const address = idObj.clients.mongo.connection.db.collection("address");
+					// const address = idObj.clients.mongo.connection.db.collection("address");
 					// Удаляем все колекции
-					address.drop();
+					// address.drop();
 					// Удаляем данные из кеша
-					Agl.rmRedis.call(idObj, "*");
+					//Agl.rmRedis.call(idObj, "*");
 					/**
 					 * *updateDB Генератор для получения обновления данных
 					 */
