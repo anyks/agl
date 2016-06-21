@@ -4662,6 +4662,18 @@ const anyks = require("./lib.anyks");
 							countries.createIndex({nameShort: 1}, {name: "nameShort"});
 							countries.createIndex({nameFull: 1}, {name: "nameFull"});
 							countries.createIndex({gps: "2dsphere"}, {name: "gps"});
+							countries.createIndex({
+								"lat":	1,
+								"lng":	1
+							}, {
+								name:		"latlng",
+								unique:		true,
+								dropDups:	true,
+								partialFilterExpression: {
+									"lat":	{$exists: true},
+									"lng":	{$exists: true}
+								}
+							});
 							// Выводим в консоль сообщение
 							idObj.log("все страны установлены!").info();
 							// Сообщаем что все удачно выполнено
@@ -4744,6 +4756,18 @@ const anyks = require("./lib.anyks");
 							regions.createIndex({okato: 1}, {name: "okato"});
 							regions.createIndex({type: 1}, {name: "type"});
 							regions.createIndex({gps: "2dsphere"}, {name: "gps"});
+							regions.createIndex({
+								"lat":	1,
+								"lng":	1
+							}, {
+								name:		"latlng",
+								unique:		true,
+								dropDups:	true,
+								partialFilterExpression: {
+									"lat":	{$exists: true},
+									"lng":	{$exists: true}
+								}
+							});
 							// Выводим в консоль сообщение
 							idObj.log("все регионы установлены!").info();
 							// Сообщаем что все удачно выполнено
@@ -4784,99 +4808,93 @@ const anyks = require("./lib.anyks");
 					const key = createSubjectKey({key: "subjects", db: "district"});
 					// Удаляем данные из кеша
 					Agl.rmRedis.call(idObj, key);
-					// Запрашиваем все данные регионов
-					idObj.schemes.Regions.find({})
-					// Запрашиваем данные регионов
-					.exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isArray(data)){
-							/**
-							 * getRegion Рекурсивная функция загрузки региона
-							 * @param  {Number} i текущий индекс массива
-							 */
-							const getRegion = (i = 0) => {
-								// Если регионы загружены не все тогда выполняем загрузку
-								if(i < data.length){
-									/**
-									 * getDistrict Рекурсивная функция загрузки районов
-									 * @param  {Number} j текущий индекс массива
-									 */
-									const getDistrict = (j = 0) => {
-										// Если данные не все загружены то загружаем дальше
-										if(j < districtsChar.length){
-											// Параметры запроса
-											const query = {
-												str:		districtsChar[j],
-												limit:		100,
-												noCache:	true,
-												regionId:	data[i]._id
-											};
-											// Выполняем поиск района
-											idObj.findDistrict(query).then(result => {
-												// Если это массив
-												if($.isArray(result) && result.length){
-													// Переходим по всему массиву
-													const str = (result.length > 1 ? result.reduce((sum, val) => {
-														// Формируем строку отчета
-														return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-														+ ", " + val.name + " " + val.type;
-													}) : result[0].name + " " + result[0].type);
-													// Выводим данные в консоль
-													idObj.log(
-														"район(ы) загружен(ы) [", districtsChar[j], "]:", str,
-														"номер района =", (i + 1),
-														"из", data.length
-													).info();
-												}
-												// Продолжаем загрузку дальше
-												getDistrict(j + 1);
-											// Если происходит ошибка тогда выходим
-											}).catch(err => {
-												// Выводим ошибку метода
-												idObj.log("findDistrict in updateDistricts", err).error();
-												// Выходим
-												getDistrict(j + 1);
-											});
-										// Если все данные загружены, переходим к следующему району
-										} else getRegion(i + 1);
+					/**
+					 * getRegions Функция получения данных регионов
+					 * @return {Promise} промис содержащий данных регионов
+					 */
+					const getRegions = () => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные регионов
+							idObj.schemes.Regions.find({})
+							// Запрашиваем данные регионов
+							.exec((err, data) => resolve(!$.isset(err)
+							&& $.isArray(data) && data.length ? data : false));
+						}));
+					};
+					/**
+					 * *getData Генератор для получения обновления данных
+					 */
+					const getData = function * (){
+						// Выполняем обновление загрузку регионов
+						const regions = yield getRegions();
+						// Если регионы существуют
+						if($.isset(regions)){
+							// Если регионы существуют тогда загружаем районы
+							for(let region of regions){
+								// Переходим по всем символам районов
+								for(let char of districtsChar){
+									// Параметры запроса
+									const query = {
+										str:		char,
+										limit:		100,
+										noCache:	true,
+										regionId:	region._id
 									};
-									// Выполняем запрос данных районов
-									getDistrict();
-								// Сообщаем что все регионы загружены
-								} else {
-									// Создаем индексы районов
-									districts.createIndex({name: 1}, {name: "district"});
-									districts.createIndex({okato: 1}, {name: "okato"});
-									districts.createIndex({type: 1}, {name: "type"});
-									districts.createIndex({gps: "2dsphere"}, {name: "gps"});
-									districts.createIndex({regionId: 1}, {
-										name: "region",
-										partialFilterExpression: {
-											regionId: {$exists: true}
-										}
-									});
-									districts.createIndex({zip: 1}, {
-										name: "zip",
-										partialFilterExpression: {
-											zip: {$exists: true}
-										}
-									});
-									// Выводим в консоль сообщение
-									idObj.log("все районы установлены!").info();
-									// Сообщаем что все удачно выполнено
-									resolve(true);
+									// Выполняем поиск районов
+									const districts = yield idObj.findDistrict(query);
+									// Если районы загружены
+									if($.isset(districts)){
+										// Переходим по всему массиву
+										const str = (districts.length > 1 ? districts.reduce((sum, val) => {
+											// Формируем строку отчета
+											return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+											+ ", " + val.name + " " + val.type;
+										}) : districts[0].name + " " + districts[0].type);
+										// Выводим данные в консоль
+										idObj.log("район(ы) загружен(ы) [", char, "]:", str).info();
+									}
 								}
-							};
-							// Извлекаем данные регионов
-							getRegion();
-						// Выводим сообщение в консоль
-						} else {
-							// Выводим сообщение в консоль
-							idObj.log("ошибка загрузки данных регионов", err).error();
-							// Сообщаем что такие данные не найдены
-							resolve(false);
+							}
 						}
-					});
+						// Создаем индексы районов
+						districts.createIndex({name: 1}, {name: "district"});
+						districts.createIndex({okato: 1}, {name: "okato"});
+						districts.createIndex({type: 1}, {name: "type"});
+						districts.createIndex({gps: "2dsphere"}, {name: "gps"});
+						districts.createIndex({regionId: 1}, {
+							name: "region",
+							partialFilterExpression: {
+								regionId: {$exists: true}
+							}
+						});
+						districts.createIndex({zip: 1}, {
+							name: "zip",
+							partialFilterExpression: {
+								zip: {$exists: true}
+							}
+						});
+						districts.createIndex({
+							"lat":	1,
+							"lng":	1
+						}, {
+							name:		"latlng",
+							unique:		true,
+							dropDups:	true,
+							partialFilterExpression: {
+								"lat":	{$exists: true},
+								"lng":	{$exists: true}
+							}
+						});
+						// Выводим в консоль сообщение
+						idObj.log("все районы установлены!").info();
+						// Выходим
+						resolve(true);
+						// Сообщаем что все удачно
+						return true;
+					};
+					// Запускаем коннект
+					exec.call(idObj, getData());
 				// Сообщаем что ключи не совпадают
 				} else resolve(false);
 			}));
@@ -4909,106 +4927,100 @@ const anyks = require("./lib.anyks");
 					const key = createSubjectKey({key: "subjects", db: "city"});
 					// Удаляем данные из кеша
 					Agl.rmRedis.call(idObj, key);
-					// Запрашиваем все данные регионов
-					idObj.schemes.Regions.find({})
-					// Запрашиваем данные регионов
-					.exec((err, data) => {
-						// Если ошибки нет
-						if(!$.isset(err) && $.isArray(data)){
-							/**
-							 * getRegions Рекурсивная функция загрузки региона
-							 * @param  {Number} i текущий индекс массива
-							 */
-							const getRegions = (i = 0) => {
-								// Если районы загружены не все тогда выполняем загрузку
-								if(i < data.length){
-									/**
-									 * getCity Рекурсивная функция загрузки городов
-									 * @param  {Number} j текущий индекс массива
-									 */
-									const getCity = (j = 0) => {
-										// Если данные не все загружены то загружаем дальше
-										if(j < citiesChar.length){
-											// Параметры запроса
-											const query = {
-												str:		citiesChar[j],
-												limit:		100,
-												noCache:	true,
-												regionId:	data[i]._id,
-												districtId:	null
-											};
-											// Выполняем поиск городов
-											idObj.findCity(query).then(result => {
-												// Если это массив
-												if($.isArray(result) && result.length){
-													// Переходим по всему массиву
-													const str = (result.length > 1 ? result.reduce((sum, val) => {
-														// Формируем строку отчета
-														return ($.isString(sum) ? sum : sum.name + " " + sum.type)
-														+ ", " + val.name + " " + val.type;
-													}) : result[0].name + " " + result[0].type);
-													// Выводим данные в консоль
-													idObj.log(
-														"город(а) загружен(ы) [", citiesChar[j], "]:", str,
-														"номер региона =", (i + 1),
-														"из", data.length
-													).info();
-												}
-												// Продолжаем загрузку дальше
-												getCity(j + 1);
-											// Если происходит ошибка тогда выходим
-											}).catch(err => {
-												// Выводим ошибку метода
-												idObj.log("findCity in updateCities", err).error();
-												// Выходим
-												getCity(j + 1);
-											});
-										// Если все данные загружены, переходим к следующему региону
-										} else getRegions(i + 1);
+					/**
+					 * getRegions Функция получения данных регионов
+					 * @return {Promise} промис содержащий данных регионов
+					 */
+					const getRegions = () => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные регионов
+							idObj.schemes.Regions.find({})
+							// Запрашиваем данные регионов
+							.exec((err, data) => resolve(!$.isset(err)
+							&& $.isArray(data) && data.length ? data : false));
+						}));
+					};
+					/**
+					 * *getData Генератор для получения обновления данных
+					 */
+					const getData = function * (){
+						// Выполняем обновление загрузку регионов
+						const regions = yield getRegions();
+						// Если регионы существуют
+						if($.isset(regions)){
+							// Если регионы существуют тогда загружаем города
+							for(let region of regions){
+								// Переходим по всем символам городов
+								for(let char of citiesChar){
+									// Параметры запроса
+									const query = {
+										str:		char,
+										limit:		100,
+										noCache:	true,
+										regionId:	region._id,
+										districtId:	null
 									};
-									// Выполняем запрос данных городов
-									getCity();
-								// Сообщаем что все города загружены
-								} else {
-									// Создаем индексы городов
-									cities.createIndex({name: 1}, {name: "city"});
-									cities.createIndex({okato: 1}, {name: "okato"});
-									cities.createIndex({type: 1}, {name: "type"});
-									cities.createIndex({gps: "2dsphere"}, {name: "gps"});
-									cities.createIndex({districtId: 1}, {
-										name: "district",
-										partialFilterExpression: {
-											districtId: {$exists: true}
-										}
-									});
-									cities.createIndex({regionId: 1}, {
-										name: "region",
-										partialFilterExpression: {
-											regionId: {$exists: true}
-										}
-									});
-									cities.createIndex({zip: 1}, {
-										name: "zip",
-										partialFilterExpression: {
-											zip: {$exists: true}
-										}
-									});
-									// Выводим в консоль сообщение
-									idObj.log("все города установлены!").info();
-									// Сообщаем что все удачно выполнено
-									resolve(true);
+									// Выполняем поиск городов
+									const cities = yield idObj.findCity(query);
+									// Если города загружены
+									if($.isset(cities)){
+										// Переходим по всему массиву
+										const str = (cities.length > 1 ? cities.reduce((sum, val) => {
+											// Формируем строку отчета
+											return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+											+ ", " + val.name + " " + val.type;
+										}) : cities[0].name + " " + cities[0].type);
+										// Выводим данные в консоль
+										idObj.log("город(а) загружен(ы) [", char, "]:", str).info();
+									}
 								}
-							};
-							// Извлекаем данные регионов
-							getRegions();
-						// Выводим сообщение в консоль
-						} else {
-							// Выводим сообщение в консоль
-							idObj.log("ошибка загрузки данных регионов", err).error();
-							// Сообщаем что такие данные не найдены
-							resolve(false);
+							}
 						}
-					});
+						// Создаем индексы городов
+						cities.createIndex({name: 1}, {name: "city"});
+						cities.createIndex({okato: 1}, {name: "okato"});
+						cities.createIndex({type: 1}, {name: "type"});
+						cities.createIndex({gps: "2dsphere"}, {name: "gps"});
+						cities.createIndex({districtId: 1}, {
+							name: "district",
+							partialFilterExpression: {
+								districtId: {$exists: true}
+							}
+						});
+						cities.createIndex({regionId: 1}, {
+							name: "region",
+							partialFilterExpression: {
+								regionId: {$exists: true}
+							}
+						});
+						cities.createIndex({zip: 1}, {
+							name: "zip",
+							partialFilterExpression: {
+								zip: {$exists: true}
+							}
+						});
+						cities.createIndex({
+							"lat":	1,
+							"lng":	1
+						}, {
+							name:		"latlng",
+							unique:		true,
+							dropDups:	true,
+							partialFilterExpression: {
+								"lat":	{$exists: true},
+								"lng":	{$exists: true}
+							}
+						});
+						// Выводим в консоль сообщение
+						idObj.log("все города установлены!").info();
+						// Выходим
+						resolve(true);
+						// Сообщаем что все удачно
+						return true;
+					};
+					// Запускаем коннект
+					exec.call(idObj, getData());
 				// Сообщаем что ключи не совпадают
 				} else resolve(false);
 			}));
@@ -5133,6 +5145,20 @@ const anyks = require("./lib.anyks");
 								zip: {$exists: true}
 							}
 						});
+						streets.createIndex({
+							"lat":	1,
+							"lng":	1
+						}, {
+							name:		"latlng",
+							unique:		true,
+							dropDups:	true,
+							partialFilterExpression: {
+								"lat":	{$exists: true},
+								"lng":	{$exists: true}
+							}
+						});
+						// Выводим в консоль сообщение
+						idObj.log("все улицы установлены!").info();
 						// Выходим
 						resolve(true);
 						// Сообщаем что все удачно
@@ -5283,6 +5309,20 @@ const anyks = require("./lib.anyks");
 								zip: {$exists: true}
 							}
 						});
+						houses.createIndex({
+							"lat":	1,
+							"lng":	1
+						}, {
+							name:		"latlng",
+							unique:		true,
+							dropDups:	true,
+							partialFilterExpression: {
+								"lat":	{$exists: true},
+								"lng":	{$exists: true}
+							}
+						});
+						// Выводим в консоль сообщение
+						idObj.log("все дома установлены!").info();
 						// Выходим
 						resolve(true);
 						// Сообщаем что все удачно
@@ -5422,6 +5462,18 @@ const anyks = require("./lib.anyks");
 								metro.createIndex({"lines.stations.name": 1}, {name: "stations"});
 								metro.createIndex({"lines.stations.order": 1}, {name: "order"});
 								metro.createIndex({"lines.stations.gps": "2dsphere"}, {name: "gps"});
+								metro.createIndex({
+									"lines.stations.lat":	1,
+									"lines.stations.lng":	1
+								}, {
+									name:		"latlng",
+									unique:		true,
+									dropDups:	true,
+									partialFilterExpression: {
+										"lines.stations.lat":	{$exists: true},
+										"lines.stations.lng":	{$exists: true}
+									}
+								});
 								// Создаем индексы для метро городов
 								metro_cities.createIndex({name: 1}, {name: "city"});
 								metro_cities.createIndex({linesIds: 1}, {name: "lines"});
@@ -5436,6 +5488,18 @@ const anyks = require("./lib.anyks");
 								metro_stations.createIndex({lineId: 1}, {name: "line"});
 								metro_stations.createIndex({order: 1}, {name: "order"});
 								metro_stations.createIndex({gps: "2dsphere"}, {name: "gps"});
+								metro_stations.createIndex({
+									"lat":	1,
+									"lng":	1
+								}, {
+									name:		"latlng",
+									unique:		true,
+									dropDups:	true,
+									partialFilterExpression: {
+										"lat":	{$exists: true},
+										"lng":	{$exists: true}
+									}
+								});
 								// Выводим в консоль сообщение
 								idObj.log("все метро установлены!").info();
 								// Сообщаем что все удачно выполнено
@@ -5583,6 +5647,18 @@ const anyks = require("./lib.anyks");
 							name: "zip",
 							partialFilterExpression: {
 								zip: {$exists: true}
+							}
+						});
+						address.createIndex({
+							"lat":	1,
+							"lng":	1
+						}, {
+							name:		"latlng",
+							unique:		true,
+							dropDups:	true,
+							partialFilterExpression: {
+								"lat":	{$exists: true},
+								"lng":	{$exists: true}
 							}
 						});
 						// Проверяем все ли данные загружены
