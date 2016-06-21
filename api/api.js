@@ -626,6 +626,9 @@ const anyks = require("./lib.anyks");
 					const getData = function * (){
 						// Если адреса существуют
 						if($.isset(addr1) && $.isset(addr2)){
+							// Очищаем название и тип
+							addr1 = addr1.replace(/[^А-ЯЁ\-\_\.\,\d\s]/ig, "");
+							addr2 = addr2.replace(/[^А-ЯЁ\-\_\.\,\d\s]/ig, "");
 							// Выполняем разбор адреса
 							let resName1 = yield idObj.parseAddress({address: addr1});
 							let resName2 = yield idObj.parseAddress({address: addr2});
@@ -651,7 +654,7 @@ const anyks = require("./lib.anyks");
 							regName2.test(resName1) ||
 							regName2.test(addr1)) resolve(true);
 							// Если сравнение не удалось то сообщаем что не удачно
-							else if($.isset(obj)) {
+							else if($.isset(obj) && $.isObject(obj)) {
 								// Копируем объект
 								const newObj = Object.assign({}, obj);
 								// Запоминаем данные субъекта
@@ -663,7 +666,7 @@ const anyks = require("./lib.anyks");
 									// Выполняем следующую проверку
 									else key = subject;
 								}
-								// Если ключ не найден тогда выходим
+								// Если ключ найден тогда продолжаем поиск
 								if($.isset(key)){
 									// Копируем значение адреса
 									addr2 = newObj[key];
@@ -5456,11 +5459,11 @@ const anyks = require("./lib.anyks");
 				// Проверяем совпадают ли ключи
 				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
 					// Подключаемся к коллекции address
-					const address = idObj.clients.mongo.connection.db.collection("address");
+					//const address = idObj.clients.mongo.connection.db.collection("address");
 					// Удаляем все колекции
-					address.drop();
+					//address.drop();
 					// Удаляем данные из кеша
-					Agl.rmRedis.call(idObj, "*");
+					//Agl.rmRedis.call(idObj, "*");
 					/**
 					 * *updateDB Генератор для получения обновления данных
 					 */
