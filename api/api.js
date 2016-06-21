@@ -2029,9 +2029,6 @@ const anyks = require("./lib.anyks");
 				const cacheParentId		= ($.isset(regionId) ? regionId.substr(0, 2) + "*"	: ParentId);
 				// Ищем данные адреса сначала в кеше
 				findAddressInCache.call(idObj, ContentName, ContentType, cacheParentId, cacheParentType, Limit).then(result => {
-					
-					console.log("+++++++++++++", regionId, result);
-
 					// Если данные не найдены
 					if(!$.isset(result) || noCache){
 						// Подключаем модуль кладра
@@ -4220,8 +4217,12 @@ const anyks = require("./lib.anyks");
 							const name = yield idObj.getAddressByGPS({lat, lng});
 							// Получаем страну
 							let country = yield idObj.getCountryByGPS({lat, lng});
+							// Если страна найдена
+							if($.isset(country)) country = $.fnShowProps(country, "country");
 							// Получаем регион
 							let region = yield idObj.getRegionByGPS({lat, lng});
+							// Если регион найден
+							if($.isset(region)) region = $.fnShowProps(region, "region");
 							// Получаем город
 							let city = ($.isset(name) && $.isset(name.address)
 							&& $.isset(name.address.city) ? name.address.city : "");
