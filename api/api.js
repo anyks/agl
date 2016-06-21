@@ -1808,10 +1808,13 @@ const anyks = require("./lib.anyks");
 					if(mapLight.indexOf(val.type) < 0){
 						// Создаем адреса в простом виде
 						arrlight.push(val.data.name);
-						// Создаем адреса для OSM
-						if(val.type !== "region") arrOsm.push(val.data.name);
-						// Если это регион тогда добавляем полное описание
-						else arrOsm.push(val.data.name + " " + val.data.type.toLowerCase());
+						// Если это не квартира
+						if(val.type !== "apartment"){
+							// Создаем адреса для OSM
+							if(val.type !== "region") arrOsm.push(val.data.name);
+							// Если это регион тогда добавляем полное описание
+							else arrOsm.push(val.data.name + " " + val.data.type.toLowerCase());
+						}
 					}
 					// Создаем строку субъекта для добавления в полный адрес
 					const subject = val.data.name + " " + val.data.type.toLowerCase();
