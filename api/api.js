@@ -698,9 +698,6 @@ const anyks = require("./lib.anyks");
 			const getData = function * (arr, i){
 				// Получаем данные из кеша
 				const cache = yield getAddressCache.call(idObj, arr[i]);
-
-				console.log("+++++++++", cache);
-
 				// Если в объекте не найдена временная зона или gps координаты или станции метро
 				if((!cache || (!$.isArray(cache.gps)
 				|| !$.isArray(cache.metro) || !$.isset(cache.timezone)))
@@ -786,7 +783,12 @@ const anyks = require("./lib.anyks");
 					// Идем дальше
 					} else getGPS(arr, i + 1);
 				// Идем дальше
-				} else getGPS(arr, i + 1);
+				} else {
+					// Запоминаем данные города
+					arr[i] = cache;
+					// Продолжаем обход дальше
+					getGPS(arr, i + 1);
+				}
 				// Сообщаем что все удачно
 				return true;
 			};
