@@ -4261,9 +4261,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(cache)) resolve(JSON.parse(cache));
+					// if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					else {
+					// else {
 						/**
 						 * *getData Генератор для получения данных адреса
 						 */
@@ -4287,6 +4287,9 @@ const anyks = require("./lib.anyks");
 							city = ($.isset(city) ? city.subject.name : false);
 							// Запрашиваем данные города с сервера
 							city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id}) : false);
+
+							console.log("-------------", city);
+
 							// Если это массив то извлекаем данные
 							if($.isArray(city) && city.length) city = yield compareGPS.call(idObj, lat, lng, city);
 							// Создаем объект для сохранения данных
@@ -4300,7 +4303,7 @@ const anyks = require("./lib.anyks");
 						};
 						// Запускаем коннект
 						exec.call(idObj, getData());
-					}
+					// }
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
