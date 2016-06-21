@@ -666,9 +666,6 @@ const anyks = require("./lib.anyks");
 									// Выполняем следующую проверку
 									else if($.isset(newObj[subject])) key = subject;
 								}
-
-								console.log("==============0", key, newObj[key]);
-
 								// Если ключ найден тогда продолжаем поиск
 								if($.isset(key)){
 									// Копируем значение адреса
