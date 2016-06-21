@@ -288,9 +288,6 @@ const anyks = require("./lib.anyks");
 						// Определяем расстояние
 						const dd = (nearestNumber(parseFloat(lat), parseFloat(val.lat))
 						+ nearestNumber(parseFloat(lng), parseFloat(val.lng)));
-
-						console.log("+++++++++++++", "distance =", distance, "dd =", dd, "lat =", lat, "lng =", lng, "val.lat =", val.lat, "val.lng =", val.lng);
-
 						// Если найденное расстояние меньше существующего то запоминаем его
 						if(dd <= distance){
 							// Запоминаем значение найденного расстояния
@@ -4286,6 +4283,10 @@ const anyks = require("./lib.anyks");
 							city = ($.isset(city) ? city.subject.name : false);
 							// Запрашиваем данные города с сервера
 							city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id}) : false);
+							
+							city[1].lat = lat;
+							city[1].lng = lng;
+
 							// Если это массив то извлекаем данные
 							if($.isArray(city) && city.length) city = yield compareGPS.call(idObj, lat, lng, city);
 
