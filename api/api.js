@@ -666,6 +666,9 @@ const anyks = require("./lib.anyks");
 									// Выполняем следующую проверку
 									else key = subject;
 								}
+
+								console.log("==============0", key, newObj[key]);
+
 								// Если ключ найден тогда продолжаем поиск
 								if($.isset(key)){
 									// Копируем значение адреса
@@ -713,10 +716,6 @@ const anyks = require("./lib.anyks");
 					if(($.isset(res) && $.isset(name)) || $.isset(fixGps)){
 						// Выполняем справнение найденного результата
 						const compare = yield compareResult(arr[i].name, name, res.address);
-
-						console.log("==============0", arr[i].name, name, compare);
-
-
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
 							// Выполняем сохранение данных
