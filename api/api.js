@@ -4278,6 +4278,10 @@ const anyks = require("./lib.anyks");
 							let region = yield idObj.getRegionByGPS({lat, lng});
 							// Если регион найден
 							if($.isset(region)) region = $.fnShowProps(region, "region");
+							// Получаем район
+							let district = yield idObj.getDistrictByGPS({lat, lng});
+							// Если район найден
+							if($.isset(district)) district = $.fnShowProps(district, "district");
 							// Получаем город
 							let city = ($.isset(name) && $.isset(name.address)
 							&& $.isset(name.address.city) ? name.address.city : "");
@@ -4290,7 +4294,7 @@ const anyks = require("./lib.anyks");
 							// Если это массив то извлекаем данные
 							if($.isArray(city) && city.length) city = yield compareGPS.call(idObj, lat, lng, city);
 							// Создаем объект для сохранения данных
-							const obj = {country, region, city};
+							const obj = {country, region, district, city};
 							// Отправляем в Redis на час
 							Agl.setRedis.call(idObj, "set", key, obj, 3600).then();
 							// Выводим результат
