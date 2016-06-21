@@ -253,6 +253,57 @@ const anyks = require("./lib.anyks");
 		else return false;
 	};
 	/**
+	 * compareGPS Функция поиска ближайшего объекта по указанным GPS координатам
+	 * @param  {String}  lat широта
+	 * @param  {String}  lng долгота
+	 * @param  {Array}   arr массив с найденными объектами
+	 * @return {Promise}     промис с найденным объектом
+	 */
+	const compareGPS = (lat, lng, arr) => {
+		// Получаем идентификатор текущего объекта
+		const idObj = this;
+		// Создаем промис для обработки
+		return (new Promise(resolve => {
+			// Если данные существуют
+			if($.isset(lat) && $.isset(lng)
+			&& $.isArray(arr)){
+				/**
+				 * nearestNumber Функция определения расстояния между числами
+				 * @param  {Number} numE эталонное значение
+				 * @param  {Number} numN сравниваемое значение
+				 * @return {Number}      найденное расстояние между числами
+				 */
+				const nearestNumber = (numE, numN) => {
+					// Определяем расстояние между числами
+					return (numE > numN ? numE - numN : numN - numE);
+				};
+				// Максимальное значение расстояния
+				let distance = 1000000;
+				// Результат поиска данных
+				let result = false;
+				// Переходим по всему массиву
+				arr.forEach(val => {
+					// Если координаты существуют
+					if($.isset(val.lat) && $.isset(val.lng)){
+						// Определяем расстояние
+						const dd = (nearestNumber(parseFloat(lat), parseFloat(val.lat))
+						+ nearestNumber(parseFloat(lng), parseFloat(val.lng)));
+						// Если найденное расстояние меньше существующего то запоминаем его
+						if(dd <= distance){
+							// Запоминаем значение найденного расстояния
+							distance = dd;
+							// Запоминаем текущий объект
+							result = val;
+						}
+					}
+				});
+				// Выводим результат
+				resolve(result);
+			// Сообщаем что результат не найден
+			} else resolve(false);
+		}));
+	};
+	/**
 	 * parseAnswerGeoCoder Функция обработки результата полученного с геокодера
 	 * @param  {Object} obj   ответ с геокодера
 	 * @return {Object}       результат обработки
@@ -4231,12 +4282,21 @@ const anyks = require("./lib.anyks");
 							// Извлекаем название города
 							city = ($.isset(city) ? city.subject.name : false);
 							// Запрашиваем данные города с сервера
-							city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id, limit: 1}) : false);
+							city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id}) : false);
 							// Если это массив то извлекаем данные
-							if($.isArray(city) && city.length) city = city[0];
+							if($.isArray(city) && city.length) city = yield compareGPS.call(idObj, lat, lng, city);
 
 
-							console.log("++++++++++", name);
+
+
+							
+
+
+
+
+
+
+							console.log("++++++++++", name, city);
 
 							// Создаем объект для сохранения данных
 							const obj = {country, region, city};
