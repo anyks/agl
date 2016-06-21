@@ -4080,9 +4080,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(cache)) resolve(JSON.parse(cache));
+					//if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					else {
+					//else {
 						/**
 						 * *getData Генератор для получения данных адреса
 						 */
@@ -4099,7 +4099,7 @@ const anyks = require("./lib.anyks");
 							// Запрашиваем данные страны с сервера
 							country = ($.isset(country) ? yield idObj.findCountry({str: country, limit: 1}) : false);
 							// Если это массив то извлекаем данные
-							if($.isArray(country) && country.length) country = country[0];
+							if($.isArray(country) && country.length) country = yield compareGPS.call(idObj, lat, lng, country);
 							// Создаем объект для сохранения данных
 							const obj = {country};
 							// Отправляем в Redis на час
@@ -4111,7 +4111,7 @@ const anyks = require("./lib.anyks");
 						};
 						// Запускаем коннект
 						exec.call(idObj, getData());
-					}
+					//}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
@@ -4137,9 +4137,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					// if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					// else {
+					else {
 						/**
 						 * *getData Генератор для получения данных адреса
 						 */
@@ -4170,7 +4170,7 @@ const anyks = require("./lib.anyks");
 						};
 						// Запускаем коннект
 						exec.call(idObj, getData());
-					//}
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
