@@ -289,7 +289,7 @@ const anyks = require("./lib.anyks");
 						const dd = (nearestNumber(parseFloat(lat), parseFloat(val.lat))
 						+ nearestNumber(parseFloat(lng), parseFloat(val.lng)));
 
-						console.log("+++++++++++++", distance, dd, lat, lng, val.lat, val.lng);
+						console.log("+++++++++++++", "distance =", distance, "dd =", dd, "lat =", lat, "lng =", lng, "val.lat =", val.lat, "val.lng =", val.lng);
 
 						// Если найденное расстояние меньше существующего то запоминаем его
 						if(dd <= distance){
