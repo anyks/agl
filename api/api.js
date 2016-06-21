@@ -715,6 +715,9 @@ const anyks = require("./lib.anyks");
 					// Получаем название суъбекта для сравнения
 					const name = ($.isset(res) && (arr[i].contentType !== 'building')
 					? res.address[arr[i].contentType] : arr[i].name);
+
+					console.log("+++++++++", arr[i].name, res, name);
+
 					// Если результат найден
 					if(($.isset(res) && $.isset(name)) || $.isset(fixGps)){
 						// Выполняем справнение найденного результата
