@@ -5123,6 +5123,156 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * updateHouses Метод обновления данных домов
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис содержащий результат обновления домов
+		 */
+		updateHouses({updateKey}, flag = false){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					// Массив букв для названий домов
+					const housesChar = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+					// Подключаемся к коллекции домов
+					const houses = idObj.clients.mongo.connection.db.collection("houses");
+					// Удаляем колекцию домов
+					houses.drop();
+					// Создаем ключ для кеша
+					const key = createSubjectKey({key: "subjects", db: "building"});
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, key);
+					/**
+					 * getRegions Функция получения данных регионов
+					 * @return {Promise} промис содержащий данных регионов
+					 */
+					const getRegions = () => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные регионов
+							idObj.schemes.Regions.find({})
+							// Запрашиваем данные регионов
+							.exec((err, data) => resolve(!$.isset(err)
+							&& $.isArray(data) && data.length ? data : false));
+						}));
+					};
+					/**
+					 * getCities Функция получения данных городов
+					 * @param  {String}  regionId идентификатор региона
+					 * @return {Promise}          промис содержащий данных городов
+					 */
+					const getCities = regionId => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные городов
+							idObj.schemes.Cities.find({regionId})
+							// Запрашиваем данные городов
+							.exec((err, data) => resolve(!$.isset(err)
+							&& $.isArray(data) && data.length ? data : false));
+						}));
+					};
+					/**
+					 * getStreets Функция получения данных улиц
+					 * @param  {String}  cityId идентификатор улицы
+					 * @return {Promise}        промис содержащий данных улиц
+					 */
+					const getStreets = cityId => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные улиц
+							idObj.schemes.Streets.find({cityId})
+							// Запрашиваем данные улиц
+							.exec((err, data) => resolve(!$.isset(err)
+							&& $.isArray(data) && data.length ? data : false));
+						}));
+					};
+					/**
+					 * *getData Генератор для получения обновления данных
+					 */
+					const getData = function * (){
+						// Выполняем обновление загрузку регионов
+						const regions = yield getRegions();
+						// Если регионы существуют
+						if($.isset(regions)){
+							// Если регионы существуют тогда загружаем города
+							for(let region of regions){
+								// Загружаем данные городов
+								const cities = yield getCities(region._id);
+								// Если города существуют
+								if($.isset(cities)){
+									// Выполняем обход по городам
+									for(let city of cities){
+										// Загружаем данные улиц
+										const streets = yield getStreets(city._id);
+										// Если улицы найдены
+										if($.isset(streets)){
+											// Выполняем обход по улицам
+											for(let street of streets){
+												// Переходим по всем символам улиц
+												for(let char of housesChar){
+													// Параметры запроса
+													const query = {
+														str:		char,
+														limit:		100,
+														noCache:	true,
+														streetId:	street._id
+													};
+													// Выполняем поиск домов
+													const houses = yield idObj.findHouse(query);
+													// Если дома загружены
+													if($.isset(houses)){
+														// Переходим по всему массиву
+														const str = (houses.length > 1 ? houses.reduce((sum, val) => {
+															// Формируем строку отчета
+															return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+															+ ", " + val.name + " " + val.type;
+														}) : houses[0].name + " " + houses[0].type);
+														// Выводим данные в консоль
+														idObj.log("дом(а) загружен(ы) [", char, "]:", str).info();
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						// Создаем индексы для домов
+						houses.createIndex({name: 1}, {name: "house"});
+						houses.createIndex({regionId: 1}, {name: "region"});
+						houses.createIndex({districtId: 1}, {name: "district"});
+						houses.createIndex({streetId: 1}, {name: "street"});
+						houses.createIndex({cityId: 1}, {name: "city"});
+						houses.createIndex({okato: 1}, {name: "okato"});
+						houses.createIndex({type: 1}, {name: "type"});
+						houses.createIndex({gps: "2dsphere"}, {name: "gps"});
+						houses.createIndex({metro: 1}, {
+							name: "metro",
+							partialFilterExpression: {
+								metro: {$exists: true}
+							}
+						});
+						houses.createIndex({zip: 1}, {
+							name: "zip",
+							partialFilterExpression: {
+								zip: {$exists: true}
+							}
+						});
+						// Выходим
+						resolve(true);
+						// Сообщаем что все удачно
+						return true;
+					};
+					// Запускаем коннект
+					exec.call(idObj, getData());
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
+			}));
+		}
+		/**
 		 * updateMetro Метод обновления данных базы метро
 		 * @param  {String}  updateKey ключ для обновления базы данных
 		 * @param  {Boolean} flag      флаг для внутреннего обновления
@@ -5307,14 +5457,8 @@ const anyks = require("./lib.anyks");
 				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
 					// Подключаемся к коллекции address
 					const address = idObj.clients.mongo.connection.db.collection("address");
-					// Подключаемся к коллекции streets
-					const streets = idObj.clients.mongo.connection.db.collection("streets");
-					// Подключаемся к коллекции streets
-					const houses = idObj.clients.mongo.connection.db.collection("houses");
 					// Удаляем все колекции
 					address.drop();
-					streets.drop();
-					houses.drop();
 					// Удаляем данные из кеша
 					Agl.rmRedis.call(idObj, "*");
 					/**
@@ -5331,117 +5475,102 @@ const anyks = require("./lib.anyks");
 						const cities = (districts ? yield idObj.updateCities({}, true) : false);
 						// Выполняем обновление базы метро
 						const metro = (cities ? yield idObj.updateMetro({}, true) : false);
-						// Если метро загружено
-						if(metro){
-							// Создаем индексы для базы адресов
-							address.createIndex({gps: "2dsphere"}, {name: "gps"});
-							address.createIndex({"address.country": 1}, {
-								name: "country",
-								partialFilterExpression: {
-									"address.country": {$exists: true}
-								}
-							});
-							address.createIndex({"address.region": 1}, {
-								name: "region",
-								partialFilterExpression: {
-									"address.region": {$exists: true}
-								}
-							});
-							address.createIndex({"address.district": 1}, {
-								name: "district",
-								partialFilterExpression: {
-									"address.district": {$exists: true}
-								}
-							});
-							address.createIndex({"address.city": 1}, {
-								name: "city",
-								partialFilterExpression: {
-									"address.city": {$exists: true}
-								}
-							});
-							address.createIndex({"address.street": 1}, {
-								name: "street",
-								partialFilterExpression: {
-									"address.street": {$exists: true}
-								}
-							});
-							address.createIndex({
-								"address.country":	1,
-								"address.region":	1
-							}, {
-								name: "regcry",
-								partialFilterExpression: {
-									"address.country":	{$exists: true},
-									"address.region":	{$exists: true}
-								}
-							});
-							address.createIndex({
-								"address.country":	1,
-								"address.region":	1,
-								"address.city":		1
-							}, {
-								name: "regcrycty",
-								partialFilterExpression: {
-									"address.country":	{$exists: true},
-									"address.region":	{$exists: true},
-									"address.city":		{$exists: true}
-								}
-							});
-							address.createIndex({
-								"address.country":	1,
-								"address.region":	1,
-								"address.city":		1,
-								"address.street":	1
-							}, {
-								name:		"address",
-								unique:		true,
-								dropDups:	true,
-								partialFilterExpression: {
-									"address.country":	{$exists: true},
-									"address.region":	{$exists: true},
-									"address.city":		{$exists: true},
-									"address.street":	{$exists: true}
-								}
-							});
-							address.createIndex({key: 1}, {
-								name:		"key",
-								unique:		true,
-								dropDups:	true,
-								partialFilterExpression: {
-									key: {$exists: true}
-								}
-							});
-							address.createIndex({zip: 1}, {
-								name: "zip",
-								partialFilterExpression: {
-									zip: {$exists: true}
-								}
-							});
-							// Создаем индексы для домов
-							houses.createIndex({name: 1}, {name: "house"});
-							houses.createIndex({regionId: 1}, {name: "region"});
-							houses.createIndex({districtId: 1}, {name: "district"});
-							houses.createIndex({streetId: 1}, {name: "street"});
-							houses.createIndex({cityId: 1}, {name: "city"});
-							houses.createIndex({okato: 1}, {name: "okato"});
-							houses.createIndex({type: 1}, {name: "type"});
-							houses.createIndex({gps: "2dsphere"}, {name: "gps"});
-							houses.createIndex({metro: 1}, {
-								name: "metro",
-								partialFilterExpression: {
-									metro: {$exists: true}
-								}
-							});
-							houses.createIndex({zip: 1}, {
-								name: "zip",
-								partialFilterExpression: {
-									zip: {$exists: true}
-								}
-							});
+						// Выполняем обновление базы улиц
+						const streets = (cities ? yield idObj.updateStreets({}, true) : false);
+						// Выполняем обновление базы домов
+						const houses = (streets ? yield idObj.updateHouses({}, true) : false);
+						// Создаем индексы для базы адресов
+						address.createIndex({gps: "2dsphere"}, {name: "gps"});
+						address.createIndex({"address.country": 1}, {
+							name: "country",
+							partialFilterExpression: {
+								"address.country": {$exists: true}
+							}
+						});
+						address.createIndex({"address.region": 1}, {
+							name: "region",
+							partialFilterExpression: {
+								"address.region": {$exists: true}
+							}
+						});
+						address.createIndex({"address.district": 1}, {
+							name: "district",
+							partialFilterExpression: {
+								"address.district": {$exists: true}
+							}
+						});
+						address.createIndex({"address.city": 1}, {
+							name: "city",
+							partialFilterExpression: {
+								"address.city": {$exists: true}
+							}
+						});
+						address.createIndex({"address.street": 1}, {
+							name: "street",
+							partialFilterExpression: {
+								"address.street": {$exists: true}
+							}
+						});
+						address.createIndex({
+							"address.country":	1,
+							"address.region":	1
+						}, {
+							name: "regcry",
+							partialFilterExpression: {
+								"address.country":	{$exists: true},
+								"address.region":	{$exists: true}
+							}
+						});
+						address.createIndex({
+							"address.country":	1,
+							"address.region":	1,
+							"address.city":		1
+						}, {
+							name: "regcrycty",
+							partialFilterExpression: {
+								"address.country":	{$exists: true},
+								"address.region":	{$exists: true},
+								"address.city":		{$exists: true}
+							}
+						});
+						address.createIndex({
+							"address.country":	1,
+							"address.region":	1,
+							"address.city":		1,
+							"address.street":	1
+						}, {
+							name:		"address",
+							unique:		true,
+							dropDups:	true,
+							partialFilterExpression: {
+								"address.country":	{$exists: true},
+								"address.region":	{$exists: true},
+								"address.city":		{$exists: true},
+								"address.street":	{$exists: true}
+							}
+						});
+						address.createIndex({key: 1}, {
+							name:		"key",
+							unique:		true,
+							dropDups:	true,
+							partialFilterExpression: {
+								key: {$exists: true}
+							}
+						});
+						address.createIndex({zip: 1}, {
+							name: "zip",
+							partialFilterExpression: {
+								zip: {$exists: true}
+							}
+						});
+						// Проверяем все ли данные загружены
+						if(countries && regions && districts
+						&& cities && streets && houses && metro){
 							// Выводим в консоль сообщение
 							idObj.log("все работы выполнены!").info();
 							// Сообщаем что работа завершена
 							resolve(true);
+						// Если данные загружены не полностью
 						} else {
 							// Выводим сообщение в консоль
 							idObj.log(
@@ -5449,6 +5578,8 @@ const anyks = require("./lib.anyks");
 								"регионы =", regions,
 								"районы =", districts,
 								"города =", cities,
+								"улицы =", streets,
+								"дома =", houses,
 								"метро =", metro
 							).error();
 							// Сообщаем что работа завершена
