@@ -4992,6 +4992,137 @@ const anyks = require("./lib.anyks");
 			}));
 		}
 		/**
+		 * updateStreets Метод обновления данных улиц
+		 * @param  {String}  updateKey ключ для обновления базы данных
+		 * @param  {Boolean} flag      флаг для внутреннего обновления
+		 * @return {Promise}           промис содержащий результат обновления улиц
+		 */
+		updateStreets({updateKey}, flag = false){
+			// Получаем идентификатор текущего объекта
+			const idObj = this;
+			// Создаем промис для обработки
+			return (new Promise(resolve => {
+				// Проверяем совпадают ли ключи
+				if(flag || (idObj.generateKey(updateKey) === idObj.updateKey)){
+					// Массив букв для названий улиц
+					const streetsChar = [
+						"1", "2", "3", "4", "5", "6", "7", "8", "9",
+						"А", "Б", "В", "Г", "Д", "E", "Ж", "З", "И",
+						"К", "Л", "М", "Н", "О", "П", "Р", "С", "Т",
+						"У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Э", "Ю", "Я"
+					];
+					// Подключаемся к коллекции улиц
+					const streets = idObj.clients.mongo.connection.db.collection("streets");
+					// Удаляем колекцию улиц
+					streets.drop();
+					// Создаем ключ для кеша
+					const key = createSubjectKey({key: "subjects", db: "street"});
+					// Удаляем данные из кеша
+					Agl.rmRedis.call(idObj, key);
+					/**
+					 * getRegions Функция получения данных регионов
+					 * @return {Promise} промис содержащий данных регионов
+					 */
+					const getRegions = () => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные регионов
+							idObj.schemes.Regions.find({})
+							// Запрашиваем данные регионов
+							.exec((err, data) => resolve(!$.isset(err)
+							&& $.isArray(data) && data.length ? data : false));
+						}));
+					};
+					/**
+					 * getCities Функция получения данных городов
+					 * @param  {String}  regionId идентификатор региона
+					 * @return {Promise}          промис содержащий данных городов
+					 */
+					const getCities = regionId => {
+						// Создаем промис для обработки
+						return (new Promise(resolve => {
+							// Запрашиваем все данные городов
+							idObj.schemes.Cities.find({regionId})
+							// Запрашиваем данные городов
+							.exec((err, data) => resolve(!$.isset(err)
+							&& $.isArray(data) && data.length ? data : false));
+						}));
+					};
+					/**
+					 * *getData Генератор для получения обновления данных
+					 */
+					const getData = function * (){
+						// Выполняем обновление загрузку регионов
+						const regions = yield getRegions();
+						// Если регионы существуют
+						if($.isset(regions)){
+							// Если регионы существуют тогда загружаем города
+							for(let region of regions){
+								// Загружаем данные городов
+								const cities = yield getCities(region._id);
+								// Если города существуют
+								if($.isset(cities)){
+									// Выполняем обход по городам
+									for(let city of cities){
+										// Переходим по всем символам улиц
+										for(let char of streetsChar){
+											// Параметры запроса
+											const query = {
+												str:		char,
+												limit:		100,
+												noCache:	true,
+												cityId:		city._id
+											};
+											// Выполняем поиск улиц
+											const streets = yield idObj.findStreet(query);
+											// Если улицы загружены
+											if($.isset(streets)){
+												// Переходим по всему массиву
+												const str = (streets.length > 1 ? streets.reduce((sum, val) => {
+													// Формируем строку отчета
+													return ($.isString(sum) ? sum : sum.name + " " + sum.type)
+													+ ", " + val.name + " " + val.type;
+												}) : streets[0].name + " " + streets[0].type);
+												// Выводим данные в консоль
+												idObj.log("улиц(ы) загружен(ы) [", char, "]:", str).info();
+											}
+										}
+									}
+								}
+							}
+						}
+						// Создаем индексы для улиц
+						streets.createIndex({name: 1}, {name: "street"});
+						streets.createIndex({regionId: 1}, {name: "region"});
+						streets.createIndex({districtId: 1}, {name: "district"});
+						streets.createIndex({cityId: 1}, {name: "city"});
+						streets.createIndex({okato: 1}, {name: "okato"});
+						streets.createIndex({type: 1}, {name: "type"});
+						streets.createIndex({gps: "2dsphere"}, {name: "gps"});
+						streets.createIndex({metro: 1}, {
+							name: "metro",
+							partialFilterExpression: {
+								metro: {$exists: true}
+							}
+						});
+						streets.createIndex({zip: 1}, {
+							name: "zip",
+							partialFilterExpression: {
+								zip: {$exists: true}
+							}
+						});
+						// Выходим
+						resolve(true);
+						// Сообщаем что все удачно
+						return true;
+					};
+					// Запускаем коннект
+					exec.call(idObj, getData());
+				// Сообщаем что ключи не совпадают
+				} else resolve(false);
+			}));
+		}
+		/**
 		 * updateMetro Метод обновления данных базы метро
 		 * @param  {String}  updateKey ключ для обновления базы данных
 		 * @param  {Boolean} flag      флаг для внутреннего обновления
@@ -5281,26 +5412,6 @@ const anyks = require("./lib.anyks");
 								}
 							});
 							address.createIndex({zip: 1}, {
-								name: "zip",
-								partialFilterExpression: {
-									zip: {$exists: true}
-								}
-							});
-							// Создаем индексы для улиц
-							streets.createIndex({name: 1}, {name: "street"});
-							streets.createIndex({regionId: 1}, {name: "region"});
-							streets.createIndex({districtId: 1}, {name: "district"});
-							streets.createIndex({cityId: 1}, {name: "city"});
-							streets.createIndex({okato: 1}, {name: "okato"});
-							streets.createIndex({type: 1}, {name: "type"});
-							streets.createIndex({gps: "2dsphere"}, {name: "gps"});
-							streets.createIndex({metro: 1}, {
-								name: "metro",
-								partialFilterExpression: {
-									metro: {$exists: true}
-								}
-							});
-							streets.createIndex({zip: 1}, {
 								name: "zip",
 								partialFilterExpression: {
 									zip: {$exists: true}
