@@ -4225,7 +4225,7 @@ const anyks = require("./lib.anyks");
 							// Извлекаем название города
 							city = ($.isset(city) ? city.subject.name : false);
 							// Запрашиваем данные города с сервера
-							city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id, limit: 1}) : false);
+							city = ($.isset(city) && $.isset(region) ? yield idObj.findCity({str: city, regionId: region._id, limit: 1, noCache: true}) : false);
 							// Если это массив то извлекаем данные
 							if($.isArray(city) && city.length) city = city[0];
 
