@@ -4205,6 +4205,9 @@ const anyks = require("./lib.anyks");
 						const getData = function * (){
 							// Получаем данные по GPS координатам
 							const name = yield idObj.getAddressByGPS({lat, lng});
+
+							console.log("++++++++++", name);
+
 							// Получаем страну
 							let country = yield idObj.getCountryByGPS({lat, lng});
 							// Если страна найдена
