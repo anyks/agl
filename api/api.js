@@ -4345,6 +4345,9 @@ const anyks = require("./lib.anyks");
 							if($.isset(region)) region = $.fnShowProps(region, "region");
 							// Получаем город
 							let city = yield idObj.getRegionByGPS({lat, lng});
+
+							console.log("++++++++++", city);
+
 							// Если город найден
 							if($.isset(city)) city = $.fnShowProps(city, "city");
 							// Получаем улицу
