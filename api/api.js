@@ -4461,7 +4461,36 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				getByGPS.call(idObj, "Metro_stations", key, lat, lng, distance)
 				// Выполняем поиск домов
-				.then(resolve).catch(err => {
+				.then(result => {
+					/**
+					 * *getData Генератор для получения данных метро
+					 */
+					const getData = function * (stations){
+						// Результат найденных станций метро
+						let result = false;
+						// Если станции метро найдены
+						if($.isArray(stations) && stations.length){
+							// Переходим по всем станциям метро
+							for(let station of stations){
+								// Загружаем данные метро
+								const metro = yield idObj.findMetroById({id: station._id});
+								// Если данные метро существуют
+								if($.isset(metro)){
+									// Если массив результатов не существует
+									if($.isset(result)) result = [];
+									// Добавляем в массив результатов станцию метро
+									result.push(metro);
+								}
+							}
+						}
+						// Выводим результат
+						resolve(result);
+						// Сообщаем что все удачно
+						return true;
+					};
+					// Запускаем коннект
+					exec.call(idObj, getData(result));
+				}).catch(err => {
 					// Выводим ошибку метода
 					idObj.log("getByGPS in getMetroByGPS", err).error();
 					// Выходим
