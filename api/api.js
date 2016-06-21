@@ -5259,8 +5259,9 @@ const anyks = require("./lib.anyks");
 								"address.city":		1,
 								"address.street":	1
 							}, {
-								name:	"address",
-								unique:	true,
+								name:		"address",
+								unique:		true,
+								dropDups:	true,
 								partialFilterExpression: {
 									"address.country":	{$exists: true},
 									"address.region":	{$exists: true},
