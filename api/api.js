@@ -624,26 +624,47 @@ const anyks = require("./lib.anyks");
 					 * *getData Генератор для формирования данных адреса
 					 */
 					const getData = function * (){
+						
+						try {
+
 						// Если адреса существуют
 						if($.isset(addr1) && $.isset(addr2)){
 							// Очищаем название и тип
 							addr1 = addr1.replace(/[^А-ЯЁ\-\_\.\,\d\s]/ig, "");
 							addr2 = addr2.replace(/[^А-ЯЁ\-\_\.\,\d\s]/ig, "");
+
+							console.log("-------------------0", addr1, addr2);
+
 							// Выполняем разбор адреса
 							let resName1 = yield idObj.parseAddress({address: addr1});
 							let resName2 = yield idObj.parseAddress({address: addr2});
+
+							console.log("-------------------1", resName1, resName2);
+
 							// Если разбор удачный
 							resName1 = $.fnShowProps(resName1, "name");
 							resName2 = $.fnShowProps(resName2, "name");
+
+							console.log("-------------------2", resName1, resName2);
+
 							// Если названия не найдены тогда присваиваем основное название
 							if(!$.isset(resName1)) resName1 = addr1;
 							if(!$.isset(resName2)) resName2 = addr2;
+
+							console.log("-------------------3", resName1, resName2);
+
 							// Очищаем названия
 							resName1 = resName1.replace(/[^А-ЯЁ\-\d\s]/ig, "");
 							resName2 = resName2.replace(/[^А-ЯЁ\-\d\s]/ig, "");
+
+							console.log("-------------------4", resName1, resName2);
+
 							// Создаем регулярное выражение для поиска
 							const regName1 = new RegExp(resName1, "i");
 							const regName2 = new RegExp(resName2, "i");
+
+							console.log("-------------------5", resName1, resName2);
+
 							// Выполняем проверку
 							if(compareWords(addr1, addr2) ||
 							compareWords(resName1, resName2) ||
@@ -666,15 +687,24 @@ const anyks = require("./lib.anyks");
 									// Выполняем следующую проверку
 									else if($.isset(newObj[subject])) key = subject;
 								}
+
+								console.log("-------------------6", key, newObj[key]);
+
 								// Если ключ найден тогда продолжаем поиск
 								if($.isset(key)){
 									// Копируем значение адреса
 									addr2 = newObj[key];
 									// Удаляем его из списка
 									newObj[key] = undefined;
+
+									console.log("-------------------7", addr1, addr2, newObj);
+
 									// Выполняем следующую проверку
 									compare = yield compareResult(addr1, addr2, newObj);
 								}
+
+								console.log("-------------------8", compare);
+
 								// Если ответ пришел тогда выходим
 								resolve(compare);
 							// Просто выходим
@@ -683,6 +713,9 @@ const anyks = require("./lib.anyks");
 						} else resolve(false);
 						// Сообщаем что все удачно
 						return true;
+
+						} catch (e) {console.log("+====================", e);}
+
 					};
 					// Запускаем коннект
 					exec.call(idObj, getData());
@@ -713,6 +746,9 @@ const anyks = require("./lib.anyks");
 					if(($.isset(res) && $.isset(name)) || $.isset(fixGps)){
 						// Выполняем справнение найденного результата
 						const compare = yield compareResult(arr[i].name, name, res.address);
+
+						console.log("-------------------9", compare);
+
 						// Если результат найден
 						if(($.isset(res.lat) && $.isset(res.lng) && compare) || $.isset(fixGps)){
 							// Выполняем сохранение данных
@@ -5463,7 +5499,7 @@ const anyks = require("./lib.anyks");
 					// Удаляем все колекции
 					// address.drop();
 					// Удаляем данные из кеша
-					//Agl.rmRedis.call(idObj, "*");
+					// Agl.rmRedis.call(idObj, "*");
 					/**
 					 * *updateDB Генератор для получения обновления данных
 					 */
