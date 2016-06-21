@@ -4466,30 +4466,21 @@ const anyks = require("./lib.anyks");
 					const key = "metro:gps:" + idObj.generateKey(lat + ":" + lng + ":" + distance);
 					// Ищем станции в кеше
 					const stations = yield getByGPS.call(idObj, "Metro_stations", key, lat, lng, distance);
-
-					console.log("+++++++++0", stations);
-
 					// Если станции метро найдены
 					if($.isArray(stations) && stations.length){
 						// Переходим по всем станциям метро
 						for(let station of stations){
-
-							console.log("+++++++++++1", station);
-
 							// Загружаем данные метро
 							const metro = yield idObj.findMetroById({id: station._id});
 							// Если данные метро существуют
 							if($.isset(metro)){
 								// Если массив результатов не существует
-								if($.isset(result)) result = [];
+								if(!$.isset(result)) result = [];
 								// Добавляем в массив результатов станцию метро
 								result.push(metro);
 							}
 						}
 					}
-
-					console.log("+++++++++++2", result);
-
 					// Выводим результат
 					resolve(result);
 					// Сообщаем что все удачно
