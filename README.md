@@ -2,12 +2,13 @@
 
 Необходимые модули для Api:
 -------
-
-``# npm install MD5``<br>
-``# npm install kladrapi``<br>
-``# npm install node-fetch``<br>
-``# npm install mongoose``<br>
-``# npm install redis``<br>
+```
+# npm install MD5
+# npm install kladrapi
+# npm install node-fetch
+# npm install mongoose
+# npm install redis
+```
 
 Необходимые модули для Agl Server:
 -------
