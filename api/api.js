@@ -4196,34 +4196,39 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					if($.isset(cache)) resolve(JSON.parse(cache));
+					//if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					else {
+					//else {
 						/**
 						 * *getData Генератор для получения данных адреса
 						 */
 						const getData = function * (){
+							// Получаемые параметры
+							let country, region, district;
 							// Получаем данные по GPS координатам
 							const name = yield idObj.getAddressByGPS({lat, lng});
 							// Получаем страну
-							let country = yield idObj.getCountryByGPS({lat, lng});
+							country = yield idObj.getCountryByGPS({lat, lng});
 							// Если страна найдена
 							if($.isset(country)) country = $.fnShowProps(country, "country");
 							// Получаем регион
-							let region = yield idObj.getRegionByGPS({lat, lng});
+							region = yield idObj.getRegionByGPS({lat, lng});
 							// Если регион найден
 							if($.isset(region)) region = $.fnShowProps(region, "region");
-							// Получаем район
-							let district = ($.isset(name) && $.isset(name.address)
-							&& $.isset(name.address.district) ? name.address.district : "");
-							// Выполняем парсинг строки адреса района
-							district = ($.isset(district) ? yield idObj.parseAddress({address: district}) : false);
-							// Извлекаем название района
-							district = ($.isset(district) ? district.subject.name : false);
-							// Запрашиваем данные района с сервера
-							district = ($.isset(district) && $.isset(region) ? yield idObj.findDistrict({str: district, regionId: region._id}) : false);
-							// Если это массив то извлекаем данные
-							if($.isArray(district) && district.length) district = yield compareGPS.call(idObj, lat, lng, district);
+							// Если регион найден
+							if($.isset(region)){
+								// Получаем район
+								district = ($.isset(name) && $.isset(name.address)
+								&& $.isset(name.address.district) ? name.address.district : "");
+								// Выполняем парсинг строки адреса района
+								district = ($.isset(district) ? yield idObj.parseAddress({address: district}) : false);
+								// Извлекаем название района
+								district = ($.isset(district) ? district.subject.name : false);
+								// Запрашиваем данные района с сервера
+								district = ($.isset(district) ? yield idObj.findCity({str: district, regionId: region._id}) : false);
+								// Если это массив то извлекаем данные
+								if($.isArray(district) && district.length) district = yield compareGPS.call(idObj, lat, lng, district);
+							}
 							// Создаем объект для сохранения данных
 							const obj = {country, region, district};
 							// Отправляем в Redis на час
@@ -4235,7 +4240,7 @@ const anyks = require("./lib.anyks");
 						};
 						// Запускаем коннект
 						exec.call(idObj, getData());
-					}
+					//}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
@@ -4261,9 +4266,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					// if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					// else {
+					else {
 						/**
 						 * *getData Генератор для получения данных адреса
 						 */
@@ -4305,7 +4310,7 @@ const anyks = require("./lib.anyks");
 						};
 						// Запускаем коннект
 						exec.call(idObj, getData());
-					// }
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
@@ -4331,9 +4336,9 @@ const anyks = require("./lib.anyks");
 				// Ищем станции в кеше
 				Agl.getRedis.call(idObj, "get", key, 3600).then(({err, cache}) => {
 					// Если данные это не массив тогда создаем его
-					//if($.isset(cache)) resolve(JSON.parse(cache));
+					if($.isset(cache)) resolve(JSON.parse(cache));
 					// Если данные в кеше не найдены тогда продолжаем искать
-					//else {
+					else {
 						/**
 						 * *getData Генератор для получения данных адреса
 						 */
@@ -4379,7 +4384,7 @@ const anyks = require("./lib.anyks");
 						};
 						// Запускаем коннект
 						exec.call(idObj, getData());
-					//}
+					}
 				// Если происходит ошибка тогда выходим
 				}).catch(err => {
 					// Выводим ошибку метода
