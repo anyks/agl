@@ -2513,3 +2513,120 @@ lng = 41.370719
 ```
 
 > данный метод загружает данные только из локальной базы
+
+---
+
+**getHousesByGPS** - Получение домов по GPS координатам
+
+#### Параметры запроса:
+
+```
+lat - Широта *
+lng - Долгота *
+distance - Расстояние в метрах (по умолчанию 3000)
+```
+
+#### запрос:
+
+```
+lat = 56.8515719
+lng = 41.370719
+```
+
+#### ответ:
+
+```js
+[{
+	id: '3701900100002790010',
+	name: '31',
+	zip: 155900,
+	type: 'дом',
+	typeShort: 'д',
+	okato: '24411000000',
+	contentType: 'building',
+	code: 'ru',
+	lat: '56.8400475',
+	lng: '41.3907855',
+	timezone: {
+		timeZoneName: 'Москва, стандартное время',
+		timeZoneId: 'Europe/Moscow',
+		rawOffset: 10800,
+		dstOffset: 0
+	},
+	regionId: '3700000000000',
+	districtId: '3701900000000',
+	cityId: '3701900100000',
+	streetId: '37019001000027900',
+	metro: [],
+	gps: [41.3907855, 56.8400475]
+}, {
+	id: '3701900100002790005',
+	name: '38',
+	zip: 155912,
+	type: 'дом',
+	typeShort: 'д',
+	okato: '24411000000',
+	contentType: 'building',
+	code: 'ru',
+	lat: '56.8400475',
+	lng: '41.3907855',
+	timezone: {
+		dstOffset: 0,
+		rawOffset: 10800,
+		timeZoneId: 'Europe/Moscow',
+		timeZoneName: 'Москва, стандартное время'
+	},
+	regionId: '3700000000000',
+	districtId: '3701900000000',
+	cityId: '3701900100000',
+	streetId: '37019001000027900',
+	metro: [],
+	gps: [41.3907855, 56.8400475]
+}, {
+	id: '3701900100002790011',
+	name: '39',
+	zip: 155900,
+	type: 'дом',
+	typeShort: 'д',
+	okato: '24411000000',
+	contentType: 'building',
+	code: 'ru',
+	lat: '56.8400475',
+	lng: '41.3907855',
+	timezone: {
+		timeZoneName: 'Москва, стандартное время',
+		timeZoneId: 'Europe/Moscow',
+		rawOffset: 10800,
+		dstOffset: 0
+	},
+	regionId: '3700000000000',
+	districtId: '3701900000000',
+	cityId: '3701900100000',
+	streetId: '37019001000027900',
+	metro: [],
+	gps: [41.3907855, 56.8400475]
+}, {
+	id: '3701900100002790002',
+	name: '36',
+	zip: 155908,
+	type: 'дом',
+	typeShort: 'д',
+	okato: '24411000000',
+	contentType: 'building',
+	code: 'ru',
+	lat: '56.8400475',
+	lng: '41.3907855',
+	timezone: {
+		timeZoneName: 'Москва, стандартное время',
+		timeZoneId: 'Europe/Moscow',
+		rawOffset: 10800,
+		dstOffset: 0
+	},
+	regionId: '3700000000000',
+	districtId: '3701900000000',
+	cityId: '3701900100000',
+	streetId: '37019001000027900',
+	metro: [],
+	gps: [41.3907855, 56.8400475]
+}]
+```
