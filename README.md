@@ -197,7 +197,106 @@
 		regionId: '3700000000000',
 		cityId: '3700000100000'
 	}
-  }
-  ```
+}
+```
 
 > данные извлекаются из локальной базы, и если каких-то субъектов в базе нет, то данный запрос результата не даст. В таком случае следует использовать метод **findAddress**
+
+**findAddress** - Поиск данных адреса по строке
+
+#### Параметры запроса:
+
+**address** - Адрес для интерпретации данных (разделение запятыми субъектов обязательно) *
+
+#### запрос:
+
+**address** = Россия Ивановская область г.Иваново пр-т.Строителей
+
+#### ответ:
+
+```js
+{
+	country: {
+		name: 'Россия',
+		type: 'Страна',
+		typeShort: 'ст-а',
+		contentType: 'country',
+		nameFull: 'Российская Федерация',
+		nameShort: 'РФ',
+		id: '7',
+		code: 'ru',
+		lat: 61.52401,
+		lng: 105.318756,
+		gps: [ 105.318756, 61.52401 ],
+		timezone: {
+			dstOffset: 0,
+			rawOffset: 25200,
+			timeZoneId: 'Asia/Krasnoyarsk',
+			timeZoneName: 'Красноярск, стандартное время'
+		}
+	},
+	region: {
+		name: 'Ивановская',
+		zip: null,
+		type: 'Область',
+		typeShort: 'обл',
+		okato: '24000000000',
+		contentType: 'region',
+		id: '3700000000000',
+		code: 'ru',
+		lat: 57.1056854,
+		lng: 41.4830084,
+		gps: [41.4830084, 57.1056854],
+		timezone: {
+			dstOffset: 0,
+			rawOffset: 10800,
+			timeZoneId: 'Europe/Moscow',
+			timeZoneName: 'Москва, стандартное время'
+		}
+	},
+	district: false,
+	city: {
+		timezone: {
+			timeZoneName: 'Москва, стандартное время',
+			timeZoneId: 'Europe/Moscow',
+			rawOffset: 10800,
+			dstOffset: 0
+		},
+		id: '3700000100000',
+		name: 'Иваново',
+		zip: 153015,
+		type: 'Город',
+		typeShort: 'г',
+		okato: '24401000000',
+		contentType: 'city',
+		code: 'ru',
+		lat: '56.9984452',
+		lng: '40.9737394',
+		regionId: '3700000000000',
+		gps: [40.9737394, 56.9984452]
+	},
+ 	 street: {
+		name: 'Строителей',
+		zip: 153038,
+		type: 'Проспект',
+		typeShort: 'пр-кт',
+		okato: '24401000000',
+		contentType: 'street',
+		id: '37000001000098000',
+		code: 'ru',
+		lat: '56.9686335',
+		lng: '41.0111737',
+		gps: [41.0111737, 56.9686335],
+		timezone: {
+			dstOffset: 0,
+			rawOffset: 10800,
+			timeZoneId: 'Europe/Moscow',
+			timeZoneName: 'Москва, стандартное время'
+		},
+		regionId: '3700000000000',
+		cityId: '3700000100000'
+	}
+}
+```
+
+> Разница между методом **findAddress** и **getAddress** заключается в том, что данный метод ищет данные не только в своей базе но и за пределами в интернете, следовательно выполнятся он будет дольше и нагрузка на систему будет выше чем у getAddress
