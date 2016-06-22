@@ -47,7 +47,7 @@
 
 > Данные параметры за исключением Password Redis и DataBase Redis прописаны по умолчанию и вводить их нет необходимости, параметры запуска указываются только если они отличаются от текущих.
 
-## Параметры конфигурационного файла:
+## Параметры конфигурационного файла
 
 ```js
 {
@@ -2934,3 +2934,59 @@ true или false
 
 > данный метод перед обновлением, удаляет из базы абсолютно все данные, его работа может занять несколько суток
 
+## Агенты сервера
+
+### Агент WebSocket
+
+#### пример подключения:
+
+```js
+var WebSocket = require(‘ws'); // Только для Node.js в браузере эта строчка не нужна
+
+var socket = new WebSocket(“ws://mysite.com");
+
+socket.onopen = function(){
+	console.log("Соединение установлено.");
+};
+
+socket.onclose = function(event){
+	if(event.wasClean) console.log('Соединение закрыто чисто');
+	// например, "убит" процесс сервера
+	else console.log('Обрыв соединения');
+	console.log('Код:', event.code, 'причина:', event.reason);
+};
+
+socket.onmessage = function(event){
+	console.log("Получены данные", JSON.parse(event.data).query);
+};
+
+socket.onerror = function(error){
+	console.log("Ошибка", error.message);
+};
+```
+
+---
+
+```js
+// Выполняем запрос к серверу на получении станции метро Румянцево
+
+socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Рум", "cityId": '7700000000000', "lineName": ‘Сокольническая'}}));
+```
+
+#### Получены данные:
+
+```js
+[{
+	id: '975c23bb4d69e2efc343cf11',
+	name: 'Румянцево',
+	lat: '55.633',
+	lng: '37.4419',
+	order: 20,
+	line: 'Сокольническая',
+	color: 'E42313',
+	city: 'Москва',
+	lineId: '31b83c4d182032e41ad85357',
+	cityId: '7700000000000',
+	gps: [37.4419, 55.633]
+}]
+```
