@@ -2327,8 +2327,116 @@ lng = 41.3796
 		lat: '56.8441',
 		lng: '41.3796',
 		gps: [41.3796, 56.8441],
+		timezone: {
+			dstOffset: 0,
+			rawOffset: 10800,
+			timeZoneId: 'Europe/Moscow',
+			timeZoneName: 'Москва, стандартное время'
+		},
 		regionId: '3700000000000',
 		districtId: '3701900000000'
+	}
+}
+```
+
+> данный метод загружает данные как из локальной базы так и из интернета, если в локальной базе данных не найдено
+
+---
+
+**getStreetByGPS** - Получение улицы по GPS координатам
+
+#### Параметры запроса:
+
+```
+lat - Широта *
+lng - Долгота *
+```
+
+#### запрос:
+
+```
+lat = 56.8515719
+lng = 41.370719
+```
+
+#### ответ:
+
+```js
+{
+	country: {
+		id: '7',
+		name: 'Россия',
+		type: 'Страна',
+		typeShort: 'ст-а',
+		contentType: 'country',
+		nameFull: 'Российская Федерация',
+		nameShort: 'РФ',
+		code: 'ru',
+		lat: '61.52401',
+		lng: '105.318756',
+		gps: [105.318756, 61.52401]
+	},
+	region: {
+		name: 'Ивановская',
+		zip: null,
+		type: 'Область',
+		typeShort: 'обл',
+		okato: '24000000000',
+		contentType: 'region',
+		id: '3700000000000',
+		code: 'ru',
+		lat: 57.1056854,
+		lng: 41.4830084,
+		gps: [41.4830084, 57.1056854],
+		timezone: {
+			dstOffset: 0,
+			rawOffset: 10800,
+			timeZoneId: 'Europe/Moscow',
+			timeZoneName: 'Москва, стандартное время'
+		}
+	},
+	city: {
+		name: 'Шуя',
+		zip: 155905,
+		type: 'Город',
+		typeShort: 'г',
+		okato: '24411000000',
+		contentType: 'city',
+		id: '3701900100000',
+		code: 'ru',
+		lat: '56.8441',
+		lng: '41.3796',
+		gps: [41.3796, 56.8441],
+		timezone: {
+			dstOffset: 0,
+			rawOffset: 10800,
+			timeZoneId: 'Europe/Moscow',
+			timeZoneName: 'Москва, стандартное время'
+		},
+		regionId: '3700000000000',
+		districtId: ‘3701900000000'
+	},
+	street: {
+		name: 'Комсомольская',
+		zip: 155900,
+		type: 'Площадь',
+		typeShort: 'пл',
+		okato: '24411000000',
+		contentType: 'street',
+		id: '37019001000010900',
+		code: 'ru',
+		lat: '56.8515719',
+		lng: '41.370719',
+		gps: [41.370719, 56.8515719],
+		timezone: {
+			dstOffset: 0,
+			rawOffset: 10800,
+			timeZoneId: 'Europe/Moscow',
+			timeZoneName: 'Москва, стандартное время'
+		},
+		regionId: '3700000000000',
+		districtId: '3701900000000',
+		cityId: ‘3701900100000'
 	}
 }
 ```
