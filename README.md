@@ -394,7 +394,7 @@ limit = 1
 		dstOffset: 0,
 		rawOffset: 10800,
 		timeZoneId: 'Europe/Moscow',
-		timeZoneName: 'Москва, стандартное время’
+		timeZoneName: 'Москва, стандартное время'
 	}
 }]
 ```
