@@ -2254,7 +2254,7 @@ lng = 41.3915336
 			timeZoneId: 'Europe/Moscow',
 			timeZoneName: 'Москва, стандартное время'
 		},
-		regionId: ‘3700000000000'
+		regionId: '3700000000000'
 	}
 }
 ```
