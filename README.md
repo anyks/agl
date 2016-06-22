@@ -2,7 +2,7 @@
 
 В качестве основных источников данных служит база данных **Кладр**
 
-## Необходимые модули для Api:
+### Необходимые модули для Api:
 
 ```
 # npm install MD5
@@ -12,7 +12,7 @@
 # npm install redis
 ```
 
-## Необходимые модули для Agl Server:
+### Необходимые модули для Agl Server:
 
 ```
 # npm install cluster
@@ -20,7 +20,7 @@
 # npm install net
 ```
 
-## Необходимые модули для Agl agent WS Server:
+### Необходимые модули для Agl agent WS Server:
 
 ```
 # npm install net
@@ -29,7 +29,7 @@
 # npm install minimist
 ```
 
-## Параметры запуска для Agl Server:
+### Параметры запуска для Agl Server:
 
 ``# ./agl.js --redis=127.0.0.1:6379 --mongo=127.0.0.1:27017 —fork=127.0.0.1:4420 —rpass=password —rdb=12``<br>
 
@@ -37,7 +37,7 @@
 
 ``# ./agl.js -r 127.0.0.1:6379 -m 127.0.0.1:27017 -f 127.0.0.1:4420 -p password -b 12``<br>
 
-## Параметры запуска для Agl agent WS Server:
+### Параметры запуска для Agl agent WS Server:
 
 ``# ./ws.js --redis=127.0.0.1:6379 --server=127.0.0.1:3320 —fork=127.0.0.1:4420 —rpass=password —rdb=12``<br>
 
