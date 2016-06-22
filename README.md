@@ -67,37 +67,37 @@
 
 ```js
 {
-	"country": {
-		"name": "Российская федерация",
-		"type": "Страна"
+	country: {
+		name: 'Российская федерация',
+		type: 'Страна'
 	},
-	"region": {
-		"name": "Ивановская",
-		"type": "Область"
+	region": {
+		name: 'Ивановская',
+		type: 'Область'
 	},
-	"district": {
-		"name": "Южский",
-		"type": "Район"
+	district: {
+		name: 'Южский',
+		type: 'Район'
 	},
-	"city": {
-		"name": "Южа",
-		"type": "Город"
+	city: {
+		name: 'Южа',
+		type: 'Город'
 	},
-	"street": {
-		"name": "Смирнова",
-		"type": "Улица"
+	street: {
+		name: 'Смирнова',
+		type: 'Улица'
 	},
-	"house": {
-		"name": "6",
-		"type": "Дом"
+	house: {
+		name: '6',
+		type: 'Дом'
 	},
-	"apartment": {
-		"name": "51",
-		"type": "Квартира"
+	apartment: {
+		name: '51',
+		type: 'Квартира'
 	},
-	"address": "{country}, {region}, {district}, {city}, {street}, {house}, {apartment}",
-	"fullAddress": "Российская федерация страна, Ивановская область, Южский район, Южа город, Смирнова улица, 6 дом, 51 квартира",
-	"lightAddress": "Российская федерация, Ивановская, Южа, Смирнова, 6"
+	address: '{country}, {region}, {district}, {city}, {street}, {house}, {apartment}',
+	fullAddress: 'Российская федерация страна, Ивановская область, Южский район, Южа город, Смирнова улица, 6 дом, 51 квартира',
+	lightAddress: 'Российская федерация, Ивановская, Южа, Смирнова, 6'
 }
 ```
 
