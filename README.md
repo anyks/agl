@@ -2943,7 +2943,7 @@ true или false
 ```js
 var WebSocket = require('ws'); // Только для Node.js в браузере эта строчка не нужна
 
-var socket = new WebSocket(“ws://mysite.com");
+var socket = new WebSocket("ws://mysite.com");
 
 socket.onopen = function(){
 	console.log("Соединение установлено.");
