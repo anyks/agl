@@ -152,7 +152,7 @@
 			dstOffset: 0,
 			rawOffset: 10800,
 			timeZoneId: 'Europe/Moscow',
-			timeZoneName: 'Москва, стандартное время’
+			timeZoneName: 'Москва, стандартное время'
 		}
 	},
 	district: false,
@@ -192,7 +192,7 @@
 			dstOffset: 0,
 			rawOffset: 10800,
 			timeZoneId: 'Europe/Moscow',
-			timeZoneName: 'Москва, стандартное время’
+			timeZoneName: 'Москва, стандартное время'
 		},
 		regionId: '3700000000000',
 		cityId: ‘3700000100000'
