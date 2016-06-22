@@ -53,7 +53,7 @@ const anyks = require("./lib.anyks");
 		"9900000000000": {
 			"lat": "45.96611",
 			"lng": "63.30778",
-			"gps": [parseFloat("63.30778"), parseFloat("45.96611")]
+			"gps": [63.30778, 45.96611]
 		}
 	};
 	/**
