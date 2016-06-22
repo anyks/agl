@@ -118,7 +118,7 @@
 ```js
 {
 	country: {
-		name: ‘Россия',
+		name: 'Россия',
 		type: 'Страна',
 		typeShort: 'ст-а',
 		contentType: 'country',
