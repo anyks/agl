@@ -1103,10 +1103,10 @@ regionId = 3700000000000
 		dstOffset: 0,
 		rawOffset: 10800,
 		timeZoneId: 'Europe/Moscow',
-		timeZoneName: 'Москва, стандартное время’
+		timeZoneName: 'Москва, стандартное время'
 	},
 	regionId: '3700000000000',
-	districtId: ‘3701900000000'
+	districtId: '3701900000000'
 }]
 ```
 
