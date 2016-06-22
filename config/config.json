@@ -1,12 +1,12 @@
 {
-	"name":			"agl",
-	"version":		"1.0",
-	"kladr":		"9035345345",
-	"password":		"test",
-	"updateKey":	"p345345345",
+	"name": "agl",
+	"kladr": "9035345345",
+	"version": "1.0",
+	"password": "test",
+	"updateKey": "p345345345",
 	"debug": {
-		"errors":	true,
-		"message":	true,
-		"color":	true
+		"color": true,
+		"errors": true,
+		"message": true
 	}
 }
