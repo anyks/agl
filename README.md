@@ -2941,7 +2941,7 @@ true или false
 #### пример подключения:
 
 ```js
-var WebSocket = require(‘ws'); // Только для Node.js в браузере эта строчка не нужна
+var WebSocket = require('ws'); // Только для Node.js в браузере эта строчка не нужна
 
 var socket = new WebSocket(“ws://mysite.com");
 
@@ -2970,7 +2970,7 @@ socket.onerror = function(error){
 ```js
 // Выполняем запрос к серверу на получении станции метро Румянцево
 
-socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Рум", "cityId": '7700000000000', "lineName": ‘Сокольническая'}}));
+socket.send(JSON.stringify({"action": "findMetro", "query": {"str":"Рум", "cityId": '7700000000000', "lineName": 'Сокольническая'}}));
 ```
 
 #### Получены данные:

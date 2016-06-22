@@ -1,21 +1,12 @@
 {
-	// Название системы
-	"name": "agl",
-	// Версия системы
-	"version": "1.0",
-	// Ключ кладра
-	"kladr": "51dfe5d42fb2b43e3300006e",
-	// Пароль для обмена данными
-	"password": "test",
-	// Ключ для обновления базы
-	"updateKey": "9712366qweqwe",
-	// Отладочная информация
+	"name":			"agl",
+	"version":		"1.0",
+	"kladr":		"9035345345",
+	"password":		"test",
+	"updateKey":	"p345345345",
 	"debug": {
-		// Отображать ошибки
-		"errors": true,
-		// Отображать сообщения
-		"message": true,
-		// Подсвечивать цветом сообщения в консоли
-		"color": true
+		"errors":	true,
+		"message":	true,
+		"color":	true
 	}
 }
