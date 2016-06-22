@@ -1,5 +1,0 @@
-[server]
-AGL-Dev-Server ansible_ssh_port=22 ansible_ssh_host=107.170.122.222
-
-[server-prod]
-AGL-Prod-Server ansible_ssh_port=22 ansible_ssh_host=128.199.33.147

@@ -1,4 +1,0 @@
-- hosts: server
-  remote_user: freebsd
-  roles:
-    - server
