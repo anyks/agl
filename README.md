@@ -1332,10 +1332,10 @@ limit = 2
 		lng: 50.7263945,
 		gps: [50.7263945, 55.1802364],
 		timezone: {
-			'timeZoneName' : 'Москва, стандартное время',
-			'timeZoneId' : 'Europe/Moscow',
-			'rawOffset' : 10800,
-			'dstOffset' : 0
+			'timeZoneName': 'Москва, стандартное время',
+			'timeZoneId': 'Europe/Moscow',
+			'rawOffset': 10800,
+			'dstOffset': 0
 		}
 	} ,{
 		name: 'Калмыкия',
@@ -1350,13 +1350,85 @@ limit = 2
 		lng: 45.7731614,
 		gps: [45.7731614, 46.5676845],
 		timezone: {
-			'timeZoneName' : 'Москва, стандартное время',
-			'timeZoneId' : 'Europe/Moscow',
-			'rawOffset' : 10800,
-			'dstOffset' : 0
+			'timeZoneName': 'Москва, стандартное время',
+			'timeZoneId': 'Europe/Moscow',
+			'rawOffset': 10800,
+			'dstOffset': 0
 		}
 	}]
 }
 ```
 
 > данный метод загружает данные только с локальной базы и если какие-то данные не загружены их нужно сначала загрузить с помощью метода **findRegion**
+
+---
+
+**getDistricts** - Получение данных районов
+
+#### Параметры запроса:
+
+```
+regionId - Идентификатор региона *
+type - Тип искомого значения (район, округ)
+page - Номер страницы начиная с 1 (по умолчанию 1)
+limit - Количество загружаемых документов, максимально 100 (по умолчанию 10)
+```
+
+#### запрос:
+
+```
+page = 1
+limit = 2
+regionId = 1600000000000
+```
+
+#### ответ:
+
+```js
+{
+	page: 1,
+	limit: 2,
+	count: 21,
+	data: [{
+		name: 'Буинский',
+		zip: 422404,
+		type: 'Район',
+		typeShort: 'р-н',
+		okato: '92218000000',
+		contentType: 'district',
+		id: '1601500000000',
+		code: 'ru',
+		lat: 54.9642608,
+		lng: 48.2035894,
+		gps: [48.2035894, 54.9642608],
+		timezone: {
+			'timeZoneName': 'Москва, стандартное время',
+			'timeZoneId': 'Europe/Moscow',
+			'rawOffset': 10800,
+			'dstOffset': 0
+		},
+		regionId: '1600000000000'
+	}, {
+		name: 'Тюлячинский',
+		zip: 422080,
+		type: 'Район',
+		typeShort: 'р-н',
+		okato: '92256000000',
+		contentType: 'district',
+		id: '1604100000000',
+		code: 'ru',
+		lat: 55.8868459,
+		lng: 50.2265391,
+		gps: [50.2265391, 55.8868459],
+		timezone: {
+			'timeZoneName': 'Москва, стандартное время',
+			'timeZoneId': 'Europe/Moscow',
+			'rawOffset': 10800,
+			'dstOffset': 0
+		},
+		regionId: '1600000000000'
+	}]
+}
+```
+
+> данный метод загружает данные только с локальной базы и если какие-то данные не загружены их нужно сначала загрузить с помощью метода **findDistrict**
