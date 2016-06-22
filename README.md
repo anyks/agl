@@ -956,7 +956,7 @@ str = Ро
 
 ```js
 [{
-	name: ‘Россия',
+	name: 'Россия',
 	type: 'Страна',
 	typeShort: 'ст-а',
 	contentType: 'country',
@@ -971,7 +971,7 @@ str = Ро
 		dstOffset: 0,
 		rawOffset: 25200,
 		timeZoneId: 'Asia/Krasnoyarsk',
-		timeZoneName: 'Красноярск, стандартное время’
+		timeZoneName: 'Красноярск, стандартное время'
 	}
 }]
 ```
