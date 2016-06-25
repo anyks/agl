@@ -813,7 +813,7 @@
 		static strip_tags(str, allowed_tags, separator){
 			let html			= "";
 			let allowed			= false;
-			const allowed_array	= [];
+			let allowed_array	= [];
 			// Функция заменяющая текст строку в тексте
 			let replacer = (search, replace, str) => {
 				return str.split(search).join(replace);
@@ -860,7 +860,7 @@
 			// Регулярное выражение для поиска
 			const reg = /\<[a-z]+(\s+[\w\s\:\;\=\"\'\-]+)\>/;
 			// Массив полученных тегов
-			const arr = [];
+			let arr = [];
 			// Проверяем существует ли такой текст
 			while(reg.test(text)){
 				// Получаем текст
