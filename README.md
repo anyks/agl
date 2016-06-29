@@ -2,31 +2,10 @@
 
 В качестве основных источников данных служит база данных **Кладр**
 
-### Необходимые модули для Api:
+### Установка системы:
 
 ```
-# npm install MD5
-# npm install kladrapi
-# npm install node-fetch
-# npm install mongoose
-# npm install redis
-```
-
-### Необходимые модули для Agl Server:
-
-```
-# npm install cluster
-# npm install minimist
-# npm install net
-```
-
-### Необходимые модули для Agl agent WS Server:
-
-```
-# npm install net
-# npm install http
-# npm install websocket
-# npm install minimist
+# npm install
 ```
 
 ### Параметры запуска для Agl Server:
@@ -2943,7 +2922,7 @@ true или false
 ```js
 var WebSocket = require('ws'); // Только для Node.js в браузере эта строчка не нужна
 
-var socket = new WebSocket("ws://mysite.com");
+var socket = new WebSocket("ws://mysite.com:3320");
 
 socket.onopen = function(){
 	console.log("Соединение установлено.");
